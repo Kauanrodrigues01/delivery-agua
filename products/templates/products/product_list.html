@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Produtos{% endblock %}
+{% block head %}
+    <link rel="stylesheet" href="{% static 'products/styles.css' %}">
+{% endblock %}
+{% block content %}
+<main class="main-content">
+    <div class="container">
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <h2>Nossos Produtos</h2>
+            <p>Água pura e de qualidade para você e sua família. Entrega rápida e preços especiais.</p>
+        </section>
+
+        <!-- Products Grid -->
+        <section class="products-grid" id="productsGrid">
+            <!-- Products will be dynamically inserted here -->
+             <div class="product-card" style="animation-delay: 0s">
+                <div class="product-image">
+                    <img src="src/assets/galao-20l.jpg" alt="Galão de Água 20L" loading="lazy">
+                </div>
+                <div class="product-info">
+                    <h3 class="product-name">Galão de Água 20L</h3>
+                    <p class="product-price">R$&nbsp;12,50</p>
+                    <button class="add-to-cart-btn" data-product-id="1">
+                        Adicionar ao Carrinho
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section class="contact-section">
+            <h3>Faça seu Pedido Agora!</h3>
+            <p>Entre em contato conosco pelos telefones abaixo ou adicione os produtos ao carrinho</p>
+            <div class="contact-phones">
+                <span class="phone">(85) 99233-8103</span>
+                <span class="separator">•</span>
+                <span class="phone">(85) 99169-0986</span>
+            </div>
+        </section>
+    </div>
+</main>
+
+<div class="cart-overlay" id="cartOverlay"></div>
+<div class="cart-sidebar" id="cartSidebar">
+    <div class="cart-header">
+        <h3>Carrinho de Compras</h3>
+        <button class="cart-close" id="cartClose">
+            <i data-lucide="x"></i>
+        </button>
+    </div>
+
+    <div class="cart-content" id="cartContent">
+        <div class="cart-empty" id="cartEmpty">
+            <p>Seu carrinho está vazio</p>
+        </div>
+        <div class="cart-items" id="cartItems">
+            <!-- Cart items will be dynamically inserted here -->
+        </div>
+    </div>
+
+    <div class="cart-footer" id="cartFooter" style="display: none;">
+        <div class="cart-total">
+            <span>Total:</span>
+            <span class="total-price" id="totalPrice">R$ 0,00</span>
+        </div>
+        <button class="checkout-button">Finalizar Pedido</button>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div class="toast" id="toast">
+    <div class="toast-content">
+        <i data-lucide="check-circle"></i>
+        <div class="toast-text">
+            <strong id="toastTitle">Produto adicionado!</strong>
+            <p id="toastDescription">Item foi adicionado ao seu carrinho.</p>
+        </div>
+    </div>
+</div>
+
+<script src="{% static '/products/script.js' %}"></script>
+{% endblock %}

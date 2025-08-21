@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F.A Distribuidora</title>
+    <meta name="description" content="F.A Distribuidora - Distribuidora de água em Palmácia/CE. Galões, garrafas e bebedouros com entrega rápida e preços especiais.">
+    <meta name="author" content="F.A Distribuidora">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="F.A Distribuidora">
+    <meta property="og:description" content="Distribuidora de água em Palmácia/CE. Galões, garrafas e bebedouros com entrega rápida e preços especiais.">
+    <meta property="og:type" content="website">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    
+    <link rel="stylesheet" href="styles.css">
+
+    {% block head %}
+    {% endblock %}
+</head>
+
+<body>
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <div class="logo-icon">F.A</div>
+                        <div class="logo-text">
+                            <h3>F.A Distribuidora</h3>
+                            <p>Distribuidora de Água</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="footer-address">
+                    <h4><i data-lucide="map-pin"></i> Endereço</h4>
+                    <p>Rua Salustiano Ribeiro Guimarães 63<br>Centro – Palmácia/CE</p>
+                </div>
+
+                <div class="footer-contact">
+                    <h4><i data-lucide="phone"></i> Contato</h4>
+                    <div class="contact-info">
+                        <p>(85) 99233-8103</p>
+                        <p>(85) 99169-0986</p>
+                    </div>
+                    <div class="cnpj">
+                        <p><i data-lucide="file-text"></i> CNPJ: 13.689.389/0001-76</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>© 2024 F.A Distribuidora. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>
