@@ -1,10 +1,12 @@
-from django.views.generic import DetailView, ListView
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
+from django.views.generic import DetailView, ListView
 
-from cart.views import get_cart
 from cart.models import CartItem
+from cart.views import get_cart
+
 from .models import Product
+
 
 def add_to_cart(request):
     if request.method != "POST":

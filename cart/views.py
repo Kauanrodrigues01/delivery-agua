@@ -1,4 +1,12 @@
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_POST
+from django.views.generic import TemplateView, View
+
+from products.models import Product
+
+from .models import Cart, CartItem
+
 
 # AJAX: aumentar quantidade
 @require_POST
@@ -11,7 +19,11 @@ def increase_cart_item(request):
 	# Calcular novo total
 	cart_items = cart.items.select_related('product').all()
 	cart_total = sum(i.product.price * i.quantity for i in cart_items)
-	return JsonResponse({'success': True, 'quantity': item.quantity, 'cart_total': float(cart_total)})
+	return JsonResponse({
+		'success': True,
+		'quantity': item.quantity,
+		'cart_total': float(cart_total)
+	})
 
 # AJAX: diminuir quantidade
 @require_POST
@@ -24,12 +36,20 @@ def decrease_cart_item(request):
 		item.save()
 		cart_items = cart.items.select_related('product').all()
 		cart_total = sum(i.product.price * i.quantity for i in cart_items)
-		return JsonResponse({'success': True, 'quantity': item.quantity, 'cart_total': float(cart_total)})
+		return JsonResponse({
+            'success': True,
+            'quantity': item.quantity,
+            'cart_total': float(cart_total)
+        })
 	else:
 		item.delete()
 		cart_items = cart.items.select_related('product').all()
 		cart_total = sum(i.product.price * i.quantity for i in cart_items)
-		return JsonResponse({'success': True, 'quantity': 0, 'cart_total': float(cart_total)})
+		return JsonResponse({
+            'success': True,
+            'quantity': 0,
+            'cart_total': float(cart_total)
+        })
 
 # AJAX: remover item
 @require_POST
@@ -41,15 +61,6 @@ def remove_cart_item(request):
 	cart_items = cart.items.select_related('product').all()
 	cart_total = sum(i.product.price * i.quantity for i in cart_items)
 	return JsonResponse({'success': True, 'cart_total': float(cart_total)})
-
-
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
-from django.views.generic import TemplateView, View
-
-from products.models import Product
-
-from .models import Cart, CartItem
 
 
 def get_cart(request):

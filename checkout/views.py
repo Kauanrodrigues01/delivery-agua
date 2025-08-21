@@ -1,13 +1,11 @@
 
+from django.shortcuts import render
 from django.views.generic import TemplateView
 
-
-
-from django.shortcuts import render, redirect
-from django.contrib import messages
 from cart.views import get_cart
-from cart.models import CartItem
+
 from .models import Order, OrderItem
+
 
 class CheckoutView(TemplateView):
 	template_name = 'checkout/checkout.html'
