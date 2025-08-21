@@ -1,22 +1,27 @@
-
-
 from django.views.generic import DetailView, ListView
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
 
 from cart.views import get_cart
-from django.shortcuts import redirect
-from cart.models import Cart, CartItem
-
-def add_to_cart(request, product_id):
-	cart = get_cart(request)
-	product = Product.objects.get(pk=product_id)
-	item, created = CartItem.objects.get_or_create(cart=cart, product=product)
-	if not created:
-		item.quantity += 1
-		item.save()
-	return None
-
+from cart.models import CartItem
 from .models import Product
 
+def add_to_cart(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Invalid method"}, status=405)
+
+    product_id = request.POST.get("product_id")
+    if not product_id:
+        return JsonResponse({"error": "No product id"}, status=400)
+
+    cart = get_cart(request)
+    product = get_object_or_404(Product, pk=product_id)
+    item, created = CartItem.objects.get_or_create(cart=cart, product=product)
+    if not created:
+        item.quantity += 1
+        item.save()
+
+    return JsonResponse({"success": True, "cart_count": cart.items.count()})
 
 class ProductListView(ListView):
 	model = Product
