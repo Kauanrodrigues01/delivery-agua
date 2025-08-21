@@ -21,7 +21,21 @@
                         {% endif %}
                         <div>
                             <div class="cart-item-name">{{ item.product.name }}</div>
-                            <div class="cart-item-qty">x{{ item.quantity }}</div>
+                            <div class="cart-item-qty-controls">
+                                <button class="cart-btn cart-btn-decrease" data-product-id="{{ item.product.id }}"
+                                    title="Remover 1">
+                                    <i data-lucide="minus"></i>
+                                </button>
+                                <span class="cart-item-qty-value">{{ item.quantity }}</span>
+                                <button class="cart-btn cart-btn-increase" data-product-id="{{ item.product.id }}"
+                                    title="Adicionar 1">
+                                    <i data-lucide="plus"></i>
+                                </button>
+                                <button class="cart-btn cart-btn-remove" data-product-id="{{ item.product.id }}"
+                                    title="Remover tudo">
+                                    <i data-lucide="trash-2"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                     <div class="cart-item-price">R$ {{ item.product.price|floatformat:2 }}</div>
@@ -39,4 +53,5 @@
         </section>
     </div>
 </main>
+<script src="{% static 'cart/script.js' %}"></script>
 {% endblock %}
