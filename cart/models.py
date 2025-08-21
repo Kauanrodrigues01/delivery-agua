@@ -1,7 +1,7 @@
 from django.db import models
 
-
 from products.models import Product
+
 
 class Cart(models.Model):
 	created_at = models.DateTimeField(auto_now_add=True)

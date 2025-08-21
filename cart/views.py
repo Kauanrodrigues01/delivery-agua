@@ -1,11 +1,13 @@
-from django.shortcuts import render
 
 
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
 from django.views.generic import TemplateView, View
-from django.http import JsonResponse, HttpResponseRedirect
-from django.shortcuts import get_object_or_404, redirect
+
 from products.models import Product
+
 from .models import Cart, CartItem
+
 
 def get_cart(request):
 	cart_id = request.session.get('cart_id')

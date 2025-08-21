@@ -1,6 +1,6 @@
-from django.core.management.base import BaseCommand
-from django.contrib.auth.models import User
 from decouple import config
+from django.contrib.auth.models import User
+from django.core.management.base import BaseCommand
 
 SUPERUSER_USERNAME = config('SUPERUSER_USERNAME', default='admin', cast=str)
 SUPERUSER_EMAIL = config('SUPERUSER_EMAIL', default='admin@gmail.com', cast=str)

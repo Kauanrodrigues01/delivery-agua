@@ -1,9 +1,11 @@
-from django.shortcuts import render
 
 
-from django.views.generic import ListView, DetailView
-from .models import Product
+from django.views.generic import DetailView, ListView
+
 from cart.views import get_cart
+
+from .models import Product
+
 
 class ProductListView(ListView):
 	model = Product

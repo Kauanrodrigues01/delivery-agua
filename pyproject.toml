@@ -37,3 +37,5 @@ makemigrations = "python manage.py makemigrations"
 createsuperuser = "python manage.py createsuperuser"
 shell = "python manage.py shell"
 test = "python manage.py test"
+lint = 'ruff check .'
+format = 'ruff check --fix && ruff format .'
