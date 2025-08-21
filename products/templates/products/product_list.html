@@ -2,7 +2,7 @@
 {% load static %}
 {% block title %}Produtos{% endblock %}
 {% block head %}
-    <link rel="stylesheet" href="{% static 'products/styles.css' %}">
+<link rel="stylesheet" href="{% static 'products/styles.css' %}">
 {% endblock %}
 {% block content %}
 <main class="main-content">
@@ -15,19 +15,29 @@
 
         <!-- Products Grid -->
         <section class="products-grid" id="productsGrid">
-            <!-- Products will be dynamically inserted here -->
-             <div class="product-card" style="animation-delay: 0s">
+            {% for product in products %}
+            <div class="product-card" style="animation-delay: {{ forloop.counter0|add:'0.1' }}s">
                 <div class="product-image">
-                    <img src="src/assets/galao-20l.jpg" alt="Galão de Água 20L" loading="lazy">
+                    {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
+                    {% else %}
+                    <img src="https://via.placeholder.com/200x200?text=Sem+Imagem" alt="{{ product.name }}"
+                        loading="lazy">
+                    {% endif %}
                 </div>
                 <div class="product-info">
-                    <h3 class="product-name">Galão de Água 20L</h3>
-                    <p class="product-price">R$&nbsp;12,50</p>
-                    <button class="add-to-cart-btn" data-product-id="1">
+                    <h3 class="product-name">{{ product.name }}</h3>
+                    <p class="product-price">R$&nbsp;{{ product.price|floatformat:2 }}</p>
+                    <a href="{% url 'product_detail' product.pk %}" class="btn btn-outline-primary btn-sm">Ver
+                        Detalhes</a>
+                    <button class="add-to-cart-btn btn btn-primary btn-sm mt-2" data-product-id="{{ product.pk }}">
                         Adicionar ao Carrinho
                     </button>
                 </div>
             </div>
+            {% empty %}
+            <p>Nenhum produto cadastrado.</p>
+            {% endfor %}
         </section>
 
         <!-- Contact Section -->

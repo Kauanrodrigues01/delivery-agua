@@ -1,27 +1,167 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>F.A Distribuidora</title>
-    <meta name="description" content="F.A Distribuidora - Distribuidora de água em Palmácia/CE. Galões, garrafas e bebedouros com entrega rápida e preços especiais.">
+    <meta name="description"
+        content="F.A Distribuidora - Distribuidora de água em Palmácia/CE. Galões, garrafas e bebedouros com entrega rápida e preços especiais.">
     <meta name="author" content="F.A Distribuidora">
-    
+
     <!-- Open Graph -->
     <meta property="og:title" content="F.A Distribuidora">
-    <meta property="og:description" content="Distribuidora de água em Palmácia/CE. Galões, garrafas e bebedouros com entrega rápida e preços especiais.">
+    <meta property="og:description"
+        content="Distribuidora de água em Palmácia/CE. Galões, garrafas e bebedouros com entrega rápida e preços especiais.">
     <meta property="og:type" content="website">
-    
+
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-    
+
+
     <link rel="stylesheet" href="styles.css">
+    <style>
+        .main-header {
+            background: linear-gradient(90deg, #007bff 0%, #00c6ff 100%);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+            border-bottom-left-radius: 1.5rem;
+            border-bottom-right-radius: 1.5rem;
+            padding: 0;
+        }
+
+        .main-header-inner {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            gap: 2rem;
+            padding: 1.5rem 0;
+        }
+
+        .main-header .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+        }
+
+        .main-header .logo-icon {
+            width: 56px;
+            height: 56px;
+            background: #fff;
+            color: #007bff;
+            font-weight: bold;
+            font-size: 2rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .main-header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.2rem;
+            letter-spacing: 0.5px;
+        }
+
+        .main-header small {
+            font-size: 1rem;
+            color: #e0e0e0;
+        }
+
+        .main-header nav {
+            display: flex;
+            align-items: center;
+        }
+
+        .main-header nav ul {
+            display: flex;
+            flex-direction: row;
+            gap: 0.5rem;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .main-header nav .nav-link {
+            font-weight: 500;
+            font-size: 1.1rem;
+            border-radius: 0.5rem;
+            transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+            padding: 0.5rem 1.1rem;
+            color: #fff;
+            text-decoration: none;
+            box-shadow: none;
+        }
+
+        .main-header nav .nav-link.active,
+        .main-header nav .nav-link:hover {
+            background: #fff;
+            color: #007bff !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            text-decoration: none;
+        }
+
+        @media (max-width: 900px) {
+            .main-header-inner {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1.2rem;
+            }
+
+            .main-header nav ul {
+                width: 100%;
+                justify-content: flex-start;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .main-header-inner {
+                padding: 1rem 0.2rem;
+            }
+
+            .main-header h1 {
+                font-size: 1.3rem;
+            }
+
+            .main-header .logo-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+            }
+
+            .main-header nav .nav-link {
+                font-size: 1rem;
+                padding: 0.4rem 0.7rem;
+            }
+        }
+    </style>
 
     {% block head %}
     {% endblock %}
 </head>
 
 <body>
+    <header class="main-header mb-4">
+        <div class="container main-header-inner">
+            <div class="logo-area">
+                <div class="logo-icon">F.A</div>
+                <div>
+                    <h1 class="mb-0">F.A Distribuidora</h1>
+                    <small class="d-block">Água Mineral em Palmácia/CE</small>
+                </div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a class="nav-link" href="/products/">Produtos</a></li>
+                    <li><a class="nav-link" href="/cart/">Carrinho</a></li>
+                    <li><a class="nav-link" href="/checkout/">Finalizar Compra</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
     <div class="container">
         {% block content %}{% endblock %}
     </div>
@@ -54,7 +194,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="footer-bottom">
                 <p>© 2024 F.A Distribuidora. Todos os direitos reservados.</p>
             </div>
