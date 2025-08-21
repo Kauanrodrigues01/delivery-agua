@@ -10,13 +10,17 @@
         <!-- Hero Section -->
         <section class="hero-section">
             <h2>Nossos Produtos</h2>
-            <p>Água pura e de qualidade para você e sua família. Entrega rápida e preços especiais.</p>
+            <p>
+                Água pura e de qualidade para você e sua família.
+                <br>
+                Entrega rápida e preços especiais.
+            </p>
         </section>
 
         <!-- Products Grid -->
         <section class="products-grid" id="productsGrid">
             {% for product in products %}
-            <div class="product-card" style="animation-delay: {{ forloop.counter0|add:'0.1' }}s">
+            <div class="product-card">
                 <div class="product-image">
                     {% if product.image %}
                     <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
@@ -28,15 +32,13 @@
                 <div class="product-info">
                     <h3 class="product-name">{{ product.name }}</h3>
                     <p class="product-price">R$&nbsp;{{ product.price|floatformat:2 }}</p>
-                    <a href="{% url 'product_detail' product.pk %}" class="btn btn-outline-primary btn-sm">Ver
-                        Detalhes</a>
                     <button class="add-to-cart-btn btn btn-primary btn-sm mt-2" data-product-id="{{ product.pk }}">
                         Adicionar ao Carrinho
                     </button>
                 </div>
             </div>
             {% empty %}
-            <p>Nenhum produto cadastrado.</p>
+            <p>Nenhum produto disponível.</p>
             {% endfor %}
         </section>
 
@@ -52,33 +54,6 @@
         </section>
     </div>
 </main>
-
-<div class="cart-overlay" id="cartOverlay"></div>
-<div class="cart-sidebar" id="cartSidebar">
-    <div class="cart-header">
-        <h3>Carrinho de Compras</h3>
-        <button class="cart-close" id="cartClose">
-            <i data-lucide="x"></i>
-        </button>
-    </div>
-
-    <div class="cart-content" id="cartContent">
-        <div class="cart-empty" id="cartEmpty">
-            <p>Seu carrinho está vazio</p>
-        </div>
-        <div class="cart-items" id="cartItems">
-            <!-- Cart items will be dynamically inserted here -->
-        </div>
-    </div>
-
-    <div class="cart-footer" id="cartFooter" style="display: none;">
-        <div class="cart-total">
-            <span>Total:</span>
-            <span class="total-price" id="totalPrice">R$ 0,00</span>
-        </div>
-        <button class="checkout-button">Finalizar Pedido</button>
-    </div>
-</div>
 
 <!-- Toast Notification -->
 <div class="toast" id="toast">
