@@ -1,0 +1,114 @@
+/* Cart Page Styles */
+.cart-section {
+    max-width: 600px;
+    margin: 0 auto;
+    background: var(--card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    padding: 2rem 2rem 1.5rem 2rem;
+}
+
+.cart-section h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--foreground);
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.cart-list {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 2rem;
+}
+
+.cart-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 0;
+    gap: 1rem;
+}
+
+.cart-item-main {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.cart-item-img {
+    width: 56px;
+    height: 56px;
+    object-fit: cover;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+}
+
+.cart-item-placeholder {
+    width: 56px;
+    height: 56px;
+    background: var(--muted);
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted-foreground);
+    font-size: 1.5rem;
+}
+
+.cart-item-name {
+    font-weight: 600;
+    color: var(--card-foreground);
+}
+
+.cart-item-qty {
+    color: var(--muted-foreground);
+    font-size: 0.95rem;
+}
+
+.cart-item-price {
+    font-weight: 600;
+    color: var(--primary);
+    font-size: 1.1rem;
+}
+
+.cart-total-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 2rem;
+}
+
+.cart-total-label {
+    color: var(--foreground);
+}
+
+.cart-total-value {
+    color: var(--primary);
+    font-size: 1.5rem;
+}
+
+.checkout-button {
+    width: 100%;
+    background: var(--gradient-primary);
+    color: var(--primary-foreground);
+    border: none;
+    padding: 1rem;
+    border-radius: var(--radius);
+    font-size: 1.1rem;
+    font-weight: 600;
+    box-shadow: var(--shadow-card);
+    transition: var(--transition);
+    text-align: center;
+    text-decoration: none;
+}
+
+.cart-empty {
+    text-align: center;
+    color: var(--muted-foreground);
+    font-size: 1.1rem;
+    padding: 2rem 0;
+}

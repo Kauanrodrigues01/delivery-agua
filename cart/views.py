@@ -34,7 +34,10 @@ class CartDetailView(TemplateView):
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
 		cart = get_cart(self.request)
+		cart_items = cart.items.select_related('product').all()
+		total = sum(item.product.price * item.quantity for item in cart_items)
 		context['cart'] = cart
-		context['cart_items'] = cart.items.select_related('product').all()
+		context['cart_items'] = cart_items
 		context['cart_count'] = cart.items.count()
+		context['cart_total'] = total
 		return context

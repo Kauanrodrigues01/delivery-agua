@@ -1,25 +1,40 @@
 {% extends 'base.html' %}
 {% block title %}Carrinho{% endblock %}
 {% block content %}
+{% load static %}
+{% block head %}
+<link rel="stylesheet" href="{% static 'cart/styles.css' %}">
+{% endblock %}
 <main class="main-content">
     <div class="container">
         <section class="cart-section">
             <h2>Seu Carrinho</h2>
             {% if cart_items %}
-            <ul class="list-group mb-4">
+            <ul class="cart-list">
                 {% for item in cart_items %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <div>
-                        <strong>{{ item.product.name }}</strong>
-                        <span class="text-muted">x{{ item.quantity }}</span>
+                <li class="cart-item">
+                    <div class="cart-item-main">
+                        {% if item.product.image %}
+                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="cart-item-img">
+                        {% else %}
+                        <div class="cart-item-placeholder">?</div>
+                        {% endif %}
+                        <div>
+                            <div class="cart-item-name">{{ item.product.name }}</div>
+                            <div class="cart-item-qty">x{{ item.quantity }}</div>
+                        </div>
                     </div>
-                    <span>R$ {{ item.product.price|floatformat:2 }}</span>
+                    <div class="cart-item-price">R$ {{ item.product.price|floatformat:2 }}</div>
                 </li>
                 {% endfor %}
             </ul>
-            <a href="{% url 'checkout' %}" class="btn btn-success">Finalizar Compra</a>
+            <div class="cart-total-row">
+                <span class="cart-total-label">Total:</span>
+                <span class="cart-total-value">R$ {{ cart_total|floatformat:2 }}</span>
+            </div>
+            <a href="{% url 'checkout' %}" class="btn btn-success checkout-button">Finalizar Compra</a>
             {% else %}
-            <p>Seu carrinho está vazio.</p>
+            <div class="cart-empty">Seu carrinho está vazio.</div>
             {% endif %}
         </section>
     </div>
