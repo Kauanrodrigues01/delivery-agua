@@ -83,6 +83,7 @@
 }
 
 .add-to-cart-btn {
+    text-decoration: none;
     background: var(--gradient-primary);
     color: var(--primary-foreground);
     border: none;
