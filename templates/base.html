@@ -361,6 +361,8 @@
     <div class="container">
         {% block content %}{% endblock %}
     </div>
+    <!-- CSRF token hidden form to ensure CSRF cookie is set for AJAX -->
+    <form id="csrf-form" style="display:none">{% csrf_token %}</form>
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
