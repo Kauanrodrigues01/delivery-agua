@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}Pedido Realizado{% endblock %}
+{% block content %}
+<main class="main-content">
+    <div class="container">
+        <section class="checkout-section" style="max-width: 500px; margin: 0 auto; text-align: center;">
+            <div class="success-icon" style="font-size:3rem; color: #22c55e; margin-bottom:1rem;">
+                <i data-lucide="check-circle"></i>
+            </div>
+            <h2 style="color: var(--foreground); font-size:2rem; margin-bottom:1rem;">Pedido realizado com sucesso!</h2>
+            <p style="color: var(--muted-foreground); font-size:1.1rem; margin-bottom:2rem;">Seu pedido foi recebido e
+                está sendo processado. Em breve entraremos em contato para confirmar a entrega.</p>
+            <a href="{% url 'product_list' %}" class="btn btn-primary w-100"
+                style="max-width:300px; margin:0 auto;">Voltar para a loja</a>
+        </section>
+    </div>
+</main>
+<script>if (window.lucide) { window.lucide.createIcons(); }</script>
+{% endblock %}

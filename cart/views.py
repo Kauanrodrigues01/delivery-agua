@@ -54,7 +54,6 @@ from .models import Cart, CartItem
 
 def get_cart(request):
 	cart_id = request.session.get('cart_id')
-	print(f"Cart ID from session: {cart_id}")
 	if cart_id:
 		cart, created = Cart.objects.get_or_create(id=cart_id)
 	else:

@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}Erro ao Finalizar Pedido{% endblock %}
+{% block content %}
+<main class="main-content">
+    <div class="container">
+        <section class="checkout-section" style="max-width: 500px; margin: 0 auto; text-align: center;">
+            <div class="error-icon" style="font-size:3rem; color: #dc3545; margin-bottom:1rem;">
+                <i data-lucide="x-circle"></i>
+            </div>
+            <h2 style="color: var(--foreground); font-size:2rem; margin-bottom:1rem;">Erro ao finalizar pedido</h2>
+            <p style="color: var(--muted-foreground); font-size:1.1rem; margin-bottom:2rem;">Ocorreu um erro ao
+                processar seu pedido. Por favor, revise os dados e tente novamente.</p>
+            <a href="{% url 'checkout' %}" class="btn btn-primary w-100" style="max-width:300px; margin:0 auto;">Tentar
+                novamente</a>
+        </section>
+    </div>
+</main>
+<script>if (window.lucide) { window.lucide.createIcons(); }</script>
+{% endblock %}

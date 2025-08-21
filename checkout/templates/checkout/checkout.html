@@ -1,6 +1,136 @@
 {% extends 'base.html' %}
 {% block title %}Finalizar Compra{% endblock %}
+{% load static %}
+{% block head %}
+<link rel="stylesheet" href="{% static 'checkout/styles.css' %}">
+{% endblock %}
 {% block content %}
-<h1>Finalizar Compra</h1>
-<!-- Formulário de checkout aqui -->
+<main class="main-content">
+    <div class="container">
+        <section class="checkout-section">
+            <h2>Finalizar Compra</h2>
+            <form id="checkoutForm" method="post" novalidate>
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="name">Nome</label>
+                    <input type="text" id="name" name="name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Telefone</label>
+                    <input type="tel" id="phone" name="phone" class="form-control" required
+                        pattern="^\([1-9]{2}\)\s9?[0-9]{4}-[0-9]{4}$" maxlength="15" autocomplete="tel">
+                </div>
+                <div class="form-group">
+                    <label for="address">Endereço para entrega</label>
+                    <input type="text" id="address" name="address" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="payment_method">Forma de pagamento</label>
+                    <select id="payment_method" name="payment_method" class="form-control" required>
+                        <option value="">Selecione</option>
+                        <option value="cartao">Cartão</option>
+                        <option value="pix">Pix</option>
+                        <option value="dinheiro">Dinheiro</option>
+                    </select>
+                </div>
+                <div class="form-group" id="cashValueGroup" style="display:none;">
+                    <label for="cash_value">Valor em espécie</label>
+                    <input type="number" step="0.01" min="0" id="cash_value" name="cash_value" class="form-control">
+                    <small id="cashHelp" class="form-text text-muted">Informe o valor que irá pagar em dinheiro para
+                        calcular o troco.</small>
+                </div>
+                <div class="form-group">
+                    <div class="checkout-total-row">
+                        <span class="checkout-total-label">Total da compra:</span>
+                        <span class="checkout-total-value">R$ {{ cart_total|floatformat:2 }}</span>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg w-100">Finalizar Pedido</button>
+                </div>
+            </form>
+            <div id="changeAlert" class="alert alert-danger mt-3" style="display:none;"></div>
+        </section>
+    </div>
+</main>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const paymentSelect = document.getElementById('payment_method');
+        const cashGroup = document.getElementById('cashValueGroup');
+        const cashInput = document.getElementById('cash_value');
+        const form = document.getElementById('checkoutForm');
+        const changeAlert = document.getElementById('changeAlert');
+        const total = parseFloat('{{ cart_total|floatformat:2 }}'.replace(',', '.'));
+        const phoneInput = document.getElementById('phone');
+
+        // Máscara dinâmica para telefone
+        phoneInput.addEventListener('input', function (e) {
+            let value = phoneInput.value.replace(/\D/g, '');
+            if (value.length > 11) value = value.slice(0, 11);
+            if (value.length > 2) {
+                value = '(' + value.slice(0, 2) + ') ' + value.slice(2);
+            }
+            if (value.length > 10) {
+                value = value.slice(0, 10) + '-' + value.slice(10);
+            } else if (value.length > 6) {
+                value = value.slice(0, 9) + '-' + value.slice(9);
+            }
+            phoneInput.value = value;
+        });
+
+        paymentSelect.addEventListener('change', function () {
+            if (this.value === 'dinheiro') {
+                cashGroup.style.display = '';
+                cashInput.setAttribute('required', 'required');
+            } else {
+                cashGroup.style.display = 'none';
+                cashInput.removeAttribute('required');
+                changeAlert.style.display = 'none';
+            }
+        });
+
+        form.addEventListener('submit', function (e) {
+            // Validação extra: nenhum campo pode ser vazio
+            const requiredFields = ['name', 'phone', 'address', 'payment_method'];
+            let valid = true;
+            requiredFields.forEach(function (id) {
+                const el = document.getElementById(id);
+                if (!el.value.trim()) {
+                    el.classList.add('is-invalid');
+                    valid = false;
+                } else {
+                    el.classList.remove('is-invalid');
+                }
+            });
+            if (!valid) {
+                e.preventDefault();
+                changeAlert.textContent = 'Por favor, preencha todos os campos obrigatórios.';
+                changeAlert.style.display = '';
+                return;
+            }
+
+            // Regex telefone
+            const phoneRaw = phoneInput.value.replace(/\D/g, '');
+            if (!/^\d{10,11}$/.test(phoneRaw)) {
+                e.preventDefault();
+                changeAlert.textContent = 'Digite um telefone válido no formato (99) 99999-9999.';
+                changeAlert.style.display = '';
+                phoneInput.focus();
+                return;
+            }
+            // Antes de enviar, sobrescreve o valor do input para o formato sem máscara
+            phoneInput.value = phoneRaw;
+
+            if (paymentSelect.value === 'dinheiro') {
+                const cashValue = parseFloat(cashInput.value.replace(',', '.'));
+                if (isNaN(cashValue) || cashValue < total) {
+                    e.preventDefault();
+                    changeAlert.textContent = `O valor em espécie não pode ser menor que o total da compra (R$ ${total.toFixed(2)}).`;
+                    changeAlert.style.display = '';
+                    cashInput.focus();
+                } else {
+                    changeAlert.style.display = 'none';
+                }
+            }
+        });
+    });
+</script>
 {% endblock %}
