@@ -17,6 +17,10 @@ class Order(models.Model):
 	def __str__(self):
 		return f"Order #{self.id} - {self.customer_name}"
 
+	@property
+	def total_price(self):
+		return sum(item.quantity * item.unit_price for item in self.items.all())
+
 	class Meta:
 		verbose_name = 'Pedido'
 		verbose_name_plural = 'Pedidos'

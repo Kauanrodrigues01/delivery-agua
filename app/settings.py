@@ -146,3 +146,8 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+EVOLUTION_API_BASE_URL = config('EVOLUTION_API_BASE_URL', default=None)
+EVOLUTION_API_KEY = config('EVOLUTION_API_KEY', default=None)
+INSTANCE_NAME = config('INSTANCE_NAME', default=None)
+WHATSAPP_ADMIN_NUMBER = config("WHATSAPP_ADMIN_NUMBER")
