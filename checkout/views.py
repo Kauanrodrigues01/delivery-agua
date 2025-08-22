@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.views.generic import TemplateView
 
 from cart.views import get_cart
-from services.notifications import send_order_notifications
+from services.notifications import send_order_notifications, send_order_notifications_with_callmebot
 
 from .models import Order, OrderItem
 
@@ -56,7 +56,7 @@ class CheckoutView(TemplateView):
                 )
             # Envia notificações WhatsApp
             try:
-                send_order_notifications(order)
+                send_order_notifications_with_callmebot(order)
                 # Limpa o carrinho apenas se a notificação for enviada com sucesso
                 cart.items.all().delete()
                 context = self.get_context_data()

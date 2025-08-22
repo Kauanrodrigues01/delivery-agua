@@ -146,13 +146,3 @@ class EvolutionAPI:
         except requests.RequestException as e:
             print(f"Failed to log out: {e}")
             return "Error"
-
-
-def init():
-    evolution = EvolutionAPI()
-    exists = evolution.instance_exists()
-    evolution.send_text_message(
-        text="Hello, Evolution API is initialized and running!",
-        number=settings.WHATSAPP_ADMIN_NUMBER,  # Use the admin number from settings
-    )
-    print(exists)

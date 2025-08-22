@@ -1,6 +1,7 @@
 from django.conf import settings
 
 from services.evolution import EvolutionAPI
+from services.callmebot import CallMeBot
 
 
 def send_order_notifications(order):
@@ -39,3 +40,23 @@ def send_order_notifications(order):
     except Exception as e:
         # Apenas loga o erro, não interrompe o fluxo
         print(f"Erro ao enviar mensagem ao cliente: {e}")
+
+
+def send_order_notifications_with_callmebot(order):
+    callmebot = CallMeBot()
+
+    # Monta a lista de itens com quantidade
+    itens_str = "\n".join(
+        [f"- {item.product.name} (x{item.quantity})" for item in order.items.all()]
+    )
+
+    # Mensagem para o admin
+    message = (
+        f"Novo pedido recebido!\n"
+        f"Cliente: {order.customer_name}\n"
+        f"Telefone: {order.phone}\n"
+        f"Endereço: {order.address}\n"
+        f"Itens:\n{itens_str}\n"
+        f"Total: R$ {order.total_price}\n"
+    )
+    callmebot.send_text_message(message)
