@@ -23,6 +23,36 @@
     margin: 0 auto;
 }
 
+/* Products Filters */
+.products-filters {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2.5rem;
+}
+
+.products-filters input[type="text"] {
+    padding: 0.75rem 2.5rem 0.75rem 1.25rem;
+    border: 1.5px solid var(--primary);
+    border-radius: 999px;
+    font-size: 1.05rem;
+    width: 100%;
+    max-width: 420px;
+    outline: none;
+    background: var(--background);
+    color: var(--foreground);
+    box-shadow: 0 2px 12px 0 rgba(33, 150, 243, 0.07);
+    transition: border 0.2s, box-shadow 0.2s;
+    margin-bottom: 0.5rem;
+}
+
+.products-filters input[type="text"]:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.15);
+    background: var(--muted);
+}
+
+/* Opcional: adicionar um ícone de busca dentro do input usando ::before em um wrapper, se desejar */
+
 /* Products Grid */
 .products-grid {
     display: grid;

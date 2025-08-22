@@ -17,6 +17,10 @@
             </p>
         </section>
 
+        <section class="products-filters">
+            <input type="text" placeholder="Buscar produtos..." id="searchInput" class="form-control">
+        </section>
+
         <!-- Products Grid -->
         <section class="products-grid" id="productsGrid">
             {% for product in products %}
@@ -68,4 +72,29 @@
 </div>
 
 <script src="{% static '/products/script.js' %}"></script>
+<script>
+    const productsList = document.getElementById('productsGrid');
+    const searchInput = document.getElementById('searchInput');
+
+    function normalizeText(text) {
+        return text
+            .normalize("NFD") // separa acentos das letras
+            .replace(/[\u0300-\u036f]/g, "") // remove os acentos
+            .replace(/[^a-zA-Z0-9 ]/g, "") // remove outros caracteres especiais, exceto espaço
+            .trim();
+    }
+
+    searchInput.addEventListener('input', () => {
+        const searchTerm = normalizeText(searchInput.value).toLowerCase();
+        const products = productsList.getElementsByClassName('product-card');
+        Array.from(products).forEach(product => {
+            const productName = normalizeText(product.querySelector('.product-name').textContent).toLowerCase();
+            if (productName.includes(searchTerm)) {
+                product.style.display = '';
+            } else {
+                product.style.display = 'none';
+            }
+        })
+    })
+</script>
 {% endblock %}
