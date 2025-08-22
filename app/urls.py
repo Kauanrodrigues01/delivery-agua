@@ -29,6 +29,8 @@ urlpatterns = [
     path('checkout/', include('checkout.urls')),
 ]
 
-# Serve media files during development
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+
+# Servir arquivos de mídia locais apenas em DEBUG (útil para desenvolvimento)
+# if settings.DEBUG:
+#     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -29,7 +29,7 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='*', cast=Csv())
 CSRF_TRUSTED_ORIGINS = config(
     "CSRF_TRUSTED_ORIGINS",
-    default="localhost:8000",
+    default="http://localhost:8000",
     cast=Csv()
 )
 LANGUAGE_CODE = config('LANGUAGE_CODE', default='pt-br')
@@ -39,21 +39,38 @@ TIME_ZONE = config('TIME_ZONE', default='America/Sao_Paulo')
 # Application definition
 
 INSTALLED_APPS = [
+    'cloudinary_storage',  # Precisa vir antes do staticfiles para sobrescrever collectstatic
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'cloudinary',
     'products',
     'cart',
     'checkout',
     'core',
 ]
 
-# Media files (uploads)
+# Media files (uploads) para Django 5.0
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': config('CLOUD_NAME'),
+    'API_KEY': config('CLOUD_API_KEY'),
+    'API_SECRET': config('CLOUD_API_SECRET'),
+    'SECURE': True,
+}
+
+DEPLOY = config('DEPLOY_ENV', default=False, cast=bool)
+
+if not DEPLOY:
+    # Local storage para dev
+    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+else:
+    # Cloudinary para produção
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -139,8 +156,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_ROOT = (BASE_DIR / 'staticfiles')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
