@@ -17,10 +17,7 @@ class EvolutionAPI:
     def instance_exists(self):
         url = f"{self.__base_url}/instance/fetchInstances?instanceName={self.__instance_name}"
 
-        headers = {
-            "apikey": self.__api_key,
-            "Content-Type": "application/json"
-        }
+        headers = {"apikey": self.__api_key, "Content-Type": "application/json"}
 
         try:
             response = requests.get(url, headers=headers)
@@ -36,7 +33,10 @@ class EvolutionAPI:
 
             for item in instances:
                 instance = item.get("instance")
-                if isinstance(instance, dict) and instance.get("instanceName") == self.__instance_name:
+                if (
+                    isinstance(instance, dict)
+                    and instance.get("instanceName") == self.__instance_name
+                ):
                     return True
 
         except requests.RequestException as e:
@@ -57,18 +57,11 @@ class EvolutionAPI:
 
         payload = {
             "number": number,
-            "options": {
-                "delay": delay
-            },
-            "textMessage": {
-                "text": text
-            }
+            "options": {"delay": delay},
+            "textMessage": {"text": text},
         }
 
-        headers = {
-            "apikey": self.__api_key,
-            "Content-Type": "application/json"
-        }
+        headers = {"apikey": self.__api_key, "Content-Type": "application/json"}
 
         try:
             response = requests.post(url, json=payload, headers=headers)
@@ -92,10 +85,7 @@ class EvolutionAPI:
         """
         url = f"{self.__base_url}/instance/connect/{self.__instance_name}"
 
-        headers = {
-            "apikey": self.__api_key,
-            "Content-Type": "application/json"
-        }
+        headers = {"apikey": self.__api_key, "Content-Type": "application/json"}
 
         try:
             response = requests.get(url, headers=headers)
@@ -114,10 +104,7 @@ class EvolutionAPI:
         """
         url = f"{self.__base_url}/instance/connectionState/{self.__instance_name}"
 
-        headers = {
-            "apikey": self.__api_key,
-            "Content-Type": "application/json"
-        }
+        headers = {"apikey": self.__api_key, "Content-Type": "application/json"}
 
         try:
             response = requests.get(url, headers=headers)
@@ -125,17 +112,17 @@ class EvolutionAPI:
             data = response.json()
 
             # Check if the 'instance' and 'state' keys are present in the response data
-            status = data.get('instance', {}).get('state', '')
+            status = data.get("instance", {}).get("state", "")
 
-            if status == 'open':
-                return 'Connected'
-            elif status == 'close':
-                return 'Disconnected'
+            if status == "open":
+                return "Connected"
+            elif status == "close":
+                return "Disconnected"
             else:
-                return 'Connecting'
+                return "Connecting"
         except requests.RequestException as e:
             print(f"Failed to retrieve instance status: {e}")
-            return 'Error'
+            return "Error"
 
     def logout_instance(self) -> str:
         """
@@ -145,23 +132,21 @@ class EvolutionAPI:
         """
         url = f"{self.__base_url}/instance/logout/{self.__instance_name}"
 
-        headers = {
-            "apikey": self.__api_key,
-            "Content-Type": "application/json"
-        }
+        headers = {"apikey": self.__api_key, "Content-Type": "application/json"}
 
         try:
             response = requests.delete(url, headers=headers)
             response.raise_for_status()  # Ensures the request was successful
             data = response.json()
 
-            if data.get('status') == 'SUCCESS':
+            if data.get("status") == "SUCCESS":
                 return True
             else:
                 return False
         except requests.RequestException as e:
             print(f"Failed to log out: {e}")
-            return 'Error'
+            return "Error"
+
 
 def init():
     evolution = EvolutionAPI()

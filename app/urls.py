@@ -18,19 +18,25 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
+from django.http import HttpResponse
 from django.urls import include, path, reverse_lazy
 from django.views.generic.base import RedirectView
 
+
+def health_check(request):
+    return HttpResponse("OK", status=200)
+
+
 urlpatterns = [
-    path('', RedirectView.as_view(url=reverse_lazy('product_list'), permanent=False)),
-    path('admin/', admin.site.urls),
-    path('products/', include('products.urls')),
-    path('cart/', include('cart.urls')),
-    path('checkout/', include('checkout.urls')),
+    path("", RedirectView.as_view(url=reverse_lazy("product_list"), permanent=False)),
+    path("admin/", admin.site.urls),
+    path("products/", include("products.urls")),
+    path("cart/", include("cart.urls")),
+    path("checkout/", include("checkout.urls")),
+    path("health/", health_check, name="health_check"),
 ]
 
 
-
 # Servir arquivos de mídia locais apenas em DEBUG (útil para desenvolvimento)
-# if settings.DEBUG:
-#     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+if settings.DEBUG and settings.DEPLOY:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

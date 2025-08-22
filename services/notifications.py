@@ -1,5 +1,7 @@
 from django.conf import settings
+
 from services.evolution import EvolutionAPI
+
 
 def send_order_notifications(order):
     """
@@ -9,11 +11,10 @@ def send_order_notifications(order):
     admin_number = settings.WHATSAPP_ADMIN_NUMBER
     client_number = order.phone
 
-
     # Monta a lista de itens com quantidade
-    itens_str = "\n".join([
-        f"- {item.product.name} (x{item.quantity})" for item in order.items.all()
-    ])
+    itens_str = "\n".join(
+        [f"- {item.product.name} (x{item.quantity})" for item in order.items.all()]
+    )
 
     # Mensagem para o admin
     admin_message = (
@@ -34,7 +35,7 @@ def send_order_notifications(order):
         f"Em breve entraremos em contato para entrega."
     )
     try:
-        evolution.send_text_message(f'55{client_number}', client_message)
+        evolution.send_text_message(f"55{client_number}", client_message)
     except Exception as e:
         # Apenas loga o erro, não interrompe o fluxo
         print(f"Erro ao enviar mensagem ao cliente: {e}")
