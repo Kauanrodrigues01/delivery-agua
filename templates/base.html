@@ -87,16 +87,7 @@
         }
 
         .main-header .logo-icon {
-            width: 56px;
-            height: 56px;
-            background: #fff;
-            color: #007bff;
-            font-weight: bold;
-            font-size: 2rem;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 70px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
 
@@ -195,7 +186,7 @@
             background: var(--primary);
             color: var(--primary-foreground);
             font-size: 1.25rem;
-            min-width: 2.5rem;
+            max-width: 100px;
             text-align: center;
             margin-right: 0.3rem;
         }
@@ -282,8 +273,6 @@
 
             .main-header .logo-icon {
                 width: 40px;
-                height: 40px;
-                font-size: 1.2rem;
             }
 
             .main-header nav .nav-link {
@@ -334,7 +323,7 @@
     <header class="main-header mb-4">
         <div class="container main-header-inner">
             <div class="logo-area">
-                <div class="logo-icon">F.A</div>
+                <img src="{% static 'images/logo.jpg' %}" alt="F.A Distribuidora" class="logo-icon">
                 <div>
                     <h1 class="mb-0">F.A Distribuidora</h1>
                     <p class="d-block">Água Mineral em Palmácia/CE</p>
@@ -368,7 +357,7 @@
             <div class="footer-content">
                 <div class="footer-brand">
                     <div class="footer-logo">
-                        <div class="logo-icon">F.A</div>
+                        <img src="{% static 'images/logo.jpg' %}" alt="F.A Distribuidora" class="logo-icon">
                         <div class="logo-text">
                             <h3>F.A Distribuidora</h3>
                             <p>Distribuidora de Água</p>

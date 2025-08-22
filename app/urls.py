@@ -38,5 +38,5 @@ urlpatterns = [
 
 
 # Servir arquivos de mídia locais apenas em DEBUG (útil para desenvolvimento)
-if settings.DEBUG and settings.DEPLOY:
+if settings.DEBUG and not settings.DEPLOY:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -44,3 +44,7 @@ shell = "python manage.py shell"
 test = "python manage.py test"
 lint = 'ruff check .'
 format = 'ruff check --fix && ruff format .'
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "app.settings"
+python_files = ["test_*.py", "*_test.py"]
