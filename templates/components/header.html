@@ -1,0 +1,34 @@
+{% load static %}
+
+<header class="main-header mb-4">
+    <div class="container main-header-inner">
+        <div class="logo-area">
+            <img src="{% static 'images/logo.jpg' %}" alt="F.A Distribuidora" class="logo-icon">
+            <div>
+                <h1 class="mb-0">F.A Distribuidora</h1>
+                <p class="d-block">Água Mineral em Palmácia/CE</p>
+            </div>
+        </div>
+        <nav>
+            <ul>
+                {% if request.user.is_authenticated  %}
+                    <li><a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a></li>
+                    <li><a class="nav-link" href="{% url 'dashboard_product_list' %}">Gerenciamento de Produtos</a></li>
+                {% else %}
+                    <li><a class="nav-link" href="{% url 'product_list' %}">Produtos</a></li>
+                    <li style="position: relative;">
+                        <a class="nav-link d-flex align-items-center gap-1 position-relative"
+                            href="{% url 'cart_detail' %}">
+                            <i data-lucide="shopping-cart"></i>
+                            <span
+                                class="cart-badge-header position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                                style="font-size:0.75rem;min-width:1.2em;line-height:1.2em;">
+                                {{ cart_count|default:0 }}
+                            </span>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</header>

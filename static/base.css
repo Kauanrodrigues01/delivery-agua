@@ -1,0 +1,45 @@
+:root {
+    /* Colors (HSL) */
+    --primary: hsl(210, 100%, 50%);
+    --primary-dark: hsl(240, 60%, 35%);
+    --primary-foreground: hsl(0, 0%, 100%);
+    --background: hsl(0, 0%, 98%);
+    --foreground: hsl(0, 0%, 15%);
+    --card: hsl(0, 0%, 100%);
+    --card-foreground: hsl(0, 0%, 15%);
+    --muted: hsl(210, 40%, 96%);
+    --muted-foreground: hsl(215, 16%, 47%);
+    --border: hsl(220, 13%, 91%);
+    --destructive: hsl(0, 84%, 60%);
+    --destructive-foreground: hsl(0, 0%, 98%);
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(210, 100%, 60%) 0%, hsl(240, 60%, 40%) 100%);
+    --gradient-header: linear-gradient(90deg, hsl(210, 100%, 50%) 0%, hsl(240, 60%, 35%) 100%);
+
+    /* Shadows */
+    --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+    /* Border Radius */
+    --radius: 0.75rem;
+    --radius-lg: 1rem;
+    --radius-sm: 0.5rem;
+
+    /* Transitions */
+    --transition: all 0.3s ease;
+    --transition-fast: all 0.2s ease;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+/* Responsive Design */
+@media (min-width: 768px) {
+    .container {
+        padding: 0 2rem;
+    }
+}

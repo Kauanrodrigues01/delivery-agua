@@ -33,6 +33,7 @@ urlpatterns = [
     path("products/", include("products.urls")),
     path("cart/", include("cart.urls")),
     path("checkout/", include("checkout.urls")),
+    path("dashboard/", include("dashboard.urls")),
     path("health/", health_check, name="health_check"),
 ]
 

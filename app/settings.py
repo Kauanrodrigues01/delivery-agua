@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "cart",
     "checkout",
     "core",
+    "dashboard",
 ]
 
 # Media files (uploads) para Django 5.0
@@ -169,3 +170,7 @@ WHATSAPP_ADMIN_NUMBER = config("WHATSAPP_ADMIN_NUMBER")
 CALLMEBOT_API_URL = config("CALLMEBOT_API_URL", default=None)
 CALLMEBOT_API_KEY = config("CALLMEBOT_API_KEY", default=None)
 CALLMEBOT_PHONE_NUMBER = config("CALLMEBOT_PHONE_NUMBER", default=None)
+
+# Authentication settings
+LOGIN_URL = '/dashboard/login/'
+LOGIN_REDIRECT_URL = '/dashboard/'

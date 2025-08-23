@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block head %}
+<!-- Algumas classes de estilização usadas aqui são as mesmas do que o app products então vamos usar para não repetir código -->
+<link rel="stylesheet" href="{% static 'products/styles.css' %}">
+
+<style>
+    .alert {
+        color: var(--destructive);
+        font-weight: bold;
+    }
+
+    .product-active {
+        color: var(--primary);
+        font-weight: bold;
+    }
+
+    .product-desactive {
+        color: var(--destructive);
+        font-weight: bold;
+    }
+
+    .product-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: bold;
+    }
+
+    .product-actions button {
+        background: none;
+        border: none;
+        color: var(--primary-dark);
+        text-decoration: none;
+        font-weight: bold;
+        padding: 0.3rem 0.8rem;
+        border-radius: var(--radius-sm);
+        transition: var(--transition);
+        cursor: pointer;
+        font-size: 0.9rem;
+    }
+
+    .product-actions button:hover {
+        background: var(--primary);
+        color: var(--primary-foreground);
+        transform: scale(1.05);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="main-content">
+    <div class="container">
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <h2>Gerenciamento de Produtos</h2>
+            <p>
+                Aqui você pode gerenciar os produtos da sua loja que serão exibidos.
+
+                <br>
+                Avisos:
+                <br>
+                <span class="alert">Os produtos marcados como desativados não serão exibidos ao catálogo de produtos para o cliente</span>
+            </p>
+        </section>
+
+        <section class="products-filters">
+            <input type="text" placeholder="Buscar produtos..." id="searchInput" class="form-control">
+        </section>
+
+        <!-- Products Grid -->
+        <section class="products-grid" id="productsGrid">
+            {% for product in products %}
+            <div class="product-card">
+                <div class="product-image">
+                    {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
+                    {% else %}
+                    <img src="https://via.placeholder.com/200x200?text=Sem+Imagem" alt="{{ product.name }}" loading="lazy">
+                    {% endif %}
+                </div>
+                <div class="product-info">
+                    <h3 class="product-name">{{ product.name }}</h3>
+                    <p class="{% if product.is_active %}product-active{% else %}product-desactive{% endif %}">
+                        {% if product.is_active %}Ativo{% else %}Desativado{% endif %}
+                    </p>
+                    <p class="product-price">R$&nbsp;{{ product.price|floatformat:2 }}</p>
+                    <div class="product-actions">
+                        <button>Editar</button>
+                        <button>Excluir</button>
+                        <button>
+                            {% if product.is_active %}
+                                Desativar
+                            {% else %}
+                                Ativar
+                            {% endif %}
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <p>Nenhum produto disponível.</p>
+            {% endfor %}
+        </section>
+    </div>
+</main>
+
+<!-- os elementos daqui possuem as mesmas classes e referências usadas em app products então vamos usar para não repetir código -->
+<script src="{% static '/products/filterProductsByName.js' %}"></script>
+{% endblock %}
