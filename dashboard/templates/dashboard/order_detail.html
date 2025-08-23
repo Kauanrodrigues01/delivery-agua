@@ -1,0 +1,271 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load math_filters %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'global/form-default-style.css' %}">
+<link rel="stylesheet" href="{% static 'global/buttons-default-style.css' %}">
+
+<style>
+    .order-detail {
+        max-width: 800px;
+        margin: 2rem auto;
+        background: var(--card);
+        border-radius: var(--radius);
+        padding: 2rem;
+        box-shadow: var(--shadow-card);
+    }
+
+    .order-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--border);
+    }
+
+    .order-status {
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-sm);
+        font-weight: bold;
+        color: white;
+    }
+
+    .status-pending {
+        background: var(--primary);
+    }
+
+    .status-completed {
+        background: #28a745;
+    }
+
+    .order-info {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .info-group h4 {
+        color: var(--muted-foreground);
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .info-group p {
+        font-size: 1rem;
+        font-weight: 500;
+        margin: 0;
+    }
+
+    .order-items {
+        margin-bottom: 2rem;
+    }
+
+    .items-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+
+    .items-table th,
+    .items-table td {
+        padding: 0.75rem;
+        text-align: left;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .items-table th {
+        background: var(--muted);
+        font-weight: bold;
+        color: var(--muted-foreground);
+    }
+
+    .order-total {
+        text-align: right;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 2px solid var(--border);
+    }
+
+    .total-amount {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: var(--primary);
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .action-buttons .btn {
+        flex: 1;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: var(--radius);
+        font-weight: bold;
+        text-decoration: none;
+        text-align: center;
+        transition: var(--transition);
+        cursor: pointer;
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: var(--primary-foreground);
+    }
+
+    .btn-secondary {
+        background: var(--muted);
+        color: var(--muted-foreground);
+    }
+
+    .btn-success {
+        background: #28a745;
+        color: white;
+    }
+
+    .btn-danger {
+        background: var(--destructive);
+        color: var(--destructive-foreground);
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-hover);
+    }
+
+    @media (max-width: 768px) {
+        .order-detail {
+            margin: 1rem;
+            padding: 1rem;
+        }
+
+        .order-header {
+            flex-direction: column;
+            gap: 1rem;
+            text-align: center;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="main-content">
+    <div class="container">
+        <div class="order-detail">
+            <div class="order-header">
+                <h2>Pedido #{{ order.id }}</h2>
+                <div
+                    class="order-status {% if order.status == 'pending' %}status-pending{% else %}status-completed{% endif %}">
+                    {% if order.status == 'pending' %}Pendente{% else %}Concluído{% endif %}
+                </div>
+            </div>
+
+            <div class="order-info">
+                <div class="info-group">
+                    <h4>Cliente</h4>
+                    <p>{{ order.customer_name }}</p>
+                </div>
+                <div class="info-group">
+                    <h4>Telefone</h4>
+                    <p>{{ order.phone }}</p>
+                </div>
+                <div class="info-group">
+                    <h4>Data do Pedido</h4>
+                    <p>{{ order.created_at|date:"d/m/Y H:i" }}</p>
+                </div>
+                <div class="info-group">
+                    <h4>Endereço de Entrega</h4>
+                    <p>{{ order.address }}</p>
+                </div>
+            </div>
+
+            <div class="order-items">
+                <h3>Itens do Pedido</h3>
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th>Produto</th>
+                            <th>Quantidade</th>
+                            <th>Preço Unitário</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in order.items.all %}
+                        <tr>
+                            <td>{{ item.product.name }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td>R$ {{ item.product.price|floatformat:2 }}</td>
+                            <td>R$ {{ item.product.price|mul:item.quantity|floatformat:2 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <div class="order-total">
+                    <div class="total-amount">
+                        Total: R$ {{ order.total_price|floatformat:2 }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <a href="{% url 'dashboard:order_list' %}" class="btn btn-secondary">
+                    Voltar à Lista
+                </a>
+                <a href="{% url 'dashboard:order_edit' order.pk %}" class="btn btn-primary">
+                    Editar Pedido
+                </a>
+                <form method="post" action="{% url 'dashboard:order_toggle_status' order.pk %}" style="flex: 1;">
+                    {% csrf_token %}
+                    <button type="submit"
+                        class="btn {% if order.status == 'pending' %}btn-success{% else %}btn-secondary{% endif %}"
+                        style="width: 100%;">
+                        {% if order.status == 'pending' %}
+                        Marcar como Concluído
+                        {% else %}
+                        Marcar como Pendente
+                        {% endif %}
+                    </button>
+                </form>
+                <button class="btn btn-danger" onclick="confirmDelete('{{ order.id }}')">
+                    Excluir Pedido
+                </button>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    function confirmDelete(orderId) {
+        if (confirm('Tem certeza que deseja excluir este pedido? Esta ação não pode ser desfeita.')) {
+            fetch(`/dashboard/orders/${orderId}/delete/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                },
+            }).then(response => {
+                if (response.ok) {
+                    window.location.href = '{% url "dashboard:order_list" %}';
+                } else {
+                    alert('Erro ao excluir o pedido.');
+                }
+            }).catch(() => {
+                alert('Erro ao excluir o pedido.');
+            });
+        }
+    }
+</script>
+{% endblock %}

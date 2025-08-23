@@ -1,0 +1,654 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'products/styles.css' %}">
+<link rel="stylesheet" href="{% static 'global/form-default-style.css' %}">
+<link rel="stylesheet" href="{% static 'global/buttons-default-style.css' %}">
+
+<style>
+    .warning {
+        color: var(--destructive);
+        font-weight: bold;
+    }
+
+    .orders-filters {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding: 0 1rem;
+    }
+
+    .orders-filters select {
+        max-width: 420px;
+        width: 100%;
+    }
+
+    .add-space-bottom {
+        margin-bottom: 3.5rem;
+    }
+
+    .order-pending {
+        color: var(--primary);
+        font-weight: bold;
+    }
+
+    .order-completed {
+        color: #28a745;
+        font-weight: bold;
+    }
+
+    .orders-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 2rem;
+        background: var(--card);
+        border-radius: var(--radius);
+        overflow: hidden;
+        box-shadow: var(--shadow-card);
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-card);
+        margin-top: 2rem;
+    }
+
+    .orders-table th,
+    .orders-table td {
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 1px solid var(--border);
+        white-space: nowrap;
+    }
+
+    .orders-table th {
+        background: var(--muted);
+        font-weight: bold;
+        color: var(--muted-foreground);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .orders-table tr:hover {
+        background: var(--muted);
+    }
+
+    /* Cards layout for mobile */
+    .orders-cards {
+        display: none;
+        gap: 1rem;
+    }
+
+    .order-card {
+        background: var(--card);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-card);
+        padding: 1.5rem;
+        border-left: 4px solid var(--primary);
+    }
+
+    .order-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .order-card-id {
+        font-weight: bold;
+        font-size: 1.1rem;
+        color: var(--primary);
+    }
+
+    .order-card-status {
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-sm);
+        font-size: 0.875rem;
+        font-weight: bold;
+    }
+
+    .order-card-status.pending {
+        background: rgba(33, 150, 243, 0.1);
+        color: var(--primary);
+    }
+
+    .order-card-status.completed {
+        background: rgba(40, 167, 69, 0.1);
+        color: #28a745;
+    }
+
+    .order-card-details {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+        font-size: 0.95rem;
+    }
+
+    .order-card-detail {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .order-card-detail-label {
+        font-weight: bold;
+        color: var(--muted-foreground);
+        font-size: 0.85rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .order-card-detail-value {
+        color: var(--foreground);
+    }
+
+    .order-card-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    /* Loading and feedback states */
+    .order-card.deleting,
+    .orders-table tr.deleting {
+        opacity: 0.5;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+    }
+
+    /* Touch-friendly interactions */
+    @media (hover: none) and (pointer: coarse) {
+
+        .order-actions button,
+        .order-actions a,
+        .order-card-actions button,
+        .order-card-actions a {
+            min-height: 44px;
+            min-width: 44px;
+        }
+
+        .delete-btn {
+            background: var(--destructive) !important;
+            color: var(--destructive-foreground) !important;
+        }
+    }
+
+    /* Accessibility improvements */
+    .orders-table:focus-within {
+        outline: 2px solid var(--primary);
+        outline-offset: 2px;
+    }
+
+    .order-card:focus-within {
+        outline: 2px solid var(--primary);
+        outline-offset: 2px;
+        border-left-color: var(--primary-dark);
+    }
+
+    /* Smooth transitions */
+    .order-card,
+    .orders-table tr {
+        transition: all 0.2s ease;
+    }
+
+    .order-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-hover);
+    }
+
+    .order-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: bold;
+    }
+
+    .order-actions button,
+    .order-actions a {
+        background: none;
+        border: none;
+        color: var(--primary-dark);
+        text-decoration: none;
+        font-weight: bold;
+        padding: 0.3rem 0.8rem;
+        border-radius: var(--radius-sm);
+        transition: var(--transition);
+        cursor: pointer;
+        font-size: 0.9rem;
+    }
+
+    .order-actions button:hover,
+    .order-actions a:hover {
+        background: var(--primary);
+        color: var(--primary-foreground);
+        transform: scale(1.05);
+    }
+
+    /* Delete button specific styling */
+    .delete-btn {
+        background: var(--destructive) !important;
+        color: var(--destructive-foreground) !important;
+        border: 1px solid var(--destructive);
+        padding: 0.4rem 0.8rem;
+        border-radius: var(--radius-sm);
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        text-decoration: none;
+    }
+
+    .delete-btn:hover {
+        background: hsl(0, 84%, 50%) !important;
+        color: var(--destructive-foreground) !important;
+        transform: scale(1.05);
+        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+    }
+
+    .delete-btn:active {
+        transform: scale(0.98);
+    }
+
+    /* Card actions delete button */
+    .order-card-actions .delete-btn {
+        background: var(--destructive) !important;
+        color: var(--destructive-foreground) !important;
+        border: 1px solid var(--destructive);
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+        min-width: 70px;
+        text-align: center;
+    }
+
+    .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+        padding: 1rem;
+    }
+
+    .modal.show {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .modal-content {
+        transform: scale(0.9);
+        transition: transform 0.3s ease;
+        margin-top: 0;
+        width: 100%;
+        max-width: 500px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .modal.show .modal-content {
+        transform: scale(1);
+    }
+
+    @media (max-width: 768px) {
+        .container {
+            padding: 0 1rem;
+        }
+
+        .hero-section {
+            margin-bottom: 2rem;
+        }
+
+        .hero-section h2 {
+            font-size: 2rem;
+        }
+
+        .hero-section p {
+            font-size: 1rem;
+        }
+
+        .orders-filters {
+            margin-bottom: 1.5rem;
+        }
+
+        .orders-filters p {
+            text-align: center;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+        }
+
+        .add-space-bottom {
+            margin-bottom: 2rem;
+        }
+
+        /* Hide table and show cards on mobile */
+        .table-wrapper {
+            display: none;
+        }
+
+        .orders-cards {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .order-card-details {
+            grid-template-columns: 1fr;
+            gap: 0.5rem;
+        }
+
+        .order-card-actions {
+            justify-content: center;
+        }
+
+        .order-actions button,
+        .order-actions a,
+        .order-card-actions button,
+        .order-card-actions a {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            min-width: 70px;
+            text-align: center;
+        }
+
+        .order-card-actions .delete-btn {
+            background: var(--destructive) !important;
+            color: var(--destructive-foreground) !important;
+        }
+
+        .modal-content {
+            margin: 1rem;
+            width: calc(100% - 2rem);
+        }
+    }
+
+    @media (min-width: 769px) {
+        .orders-cards {
+            display: none;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .hero-section h2 {
+            font-size: 1.75rem;
+        }
+
+        .orders-table th,
+        .orders-table td {
+            padding: 0.5rem 0.25rem;
+            font-size: 0.85rem;
+        }
+
+        .order-actions {
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .order-actions button,
+        .order-actions a {
+            font-size: 0.8rem;
+            padding: 0.4rem 0.6rem;
+        }
+
+        .delete-btn {
+            background: var(--destructive) !important;
+            color: var(--destructive-foreground) !important;
+        }
+
+        .order-card {
+            padding: 1rem;
+        }
+
+        .order-card-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        .order-card-actions {
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .order-card-actions button,
+        .order-card-actions a {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .order-card-actions .delete-btn {
+            background: var(--destructive) !important;
+            color: var(--destructive-foreground) !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="main-content">
+    <div class="container">
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <h2>Gerenciamento de Pedidos</h2>
+            <p>
+                Aqui você pode gerenciar todos os pedidos realizados pelos clientes.
+                <br>
+                <span class="warning">Mantenha o status dos pedidos atualizado para melhor controle.</span>
+            </p>
+        </section>
+
+        <section class="orders-filters">
+            <p>Use os filtros abaixo para buscar pedidos específicos:</p>
+            <select id="statusFilter" class="form-control" onchange="filterByStatus()">
+                <option value="">Todos</option>
+                <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pendentes</option>
+                <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Concluídos</option>
+            </select>
+        </section>
+
+        <a href="{% url 'dashboard:order_create' %}" class="add-btn add-space-bottom">Criar Novo Pedido</a>
+
+        <!-- Orders Table -->
+        <section class="orders-section">
+            {% if orders %}
+            <!-- Desktop Table View -->
+            <div class="table-wrapper">
+                <table class="orders-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Cliente</th>
+                            <th>Telefone</th>
+                            <th>Status</th>
+                            <th>Total</th>
+                            <th>Data</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr data-id="{{ order.id }}">
+                            <td>#{{ order.id }}</td>
+                            <td>{{ order.customer_name }}</td>
+                            <td>{{ order.phone }}</td>
+                            <td>
+                                <span
+                                    class="{% if order.status == 'pending' %}order-pending{% else %}order-completed{% endif %}">
+                                    {% if order.status == 'pending' %}Pendente{% else %}Concluído{% endif %}
+                                </span>
+                            </td>
+                            <td>R$ {{ order.total_price|floatformat:2 }}</td>
+                            <td>{{ order.created_at|date:"d/m/Y H:i" }}</td>
+                            <td>
+                                <div class="order-actions">
+                                    <a href="{% url 'dashboard:order_detail' order.pk %}">Ver</a>
+                                    <a href="{% url 'dashboard:order_edit' order.pk %}">Editar</a>
+                                    <button class="delete-btn" data-order-id="{{ order.id }}">Excluir</button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Mobile Cards View -->
+            <div class="orders-cards">
+                {% for order in orders %}
+                <div class="order-card" data-id="{{ order.id }}">
+                    <div class="order-card-header">
+                        <div class="order-card-id">#{{ order.id }}</div>
+                        <div
+                            class="order-card-status {% if order.status == 'pending' %}pending{% else %}completed{% endif %}">
+                            {% if order.status == 'pending' %}Pendente{% else %}Concluído{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="order-card-details">
+                        <div class="order-card-detail">
+                            <div class="order-card-detail-label">Cliente</div>
+                            <div class="order-card-detail-value">{{ order.customer_name }}</div>
+                        </div>
+                        <div class="order-card-detail">
+                            <div class="order-card-detail-label">Telefone</div>
+                            <div class="order-card-detail-value">{{ order.phone }}</div>
+                        </div>
+                        <div class="order-card-detail">
+                            <div class="order-card-detail-label">Total</div>
+                            <div class="order-card-detail-value">R$ {{ order.total_price|floatformat:2 }}</div>
+                        </div>
+                        <div class="order-card-detail">
+                            <div class="order-card-detail-label">Data</div>
+                            <div class="order-card-detail-value">{{ order.created_at|date:"d/m/Y H:i" }}</div>
+                        </div>
+                    </div>
+
+                    <div class="order-card-actions">
+                        <a href="{% url 'dashboard:order_detail' order.pk %}" class="add-btn">Ver</a>
+                        <a href="{% url 'dashboard:order_edit' order.pk %}" class="add-btn">Editar</a>
+                        <button class="delete-btn" data-order-id="{{ order.id }}">Excluir</button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p style="text-align: center; padding: 2rem; color: var(--muted-foreground);">Nenhum pedido encontrado.</p>
+            {% endif %}
+        </section>
+    </div>
+
+    <!-- Modal Confirm Delete Order -->
+    <div class="modal" id="modalConfirmDeleteOrder">
+        <div class="modal-content form-section">
+            <h3 class="form-title" style="margin-bottom: 0;">Confirmar Exclusão</h3>
+            <p style="margin-bottom: 1rem;">Você tem certeza que deseja excluir este pedido?</p>
+            <input type="hidden" name="id" id="confirmDeleteOrderId">
+            <div class="form-group">
+                <button type="button" class="add-btn w-100" id="confirmDeleteButton">Confirmar</button>
+                <button type="button" class="cancel-btn w-100" id="closeModalButtonDelete">Cancelar</button>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    // Função genérica para abrir e fechar modais
+    function toggleModal(modalId, show = true) {
+        const modal = document.getElementById(modalId);
+        if (show) {
+            modal.classList.add('show');
+        } else {
+            modal.classList.remove('show');
+        }
+    }
+
+    // Modal Confirm Delete Order
+    document.querySelectorAll('.delete-btn').forEach(button => {
+        button.addEventListener('click', (event) => {
+            const orderId = event.target.dataset.orderId;
+            document.getElementById('confirmDeleteOrderId').value = orderId;
+            toggleModal('modalConfirmDeleteOrder');
+        });
+    });
+
+    document.getElementById('confirmDeleteButton').addEventListener('click', () => {
+        const orderId = document.getElementById('confirmDeleteOrderId').value;
+
+        // Add loading state
+        const tableRow = document.querySelector(`tr[data-id="${orderId}"]`);
+        const card = document.querySelector(`.order-card[data-id="${orderId}"]`);
+
+        if (tableRow) tableRow.classList.add('deleting');
+        if (card) card.classList.add('deleting');
+
+        fetch(`/dashboard/orders/${orderId}/delete/`, {
+            method: 'DELETE',
+            headers: { 'X-CSRFToken': document.querySelector('#csrf-form [name=csrfmiddlewaretoken]').value },
+        }).then(response => {
+            if (response.ok) {
+                // Remove from table view
+                if (tableRow) tableRow.remove();
+
+                // Remove from cards view
+                if (card) card.remove();
+
+                // Check if no orders left
+                const remainingTableRows = document.querySelectorAll('.orders-table tbody tr');
+                const remainingCards = document.querySelectorAll('.order-card');
+
+                if (remainingTableRows.length === 0 && remainingCards.length === 0) {
+                    document.querySelector('.orders-section').innerHTML =
+                        '<p style="text-align: center; padding: 2rem; color: var(--muted-foreground);">Nenhum pedido encontrado.</p>';
+                }
+            } else {
+                // Remove loading state if failed
+                if (tableRow) tableRow.classList.remove('deleting');
+                if (card) card.classList.remove('deleting');
+                alert('Erro ao excluir o pedido.');
+            }
+        }).catch(() => {
+            // Remove loading state if failed
+            if (tableRow) tableRow.classList.remove('deleting');
+            if (card) card.classList.remove('deleting');
+            alert('Erro ao excluir o pedido.');
+        });
+        toggleModal('modalConfirmDeleteOrder', false);
+    });
+
+    document.getElementById('closeModalButtonDelete').addEventListener('click', () => {
+        toggleModal('modalConfirmDeleteOrder', false);
+    });
+
+    // Fechar modal clicando fora
+    window.addEventListener('click', (event) => {
+        if (event.target === document.getElementById('modalConfirmDeleteOrder')) {
+            toggleModal('modalConfirmDeleteOrder', false);
+        }
+    });
+
+    // Filtrar pedidos por status
+    function filterByStatus() {
+        const status = document.getElementById('statusFilter').value;
+        const url = new URL(window.location.href);
+        if (status) {
+            url.searchParams.set('status', status);
+        } else {
+            url.searchParams.delete('status');
+        }
+        window.location.href = url;
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,862 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'global/form-default-style.css' %}">
+<link rel="stylesheet" href="{% static 'global/buttons-default-style.css' %}">
+
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+<style>
+    .order-form {
+        max-width: 800px;
+        margin: 2rem auto;
+        background: var(--card);
+        border-radius: var(--radius);
+        padding: 2rem;
+        box-shadow: var(--shadow-card);
+    }
+
+    .form-section {
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .form-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+
+    .form-section h3 {
+        color: var(--primary);
+        margin-bottom: 1rem;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .product-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        margin-bottom: 1rem;
+        background: var(--card);
+        box-shadow: var(--shadow-card);
+    }
+
+    .product-item .product-info {
+        flex: 1;
+    }
+
+    .product-item .product-name {
+        font-weight: bold;
+        margin: 0 0 0.25rem 0;
+    }
+
+    .product-item .product-price {
+        color: var(--primary);
+        font-weight: bold;
+        margin: 0;
+    }
+
+    .product-item .product-quantity {
+        width: 80px;
+        text-align: center;
+    }
+
+    .product-item .remove-btn {
+        background: var(--destructive);
+        color: var(--destructive-foreground);
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .product-item .remove-btn:hover {
+        background: hsl(0, 84%, 50%);
+        transform: scale(1.05);
+    }
+
+    .add-product-section {
+        padding: 1.5rem;
+        background: var(--muted);
+        border-radius: var(--radius);
+        margin-bottom: 2rem;
+    }
+
+    .added-products-section h4 {
+        color: var(--primary);
+        margin-bottom: 1rem;
+    }
+
+    .products-list {
+        min-height: 100px;
+    }
+
+    .no-products-message {
+        text-align: center;
+        color: var(--muted-foreground);
+        font-style: italic;
+        padding: 2rem;
+    }
+
+    .product-search {
+        position: relative;
+    }
+
+    #product_select {
+        width: 100%;
+    }
+
+    /* Select2 Custom Styling - Improved and Robust */
+    .select2-container {
+        width: 100% !important;
+        position: relative;
+        display: block;
+    }
+
+    .select2-container * {
+        box-sizing: border-box;
+    }
+
+    .select2-container--default .select2-selection--single {
+        height: 45px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 0;
+        background: var(--card);
+        color: var(--foreground);
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .select2-container--default.select2-container--open .select2-selection--single {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.15);
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: var(--foreground);
+        line-height: 43px;
+        padding-left: 12px;
+        padding-right: 30px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: block;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__placeholder {
+        color: var(--muted-foreground);
+        font-style: italic;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 43px;
+        position: absolute;
+        top: 1px;
+        right: 1px;
+        width: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow b {
+        border-color: var(--muted-foreground) transparent transparent transparent;
+        border-style: solid;
+        border-width: 5px 4px 0 4px;
+        height: 0;
+        left: 50%;
+        margin-left: -4px;
+        margin-top: -2px;
+        position: absolute;
+        top: 50%;
+        width: 0;
+    }
+
+    .select2-container--default.select2-container--open .select2-selection--single .select2-selection__arrow b {
+        border-color: transparent transparent var(--muted-foreground) transparent;
+        border-width: 0 4px 5px 4px;
+    }
+
+    /* Dropdown Styling */
+    .select2-dropdown {
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        background: var(--card);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        z-index: 99999 !important;
+        position: absolute !important;
+        overflow: hidden;
+        max-height: 300px;
+        margin-top: 2px;
+    }
+
+    /* Force dropdown to appear below the select */
+    .select2-container--open .select2-dropdown {
+        top: 100% !important;
+        bottom: auto !important;
+    }
+
+    /* Ensure dropdown container positioning */
+    .select2-container .select2-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+    }
+
+    .select2-container--default .select2-search--dropdown {
+        padding: 8px;
+        border-bottom: 1px solid var(--border);
+        background: var(--card);
+    }
+
+    .select2-container--default .select2-search--dropdown .select2-search__field {
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        background: var(--card);
+        color: var(--foreground);
+        padding: 8px 12px;
+        width: 100%;
+        font-size: 14px;
+        outline: none;
+        transition: border-color 0.2s ease;
+    }
+
+    .select2-container--default .select2-search--dropdown .select2-search__field:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.15);
+    }
+
+    .select2-container--default .select2-results {
+        max-height: 250px;
+        overflow-y: auto;
+        background: var(--card);
+    }
+
+    .select2-container--default .select2-results__option {
+        padding: 12px 16px;
+        color: var(--foreground);
+        background: var(--card);
+        border-bottom: 1px solid var(--border);
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        position: relative;
+    }
+
+    .select2-container--default .select2-results__option:last-child {
+        border-bottom: none;
+    }
+
+    .select2-container--default .select2-results__option--highlighted[aria-selected] {
+        background-color: var(--primary) !important;
+        color: var(--primary-foreground) !important;
+    }
+
+    .select2-container--default .select2-results__option[aria-selected=true] {
+        background-color: var(--muted) !important;
+        color: var(--foreground) !important;
+    }
+
+    .select2-container--default .select2-results__option--highlighted[aria-selected=true] {
+        background-color: var(--primary) !important;
+        color: var(--primary-foreground) !important;
+    }
+
+    .select2-container--default .select2-results__option[data-selected=true] {
+        background-color: var(--muted) !important;
+    }
+
+    /* Custom result styling */
+    .select2-result-product {
+        display: block;
+        width: 100%;
+    }
+
+    .select2-result-product__name {
+        font-weight: 600;
+        margin-bottom: 2px;
+        display: block;
+    }
+
+    .select2-result-product__price {
+        font-size: 0.85em;
+        opacity: 0.8;
+        color: var(--primary);
+        font-weight: 500;
+        display: block;
+    }
+
+    /* Loading and disabled states */
+    .select2-container--default.select2-container--disabled .select2-selection--single {
+        background-color: var(--muted);
+        cursor: default;
+        opacity: 0.6;
+    }
+
+    .select2-container--default .select2-results__option--loading {
+        color: var(--muted-foreground);
+        font-style: italic;
+        text-align: center;
+    }
+
+    /* Clear button */
+    .select2-container--default .select2-selection__clear {
+        color: var(--destructive);
+        cursor: pointer;
+        float: right;
+        font-weight: bold;
+        margin-right: 10px;
+        position: absolute;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .select2-container--default .select2-selection__clear:hover {
+        color: var(--destructive);
+        opacity: 0.8;
+    }
+
+    /* Responsive adjustments for Select2 */
+    @media (max-width: 768px) {
+        .select2-container--default .select2-selection--single {
+            height: 50px;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 48px;
+            padding-left: 16px;
+            padding-right: 40px;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 48px;
+            width: 30px;
+        }
+
+        .select2-dropdown {
+            width: 100% !important;
+            max-height: 250px;
+            position: absolute !important;
+            top: 100% !important;
+            bottom: auto !important;
+            z-index: 999999 !important;
+            margin-top: 2px;
+        }
+
+        .select2-container--default .select2-search--dropdown {
+            padding: 12px;
+        }
+
+        .select2-container--default .select2-search--dropdown .select2-search__field {
+            padding: 12px 16px;
+            font-size: 16px; /* Prevents zoom on iOS */
+            height: 44px;
+        }
+
+        .select2-container--default .select2-results__option {
+            padding: 16px 20px;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+        }
+
+        .select2-result-product {
+            width: 100%;
+        }
+
+        .select2-result-product__name {
+            font-size: 1rem;
+            margin-bottom: 4px;
+        }
+
+        .select2-result-product__price {
+            font-size: 0.9rem;
+        }
+    }
+
+    /* Fix for overflow issues */
+    .order-form {
+        position: relative;
+        overflow: visible;
+    }
+
+    .add-product-section {
+        position: relative;
+        overflow: visible;
+        z-index: 1;
+    }
+
+    .form-row {
+        position: relative;
+        overflow: visible;
+    }
+
+    /* Additional custom styles for better integration */
+    .select2-container--default .select2-selection--single:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.15);
+        outline: none;
+    }
+
+    /* Prevent page scroll issues */
+    body.select2-dropdown-open {
+        overflow: hidden;
+    }
+
+    @media (max-width: 480px) {
+        .select2-dropdown {
+            position: absolute !important;
+            top: 100% !important;
+            left: 0 !important;
+            right: 0 !important;
+            width: 100% !important;
+            transform: none;
+            max-height: 60vh;
+            margin-top: 2px;
+        }
+    }
+
+    .product-total {
+        text-align: right;
+        font-weight: bold;
+        color: var(--primary);
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 2px solid var(--border);
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .action-buttons .btn {
+        flex: 1;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: var(--radius);
+        font-weight: bold;
+        text-decoration: none;
+        text-align: center;
+        transition: var(--transition);
+        cursor: pointer;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-hover);
+    }
+
+    @media (max-width: 768px) {
+        .order-form {
+            margin: 1rem;
+            padding: 1rem;
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .product-item {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="main-content">
+    <div class="container">
+        <div class="order-form">
+            <h2>Editar Pedido #{{ order.id }}</h2>
+
+            <form method="post" action="{% url 'dashboard:order_edit' order.pk %}">
+                {% csrf_token %}
+
+                <!-- Informações do Cliente -->
+                <div class="form-section">
+                    <h3>Informações do Cliente</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="customer_name">Nome do Cliente</label>
+                            <input type="text" id="customer_name" name="customer_name" class="form-control"
+                                value="{{ order.customer_name }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Telefone</label>
+                            <input type="tel" id="phone" name="phone" class="form-control" value="{{ order.phone }}"
+                                required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="address">Endereço de Entrega</label>
+                        <input type="text" id="address" name="address" class="form-control" required
+                            value="{{ order.address }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="status">Status do Pedido</label>
+                        <select id="status" name="status" class="form-control">
+                            <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>Pendente
+                            </option>
+                            <option value="completed" {% if order.status == 'completed' %}selected{% endif %}>Concluído
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Produtos -->
+                <div class="form-section">
+                    <h3>Produtos do Pedido</h3>
+
+                    <!-- Adicionar Produto -->
+                    <div class="add-product-section">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="product_select">Adicionar Produto</label>
+                                <select id="product_select" class="form-control" data-placeholder="Clique para selecionar produtos...">
+                                    <option value=""></option>
+                                    {% for product in products %}
+                                    <option value="{{ product.id }}" data-name="{{ product.name }}"
+                                        data-price="{{ product.price }}">
+                                        {{ product.name }} - R$ {{ product.price|floatformat:2 }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="product_quantity">Quantidade</label>
+                                <input type="number" id="product_quantity" class="form-control" min="1" value="1">
+                            </div>
+                            <div class="form-group">
+                                <label style="visibility: hidden;">Ação</label>
+                                <button type="button" id="add_product_btn" class="btn add-btn" style="width: 100%;">
+                                    Adicionar Produto
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lista de Produtos Adicionados -->
+                    <div class="added-products-section">
+                        <h4>Produtos no Pedido</h4>
+                        <div id="added_products_list" class="products-list">
+                            <!-- Os produtos serão carregados via JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Hidden inputs para envio do formulário -->
+                    <div id="hidden_inputs_container"></div>
+                </div>
+
+                <div class="action-buttons">
+                    <a href="{% url 'dashboard:order_detail' order.pk %}" class="btn cancel-btn">
+                        Cancelar
+                    </a>
+                    <button type="submit" class="btn add-btn">
+                        Salvar Alterações
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+<!-- jQuery (required for Select2) -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+    let addedProducts = [];
+    let productCounter = 0;
+
+    // Initialize Select2
+    $(document).ready(function () {
+        // Destroy any existing Select2 instance
+        if ($('#product_select').hasClass("select2-hidden-accessible")) {
+            $('#product_select').select2('destroy');
+        }
+
+        $('#product_select').select2({
+            placeholder: 'Clique para selecionar produtos...',
+            allowClear: true,
+            width: '100%',
+            minimumInputLength: 0,
+            dropdownAutoWidth: false,
+            dropdownParent: $('.add-product-section'),
+            language: {
+                noResults: function () {
+                    return "Nenhum produto encontrado";
+                },
+                searching: function () {
+                    return "Buscando...";
+                },
+                inputTooShort: function () {
+                    return "Clique para ver todos os produtos";
+                },
+                loadingMore: function () {
+                    return "Carregando mais resultados...";
+                },
+                errorLoading: function () {
+                    return "Erro ao carregar resultados";
+                }
+            },
+            templateResult: function (data) {
+                if (data.loading) {
+                    return $('<div class="select2-result-loading">Carregando...</div>');
+                }
+
+                if (!data.id) {
+                    return data.text;
+                }
+
+                try {
+                    // Custom template for results with price highlighting
+                    var textParts = data.text.split(' - ');
+                    var productName = textParts[0] || '';
+                    var productPrice = textParts[1] || '';
+
+                    var $result = $(
+                        '<div class="select2-result-product">' +
+                        '<div class="select2-result-product__name">' + productName + '</div>' +
+                        '<div class="select2-result-product__price">' + productPrice + '</div>' +
+                        '</div>'
+                    );
+
+                    return $result;
+                } catch (e) {
+                    return data.text;
+                }
+            },
+            templateSelection: function (data) {
+                if (data.id && data.text) {
+                    try {
+                        // Show only product name in selection
+                        return data.text.split(' - ')[0];
+                    } catch (e) {
+                        return data.text;
+                    }
+                }
+                return data.text;
+            },
+            escapeMarkup: function (markup) {
+                return markup;
+            }
+        });
+
+        // Handle selection change
+        $('#product_select').on('select2:select', function (e) {
+            // Auto-focus quantity input when product is selected
+            setTimeout(function() {
+                $('#product_quantity').focus();
+            }, 100);
+        });
+
+        // Handle dropdown open/close for mobile
+        $('#product_select').on('select2:open', function (e) {
+            // Add class to body to handle mobile scroll
+            $('body').addClass('select2-dropdown-open');
+            
+            // Ensure dropdown is positioned correctly
+            setTimeout(function() {
+                const dropdown = $('.select2-dropdown');
+                dropdown.css({
+                    'position': 'absolute',
+                    'z-index': '999999',
+                    'top': '100%',
+                    'bottom': 'auto'
+                });
+            }, 10);
+        });
+
+        $('#product_select').on('select2:close', function (e) {
+            // Remove class from body
+            $('body').removeClass('select2-dropdown-open');
+        });
+
+        // Handle errors gracefully
+        $('#product_select').on('select2:select select2:unselect', function (e) {
+            try {
+                // Clear any error states
+                $(this).removeClass('error');
+            } catch (error) {
+                console.warn('Select2 event error:', error);
+            }
+        });
+
+        // Load existing products after Select2 is initialized
+        loadExistingProducts();
+    });
+
+    // Load existing products function
+    function loadExistingProducts() {
+        // Carregar produtos existentes do pedido via dados do template
+        {% for product_info in products_with_order_info %}
+        {% if product_info.is_in_order %}
+        addedProducts.push({
+            id: '{{ product_info.product.id }}',
+            name: '{{ product_info.product.name|escapejs }}',
+            price: parseFloat('{{ product_info.product.price }}'),
+            quantity: parseInt('{{ product_info.quantity }}'),
+            total: parseFloat('{{ product_info.product.price }}') * parseInt('{{ product_info.quantity }}'),
+            counter: productCounter++
+        });
+        {% endif %}
+        {% endfor %}
+
+        updateProductsList();
+        updateHiddenInputs();
+    }
+
+    // Adicionar produto ao pedido
+    document.getElementById('add_product_btn').addEventListener('click', function () {
+        const select = document.getElementById('product_select');
+        const quantityInput = document.getElementById('product_quantity');
+
+        if (!select.value) {
+            alert('Selecione um produto primeiro.');
+            return;
+        }
+
+        const productId = select.value;
+        const quantity = parseInt(quantityInput.value);
+        const selectedOption = select.options[select.selectedIndex];
+        const productName = selectedOption.dataset.name;
+        const productPrice = parseFloat(selectedOption.dataset.price);
+
+        // Verificar se produto já foi adicionado
+        const existingProduct = addedProducts.find(p => p.id === productId);
+        if (existingProduct) {
+            alert('Este produto já foi adicionado. Use o campo de quantidade para alterar.');
+            return;
+        }
+
+        // Adicionar produto à lista
+        const product = {
+            id: productId,
+            name: productName,
+            price: productPrice,
+            quantity: quantity,
+            total: productPrice * quantity,
+            counter: productCounter++
+        };
+
+        addedProducts.push(product);
+        updateProductsList();
+        updateHiddenInputs();
+
+        // Limpar seleção
+        $('#product_select').val(null).trigger('change');
+        quantityInput.value = 1;
+    });
+
+    // Atualizar lista visual de produtos
+    function updateProductsList() {
+        const container = document.getElementById('added_products_list');
+
+        if (addedProducts.length === 0) {
+            container.innerHTML = '<p class="no-products-message">Nenhum produto adicionado ainda.</p>';
+            return;
+        }
+
+        let html = '';
+        let totalGeneral = 0;
+
+        addedProducts.forEach(product => {
+            totalGeneral += product.total;
+            html += `
+                <div class="product-item" data-product-id="${product.id}">
+                    <div class="product-info">
+                        <div class="product-name">${product.name}</div>
+                        <div class="product-price">R$ ${product.price.toFixed(2)} cada</div>
+                    </div>
+                    <input type="number" 
+                           class="product-quantity form-control" 
+                           min="1" 
+                           value="${product.quantity}"
+                           onchange="updateProductQuantity('${product.id}', this.value)">
+                    <div style="margin-left: 1rem;">
+                        <strong>R$ ${product.total.toFixed(2)}</strong>
+                    </div>
+                    <button type="button" 
+                            class="remove-btn" 
+                            onclick="removeProduct('${product.id}')">
+                        Remover
+                    </button>
+                </div>
+            `;
+        });
+
+        html += `<div class="product-total">Total do Pedido: R$ ${totalGeneral.toFixed(2)}</div>`;
+        container.innerHTML = html;
+    }
+
+    // Atualizar quantidade de um produto
+    function updateProductQuantity(productId, newQuantity) {
+        const product = addedProducts.find(p => p.id === productId);
+        if (product) {
+            product.quantity = parseInt(newQuantity);
+            product.total = product.price * product.quantity;
+            updateProductsList();
+            updateHiddenInputs();
+        }
+    }
+
+    // Remover produto
+    function removeProduct(productId) {
+        addedProducts = addedProducts.filter(p => p.id !== productId);
+        updateProductsList();
+        updateHiddenInputs();
+    }
+
+    // Atualizar inputs hidden para envio do formulário
+    function updateHiddenInputs() {
+        const container = document.getElementById('hidden_inputs_container');
+        let html = '';
+
+        addedProducts.forEach(product => {
+            html += `
+                <input type="hidden" name="product_id" value="${product.id}">
+                <input type="hidden" name="quantity" value="${product.quantity}">
+            `;
+        });
+
+        container.innerHTML = html;
+    }
+
+    // Validação do formulário
+    document.querySelector('form').addEventListener('submit', function (e) {
+        if (addedProducts.length === 0) {
+            e.preventDefault();
+            alert('Adicione pelo menos um produto ao pedido.');
+            return false;
+        }
+    });
+</script>
+{% endblock %}

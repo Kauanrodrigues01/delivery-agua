@@ -25,6 +25,12 @@
                         <span class="nav-text-short">Produtos</span>
                     </a>
                 </li>
+                <li>
+                    <a class="nav-link" href="{% url 'dashboard:order_list' %}">
+                        <span class="nav-text-full">Gerenciamento de Pedidos</span>
+                        <span class="nav-text-short">Pedidos</span>
+                    </a>
+                </li>
                 <li><a class="nav-link" href="{% url 'dashboard:logout' %}">Sair</a></li>
                 {% else %}
                 <li><a class="nav-link" href="{% url 'product_list' %}">Produtos</a></li>
