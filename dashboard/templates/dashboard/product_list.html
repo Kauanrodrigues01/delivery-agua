@@ -6,10 +6,18 @@
 <!-- Algumas classes de estilização usadas aqui são as mesmas do que o app products então vamos usar para não repetir código -->
 <link rel="stylesheet" href="{% static 'products/styles.css' %}">
 
+<!-- Formulários -->
+<link rel="stylesheet" href="{% static 'global/form-default-style.css' %}">
+<link rel="stylesheet" href="{% static 'global/buttons-default-style.css' %}">
+
 <style>
-    .alert {
+    .warning {
         color: var(--destructive);
         font-weight: bold;
+    }
+
+    .add-space-bottom {
+        margin-bottom: 3.5rem;
     }
 
     .product-active {
@@ -47,6 +55,40 @@
         color: var(--primary-foreground);
         transform: scale(1.05);
     }
+
+    .modal-add-product {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .modal-add-product.show {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .modal-content {
+        background: white;
+        padding: 2rem;
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-lg);
+        transform: scale(0.9);
+        transition: transform 0.3s ease;
+    }
+
+    .modal-add-product.show .modal-content {
+        transform: scale(1);
+    }
 </style>
 {% endblock %}
 
@@ -62,13 +104,16 @@
                 <br>
                 Avisos:
                 <br>
-                <span class="alert">Os produtos marcados como desativados não serão exibidos ao catálogo de produtos para o cliente</span>
+                <span class="warning">Os produtos marcados como desativados não serão exibidos ao catálogo de produtos
+                    para o cliente</span>
             </p>
         </section>
 
         <section class="products-filters">
             <input type="text" placeholder="Buscar produtos..." id="searchInput" class="form-control">
         </section>
+
+        <button class="add-btn add-space-bottom" id="addProductButton">Adicionar Produto</button>
 
         <!-- Products Grid -->
         <section class="products-grid" id="productsGrid">
@@ -78,7 +123,8 @@
                     {% if product.image %}
                     <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
                     {% else %}
-                    <img src="https://via.placeholder.com/200x200?text=Sem+Imagem" alt="{{ product.name }}" loading="lazy">
+                    <img src="https://via.placeholder.com/200x200?text=Sem+Imagem" alt="{{ product.name }}"
+                        loading="lazy">
                     {% endif %}
                 </div>
                 <div class="product-info">
@@ -92,9 +138,9 @@
                         <button>Excluir</button>
                         <button>
                             {% if product.is_active %}
-                                Desativar
+                            Desativar
                             {% else %}
-                                Ativar
+                            Ativar
                             {% endif %}
                         </button>
                     </div>
@@ -105,8 +151,53 @@
             {% endfor %}
         </section>
     </div>
+
+    <div class="modal-add-product" id="modalAddProduct">
+        <div class="modal-content form-section">
+            <h3 class="form-title">Adicionar Produto</h3>
+            <form id="addProductForm">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="productName">Nome do Produto</label>
+                    <input type="text" id="productName" name="name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="productPrice">Preço do Produto</label>
+                    <input type="number" id="productPrice" name="price" class="form-control" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="productImage">Imagem do Produto</label>
+                    <input type="file" id="productImage" name="image" class="form-control">
+                </div>
+                <div class="form-group remove-space">
+                    <button type="submit" class="add-btn w-100">Adicionar Produto</button>
+                    <button type="button" class="cancel-btn w-100" id="closeModalButton">Cancelar</button>
+                </div>
+            </form>
+            <div id="changeAlert" class="alert alert-danger mt-3" style="display:none;"></div>
+        </div>
+    </div>
 </main>
 
 <!-- os elementos daqui possuem as mesmas classes e referências usadas em app products então vamos usar para não repetir código -->
 <script src="{% static '/products/filterProductsByName.js' %}"></script>
+<script>
+    const modal = document.getElementById('modalAddProduct');
+    const addProductButton = document.getElementById('addProductButton');
+    const closeModalButton = document.getElementById('closeModalButton');
+
+    addProductButton.addEventListener('click', () => {
+        modal.classList.add('show');
+    });
+
+    closeModalButton.addEventListener('click', () => {
+        modal.classList.remove('show');
+    });
+
+    window.addEventListener('click', (event) => {
+        if (event.target === modal) {
+            modal.classList.remove('show');
+        }
+    });
+</script>
 {% endblock %}

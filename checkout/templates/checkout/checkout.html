@@ -1,14 +1,20 @@
 {% extends 'base.html' %}
+
 {% block title %}Finalizar Compra{% endblock %}
+
 {% load static %}
+
 {% block head %}
-<link rel="stylesheet" href="{% static 'checkout/styles.css' %}">
+<link rel="stylesheet" href="{% static 'global/styles.css' %}">
+<link rel="stylesheet" href="{% static 'global/form-default-style.css' %}">
+<link rel="stylesheet" href="{% static 'global/buttons-default-style.css' %}">
 {% endblock %}
+
 {% block content %}
 <main class="main-content">
     <div class="container">
-        <section class="checkout-section">
-            <h2>Finalizar Compra</h2>
+        <section class="form-section">
+            <h2 class="form-title">Finalizar Compra</h2>
             <form id="checkoutForm" method="post" novalidate>
                 {% csrf_token %}
                 <div class="form-group">
@@ -44,7 +50,7 @@
                         <span class="checkout-total-label">Total da compra:</span>
                         <span class="checkout-total-value">R$ {{ cart_total|floatformat:2 }}</span>
                     </div>
-                    <button type="submit" class="btn btn-primary btn-lg w-100">Finalizar Pedido</button>
+                    <button type="submit" class="add-btn w-100">Finalizar Pedido</button>
                 </div>
             </form>
             <div id="changeAlert" class="alert alert-danger mt-3" style="display:none;"></div>

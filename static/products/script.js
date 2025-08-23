@@ -14,7 +14,7 @@ function getCookie(name) {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-  const addToCartButtons = document.querySelectorAll(".add-to-cart-btn");
+  const addToCartButtons = document.querySelectorAll(".add-btn");
   addToCartButtons.forEach(function (btn) {
     btn.addEventListener("click", function (e) {
       e.preventDefault();

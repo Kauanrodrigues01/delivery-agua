@@ -1,6 +1,7 @@
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import DetailView, ListView
+from django.urls import reverse_lazy
 
 from cart.models import CartItem
 from cart.views import get_cart
@@ -37,6 +38,11 @@ class ProductListView(ListView):
         cart = get_cart(self.request)
         context["cart_count"] = cart.items.count() if cart else 0
         return context
+    
+    def get(self, request, *args, **kwargs):
+        if self.request.user.is_authenticated:
+            return redirect('dashboard')
+        return super().get(request, *args, **kwargs)
 
 
 class ProductDetailView(DetailView):
