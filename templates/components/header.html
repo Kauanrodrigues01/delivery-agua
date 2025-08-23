@@ -6,13 +6,19 @@
             <img src="{% static 'images/logo.jpg' %}" alt="F.A Distribuidora" class="logo-icon">
             <div>
                 <h1 class="mb-0">F.A Distribuidora</h1>
-                <p class="d-block">Água Mineral em Palmácia/CE</p>
+                <p class="d-block">
+                    {% if request.user.is_authenticated  %}
+                        Página do Administrador
+                    {% else %}
+                        Água Mineral em Palmácia/CE
+                    {% endif %}
+                </p>
             </div>
         </div>
         <nav>
             <ul>
                 {% if request.user.is_authenticated  %}
-                    <li><a class="nav-link" href="{% url 'dashboard:dashboard' %}">Dashboard</a></li>
+                    <li><a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a></li>
                     <li><a class="nav-link" href="{% url 'dashboard:product_list' %}">Gerenciamento de Produtos</a></li>
                 {% else %}
                     <li><a class="nav-link" href="{% url 'product_list' %}">Produtos</a></li>
