@@ -25,8 +25,18 @@ def dashboard_view(request):
 # Product CRUD views
 @login_required
 def product_list(request):
-    products = Product.objects.all().order_by('-created_at')
-    return render(request, 'dashboard/product_list.html', {'products': products})
+    # Get filter parameter from the request
+    status_filter = request.GET.get('status')
+
+    # Filter products based on the status
+    if status_filter == 'active':
+        products = Product.objects.filter(is_active=True).order_by('-created_at')
+    elif status_filter == 'inactive':
+        products = Product.objects.filter(is_active=False).order_by('-created_at')
+    else:
+        products = Product.objects.all().order_by('-created_at')
+
+    return render(request, 'dashboard/product_list.html', {'products': products, 'status_filter': status_filter})
 
 @login_required
 @require_POST

@@ -16,6 +16,17 @@
         font-weight: bold;
     }
 
+    .products-filters {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .products-filters select {
+        max-width: 420px;
+    }
+
     .add-space-bottom {
         margin-bottom: 3.5rem;
     }
@@ -112,7 +123,14 @@
         </section>
 
         <section class="products-filters">
+            <p>Use os filtros abaixo para buscar produtos específicos:</p>
             <input type="text" placeholder="Buscar produtos..." id="searchInput" class="form-control">
+            <select id="statusFilter" class="form-control" onchange="filterByStatus()">
+                <option value="">Todos</option>
+                <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Ativos</option>
+                <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inativos
+                </option>
+            </select>
         </section>
 
         <button class="add-btn add-space-bottom" id="addProductButton">Adicionar Produto</button>
@@ -366,5 +384,17 @@
             modalConfirmToggleProduct.classList.remove('show');
         }
     });
+
+    // Filtrar produtos por status
+    function filterByStatus() {
+        const status = document.getElementById('statusFilter').value;
+        const url = new URL(window.location.href);
+        if (status) {
+            url.searchParams.set('status', status);
+        } else {
+            url.searchParams.delete('status');
+        }
+        window.location.href = url;
+    }
 </script>
 {% endblock %}
