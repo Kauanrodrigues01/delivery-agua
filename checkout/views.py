@@ -52,7 +52,6 @@ class CheckoutView(TemplateView):
                     order=order,
                     product=item.product,
                     quantity=item.quantity,
-                    unit_price=item.product.price,
                 )
             # Envia notificações WhatsApp
             try:
