@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, authenticate
+from django.views.decorators.http import require_http_methods, require_POST
 from products.models import Product
 
 # Login view
@@ -11,7 +12,7 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            return redirect('dashboard')
+            return redirect('dashboard:dashboard')
         else:
             return render(request, 'dashboard/login.html', {'error': 'Invalid credentials'})
     return render(request, 'dashboard/login.html')
@@ -24,32 +25,47 @@ def dashboard_view(request):
 # Product CRUD views
 @login_required
 def product_list(request):
-    products = Product.objects.all()
+    products = Product.objects.all().order_by('-created_at')
     return render(request, 'dashboard/product_list.html', {'products': products})
 
 @login_required
+@require_POST
 def product_create(request):
-    if request.method == 'POST':
-        name = request.POST['name']
-        price = request.POST['price']
-        Product.objects.create(name=name, price=price)
-        return redirect('product_list')
-    return render(request, 'dashboard/product_form.html')
+    name = request.POST.get('name')
+    price = request.POST.get('price')
+    image = request.FILES.get('image')
+    is_active = request.POST.get('is_active') == "true"
+
+    Product.objects.create(
+        name=name,
+        price=price,
+        image=image,
+        is_active=is_active
+    )
+
+    return redirect('dashboard:product_list')
 
 @login_required
+@require_POST
 def product_edit(request, pk):
     product = Product.objects.get(pk=pk)
-    if request.method == 'POST':
-        product.name = request.POST['name']
-        product.price = request.POST['price']
-        product.save()
-        return redirect('product_list')
-    return render(request, 'dashboard/product_form.html', {'product': product})
+    product.name = request.POST['name']
+    product.price = request.POST['price']
+    product.image = request.FILES.get('image', product.image)
+    product.save()
+    return redirect('dashboard:product_list')
 
 @login_required
+@require_http_methods(["DELETE"])
 def product_delete(request, pk):
     product = Product.objects.get(pk=pk)
-    if request.method == 'POST':
-        product.delete()
-        return redirect('product_list')
-    return render(request, 'dashboard/product_confirm_delete.html', {'product': product})
+    product.delete()
+    return redirect('dashboard:product_list')
+
+@login_required
+@require_POST
+def product_toggle_active(request, pk):
+    product = Product.objects.get(pk=pk)
+    product.is_active = not product.is_active
+    product.save()
+    return redirect('dashboard:product_list')

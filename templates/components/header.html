@@ -12,8 +12,8 @@
         <nav>
             <ul>
                 {% if request.user.is_authenticated  %}
-                    <li><a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a></li>
-                    <li><a class="nav-link" href="{% url 'dashboard_product_list' %}">Gerenciamento de Produtos</a></li>
+                    <li><a class="nav-link" href="{% url 'dashboard:dashboard' %}">Dashboard</a></li>
+                    <li><a class="nav-link" href="{% url 'dashboard:product_list' %}">Gerenciamento de Produtos</a></li>
                 {% else %}
                     <li><a class="nav-link" href="{% url 'product_list' %}">Produtos</a></li>
                     <li style="position: relative;">
