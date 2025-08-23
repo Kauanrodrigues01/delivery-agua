@@ -56,7 +56,7 @@
         transform: scale(1.05);
     }
 
-    .modal-add-product {
+    .modal {
         position: fixed;
         top: 0;
         left: 0;
@@ -72,22 +72,24 @@
         transition: opacity 0.3s ease, visibility 0.3s ease;
     }
 
-    .modal-add-product.show {
+    .modal.show {
         opacity: 1;
         visibility: visible;
     }
 
     .modal-content {
-        background: white;
-        padding: 2rem;
-        border-radius: var(--radius-md);
-        box-shadow: var(--shadow-lg);
         transform: scale(0.9);
         transition: transform 0.3s ease;
+        /* Sobreescreve o margin-top: ; de form-section */
+        margin-top: 0;
     }
 
-    .modal-add-product.show .modal-content {
+    .modal.show .modal-content {
         transform: scale(1);
+    }
+
+    .form-group button.add-btn {
+        margin-bottom: 1rem;
     }
 </style>
 {% endblock %}
@@ -134,9 +136,9 @@
                     </p>
                     <p class="product-price">R$&nbsp;{{ product.price|floatformat:2 }}</p>
                     <div class="product-actions">
-                        <button>Editar</button>
-                        <button>Excluir</button>
-                        <button>
+                        <button class="edit-btn">Editar</button>
+                        <button class="delete-btn">Excluir</button>
+                        <button class="toggle-btn">
                             {% if product.is_active %}
                             Desativar
                             {% else %}
@@ -152,7 +154,7 @@
         </section>
     </div>
 
-    <div class="modal-add-product" id="modalAddProduct">
+    <div class="modal" id="modalAddProduct">
         <div class="modal-content form-section">
             <h3 class="form-title">Adicionar Produto</h3>
             <form id="addProductForm">
@@ -169,12 +171,68 @@
                     <label for="productImage">Imagem do Produto</label>
                     <input type="file" id="productImage" name="image" class="form-control">
                 </div>
-                <div class="form-group remove-space">
+                <div class="form-group">
+                    <label for="productIsActive">Ativo</label>
+                    <select name="is_active" id="productIsActive" class="form-control">
+                        <option value="true">Sim</option>
+                        <option value="false">Não</option>
+                    </select>
+                </div>
+                <div class="form-group">
                     <button type="submit" class="add-btn w-100">Adicionar Produto</button>
-                    <button type="button" class="cancel-btn w-100" id="closeModalButton">Cancelar</button>
+                    <button type="button" class="cancel-btn w-100" id="closeModalButtonAdd">Cancelar</button>
                 </div>
             </form>
             <div id="changeAlert" class="alert alert-danger mt-3" style="display:none;"></div>
+        </div>
+    </div>
+
+    <div class="modal" id="modalEditProduct">
+        <div class="modal-content form-section">
+            <h3 class="form-title">Editar Produto</h3>
+            <form id="editProductForm">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="productName">Nome do Produto</label>
+                    <input type="text" id="productName" name="name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="productPrice">Preço do Produto</label>
+                    <input type="number" id="productPrice" name="price" class="form-control" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="productImage">Imagem do Produto</label>
+                    <input type="file" id="productImage" name="image" class="form-control">
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="add-btn w-100">Adicionar Produto</button>
+                    <br>
+                    <button type="button" class="cancel-btn w-100" id="closeModalButtonEdit">Cancelar</button>
+                </div>
+                <div id="changeAlert" class="alert alert-danger mt-3" style="display:none;"></div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="modalConfirmDeleteProduct">
+        <div class="modal-content form-section">
+            <h3 class="form-title" style="margin-bottom: 0;">Confirmar Exclusão</h3>
+            <p style="margin-bottom: 1rem;">Você tem certeza que deseja excluir este produto?</p>
+            <div class="form-group">
+                <button type="button" class="add-btn w-100" id="confirmDeleteButton">Confirmar</button>
+                <button type="button" class="cancel-btn w-100" id="closeModalButtonDelete">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="modalConfirmToggleProduct">
+        <div class="modal-content form-section">
+            <h3 class="form-title" style="margin-bottom: 0;">Confirmar Ação</h3>
+            <p style="margin-bottom: 1rem;">Você tem certeza que deseja ativar/desativar este produto?</p>
+            <div class="form-group">
+                <button type="button" class="add-btn w-100" id="confirmToggleButton">Confirmar</button>
+                <button type="button" class="cancel-btn w-100" id="closeModalButtonToggle">Cancelar</button>
+            </div>
         </div>
     </div>
 </main>
@@ -182,21 +240,87 @@
 <!-- os elementos daqui possuem as mesmas classes e referências usadas em app products então vamos usar para não repetir código -->
 <script src="{% static '/products/filterProductsByName.js' %}"></script>
 <script>
-    const modal = document.getElementById('modalAddProduct');
+    // Modal Add Product
+    const modalAddProduct = document.getElementById('modalAddProduct');
     const addProductButton = document.getElementById('addProductButton');
-    const closeModalButton = document.getElementById('closeModalButton');
+    const closeModalButtonAdd = document.getElementById('closeModalButtonAdd');
 
     addProductButton.addEventListener('click', () => {
-        modal.classList.add('show');
+        modalAddProduct.classList.add('show');
     });
 
-    closeModalButton.addEventListener('click', () => {
-        modal.classList.remove('show');
+    closeModalButtonAdd.addEventListener('click', () => {
+        modalAddProduct.classList.remove('show');
     });
 
+    // Modal Edit Product
+    const modalEditProduct = document.getElementById('modalEditProduct');
+    const editButtons = document.querySelectorAll('.edit-btn');
+    const closeModalButtonEdit = document.getElementById('closeModalButtonEdit');
+
+    editButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+        modalEditProduct.classList.add('show');
+    });
+    });
+
+    closeModalButtonEdit.addEventListener('click', () => {
+    modalEditProduct.classList.remove('show');
+    });
+
+    // Modal Confirm Delete Product
+    const modalConfirmDeleteProduct = document.getElementById('modalConfirmDeleteProduct');
+    const deleteButtons = document.querySelectorAll('.delete-btn');
+    const confirmDeleteButton = document.getElementById('confirmDeleteButton');
+    const closeModalButtonDelete = document.getElementById('closeModalButtonDelete');
+
+    deleteButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+            modalConfirmDeleteProduct.classList.add('show');
+        });
+    });
+
+    confirmDeleteButton.addEventListener('click', () => {
+        // Lógica para confirmar a exclusão do produto
+    });
+
+    closeModalButtonDelete.addEventListener('click', () => {
+        modalConfirmDeleteProduct.classList.remove('show');
+    });
+
+    // Modal Confirm Toggle Product
+    const modalConfirmToggleProduct = document.getElementById('modalConfirmToggleProduct');
+    const toggleButtons = document.querySelectorAll('.toggle-btn');
+    const confirmToggleButton = document.getElementById('confirmToggleButton');
+    const closeModalButtonToggle = document.getElementById('closeModalButtonToggle');
+
+    toggleButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+            modalConfirmToggleProduct.classList.add('show');
+        });
+    });
+
+    confirmToggleButton.addEventListener('click', () => {
+        // Lógica para confirmar a ativação/desativação do produto
+    });
+
+    closeModalButtonToggle.addEventListener('click', () => {
+        modalConfirmToggleProduct.classList.remove('show');
+    });
+
+    // Fechar modal clicando fora (ambos os modais)
     window.addEventListener('click', (event) => {
-        if (event.target === modal) {
-            modal.classList.remove('show');
+        if (event.target === modalAddProduct) {
+            modalAddProduct.classList.remove('show');
+        }
+        if (event.target === modalEditProduct) {
+            modalEditProduct.classList.remove('show');
+        }
+        if (event.target === modalConfirmDeleteProduct) {
+            modalConfirmDeleteProduct.classList.remove('show');
+        }
+        if (event.target === modalConfirmToggleProduct) {
+            modalConfirmToggleProduct.classList.remove('show');
         }
     });
 </script>
