@@ -1,7 +1,90 @@
 {% extends 'base.html' %}
 
+{% load static %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'dashboard/styles.css' %}">
+{% endblock %}
+
 {% block content %}
-<h1>Dashboard</h1>
-<p>Welcome to the dashboard!</p>
-<a href="{% url 'dashboard:product_list' %}">Manage Products</a>
+<main class="main-content">
+    <div class="container">
+        <!-- Dashboard Header -->
+        <section class="dashboard-header">
+            <h1>Dashboard</h1>
+            <p>Painel de visualização de dados</p>
+        </section>
+
+        <!-- Quick Stats -->
+        <section class="quick-stats">
+            <div class="quick-stat">
+                <div class="quick-stat-value">{{ metrics.total_products }}</div>
+                <div class="quick-stat-label">Total de Produtos</div>
+            </div>
+            <div class="quick-stat">
+                <div class="quick-stat-value">{{ metrics.total_sales }}</div>
+                <div class="quick-stat-label">Total de Vendas</div>
+            </div>
+            <div class="quick-stat">
+                <div class="quick-stat-value">R$ {{ metrics.total_revenue|floatformat:2 }}</div>
+                <div class="quick-stat-label">Receita Total</div>
+            </div>
+            <div class="quick-stat">
+                <div class="quick-stat-value">R$ {{ metrics.ticket_medio|floatformat:2 }}</div>
+                <div class="quick-stat-label">Ticket Médio</div>
+            </div>
+        </section>
+
+        <!-- Detailed Metrics -->
+        <section class="metrics-container">
+            <div class="metric-card">
+                <h3>Produtos</h3>
+                <div class="metric-value">{{ metrics.total_products }}</div>
+                <div class="metric-description">
+                    {{ metrics.total_active_products }} ativos, {{ metrics.total_inactive_products }} inativos
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <h3>Vendas Totais</h3>
+                <div class="metric-value">{{ metrics.total_sales }}</div>
+                <div class="metric-description">
+                    Todos os pedidos realizados
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <h3>Receita Total</h3>
+                <div class="metric-value currency">R$ {{ metrics.total_revenue|floatformat:2 }}</div>
+                <div class="metric-description">
+                    Valor total arrecadado
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <h3>Ticket Médio</h3>
+                <div class="metric-value currency">R$ {{ metrics.ticket_medio|floatformat:2 }}</div>
+                <div class="metric-description">
+                    Valor médio por pedido
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <h3>Vendas (7 dias)</h3>
+                <div class="metric-value">{{ metrics.sales_last_7_days }}</div>
+                <div class="metric-description">
+                    R$ {{ metrics.revenue_last_7_days|floatformat:2 }} em receita
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <h3>Vendas (30 dias)</h3>
+                <div class="metric-value">{{ metrics.sales_last_30_days }}</div>
+                <div class="metric-description">
+                    R$ {{ metrics.revenue_last_30_days|floatformat:2 }} em receita
+                </div>
+            </div>
+        </section>
+    </div>
+</main>
 {% endblock %}

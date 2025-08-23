@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, authenticate
 from django.views.decorators.http import require_http_methods, require_POST
 from products.models import Product
+from .utils.metrics import calculate_metrics
 
 # Login view
 def login_view(request):
@@ -20,7 +21,8 @@ def login_view(request):
 # Dashboard view
 @login_required
 def dashboard_view(request):
-    return render(request, 'dashboard/dashboard.html')
+    metrics = calculate_metrics()
+    return render(request, 'dashboard/dashboard.html', {'metrics': metrics})
 
 # Product CRUD views
 @login_required

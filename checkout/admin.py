@@ -6,8 +6,7 @@ from .models import Order, OrderItem
 class OrderItemInline(admin.TabularInline):
     model = OrderItem
     extra = 0
-    fields = ("product", "quantity", "unit_price")
-    readonly_fields = ("unit_price",)
+    fields = ("product", "quantity")
 
 
 @admin.register(Order)
@@ -25,7 +24,6 @@ class OrderAdmin(admin.ModelAdmin):
 
 @admin.register(OrderItem)
 class OrderItemAdmin(admin.ModelAdmin):
-    list_display = ("order", "product", "quantity", "unit_price")
+    list_display = ("order", "product", "quantity")
     search_fields = ("product__name",)
-    readonly_fields = ("unit_price",)
-    fieldsets = ((None, {"fields": ("order", "product", "quantity", "unit_price")}),)
+    fieldsets = ((None, {"fields": ("order", "product", "quantity")}),)
