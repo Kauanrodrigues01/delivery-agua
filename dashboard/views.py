@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, authenticate, logout
 from django.views.decorators.http import require_http_methods, require_POST
 from products.models import Product
 from .utils.metrics import calculate_metrics
@@ -81,3 +81,9 @@ def product_toggle_active(request, pk):
     product.is_active = not product.is_active
     product.save()
     return redirect('dashboard:product_list')
+
+# Logout view
+@login_required
+def logout_view(request):
+    logout(request)
+    return redirect('dashboard:login')

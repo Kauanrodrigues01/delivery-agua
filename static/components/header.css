@@ -91,6 +91,15 @@
 }
 
 
+/* Navigation text responsiveness */
+.nav-text-short {
+    display: none;
+}
+
+.nav-text-full {
+    display: inline;
+}
+
 @media (max-width: 900px) {
     .main-header-inner {
         flex-direction: column;
@@ -101,6 +110,21 @@
     .main-header nav ul {
         width: 100%;
         justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 768px) {
+    .nav-text-full {
+        display: none;
+    }
+    
+    .nav-text-short {
+        display: inline;
+    }
+    
+    .main-header nav ul {
+        gap: 0.3rem;
     }
 }
 
@@ -118,14 +142,43 @@
     }
 
     .main-header nav .nav-link {
-        font-size: 1rem;
-        padding: 0.4rem 0.7rem;
+        font-size: 0.9rem;
+        padding: 0.4rem 0.6rem;
+    }
+    
+    .main-header nav ul {
+        gap: 0.2rem;
     }
 }
 
 
 @media (max-width: 480px) {
-    .logo-text h1 {
-        font-size: 1.25rem;
+    .main-header-inner {
+        padding: 0.8rem 0.1rem;
+    }
+    
+    .main-header h1 {
+        font-size: 1.1rem;
+    }
+    
+    .main-header p {
+        font-size: 0.85rem;
+    }
+    
+    .main-header .logo-icon {
+        width: 35px;
+    }
+    
+    .main-header nav .nav-link {
+        font-size: 0.85rem;
+        padding: 0.3rem 0.5rem;
+    }
+    
+    .main-header nav ul {
+        gap: 0.1rem;
+    }
+    
+    .logo-area {
+        gap: 0.8rem;
     }
 }
