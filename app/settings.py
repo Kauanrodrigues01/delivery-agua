@@ -172,5 +172,5 @@ CALLMEBOT_API_KEY = config("CALLMEBOT_API_KEY", default=None)
 CALLMEBOT_PHONE_NUMBER = config("CALLMEBOT_PHONE_NUMBER", default=None)
 
 # Authentication settings
-LOGIN_URL = '/dashboard/login/'
-LOGIN_REDIRECT_URL = '/dashboard/'
+LOGIN_URL = "/dashboard/login/"
+LOGIN_REDIRECT_URL = "/dashboard/"

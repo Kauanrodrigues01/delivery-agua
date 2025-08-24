@@ -31,17 +31,17 @@ class ProductListView(ListView):
     model = Product
     template_name = "products/product_list.html"
     context_object_name = "products"
-    queryset = Product.objects.filter(is_active=True).order_by('-created_at')
+    queryset = Product.objects.filter(is_active=True).order_by("-created_at")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         cart = get_cart(self.request)
         context["cart_count"] = cart.items.count() if cart else 0
         return context
-    
+
     def get(self, request, *args, **kwargs):
         if self.request.user.is_authenticated:
-            return redirect('dashboard:dashboard')
+            return redirect("dashboard:dashboard")
         return super().get(request, *args, **kwargs)
 
 
