@@ -141,7 +141,132 @@
         box-shadow: var(--shadow-hover);
     }
 
+    .items-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+
+    .items-table th,
+    .items-table td {
+        padding: 0.75rem;
+        text-align: left;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .items-table th {
+        background: var(--muted);
+        font-weight: bold;
+        color: var(--muted-foreground);
+    }
+
+    /* Mobile table scroll */
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin: 0 -1rem;
+        padding: 0 1rem;
+    }
+
+    .table-container::-webkit-scrollbar {
+        height: 4px;
+    }
+
+    .table-container::-webkit-scrollbar-track {
+        background: var(--muted);
+    }
+
+    .table-container::-webkit-scrollbar-thumb {
+        background: var(--primary);
+        border-radius: 2px;
+    }
+
+    /* Alternative mobile layout - cards */
+    .mobile-items {
+        display: none;
+    }
+
+    .item-card {
+        background: var(--card);
+        border-radius: var(--radius);
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        border: 1px solid var(--border);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: var(--transition);
+    }
+
+    .item-card:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .item-card h5 {
+        margin: 0 0 1rem 0;
+        font-weight: 600;
+        color: var(--foreground);
+        line-height: 1.4;
+        font-size: 1rem;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 0.5rem;
+    }
+
+    .item-details {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .item-detail {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+    }
+
+    .item-detail:not(:last-child) {
+        border-bottom: 1px solid var(--muted);
+    }
+
+    .item-detail strong {
+        color: var(--muted-foreground);
+        font-size: 0.85rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        flex: 1;
+    }
+
+    .item-detail span {
+        font-weight: 600;
+        color: var(--foreground);
+        text-align: right;
+        flex: 1;
+    }
+
+    .item-detail.subtotal {
+        background: var(--muted);
+        margin: 0.5rem -1.25rem -1.25rem -1.25rem;
+        padding: 0.75rem 1.25rem;
+        border-radius: 0 0 var(--radius) var(--radius);
+        border: none;
+    }
+
+    .item-detail.subtotal strong {
+        color: var(--primary);
+        font-weight: 600;
+    }
+
+    .item-detail.subtotal span {
+        color: var(--primary);
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+
     @media (max-width: 768px) {
+        .container {
+            padding: 0;
+        }
+
         .order-detail {
             margin: 1rem;
             padding: 1rem;
@@ -155,6 +280,75 @@
 
         .action-buttons {
             flex-direction: column;
+        }
+
+        .action-buttons .btn {
+            width: 100%;
+        }
+
+        .action-buttons button.btn {
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
+
+        .items-table {
+            table-layout: fixed;
+            font-size: 0.9rem;
+        }
+
+        .items-table th {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .items-table th.name-col {
+            width: 40%;
+        }
+
+        .items-table th.quantity-col {
+            width: 15%;
+        }
+
+        .items-table th.price-col {
+            width: 22.5%;
+        }
+
+        .items-table th.subtotal-col {
+            width: 22.5%;
+        }
+
+        .items-table td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            vertical-align: top;
+        }
+
+        .items-table td.name-col {
+            white-space: normal;
+            word-wrap: break-word;
+            line-height: 1.3;
+            max-height: 3.9em;
+        }
+
+        .items-table td:not(.name-col) {
+            white-space: nowrap;
+        }
+
+        .table-container {
+            margin: 0 -1rem;
+            padding: 0 1rem;
+        }
+    }
+
+    /* Show cards on very small screens */
+    @media (max-width: 480px) {
+        .table-container {
+            display: none !important;
+        }
+
+        .mobile-items {
+            display: block !important;
         }
     }
 </style>
@@ -193,26 +387,53 @@
 
             <div class="order-items">
                 <h3>Itens do Pedido</h3>
-                <table class="items-table">
-                    <thead>
-                        <tr>
-                            <th>Produto</th>
-                            <th>Quantidade</th>
-                            <th>Preço Unitário</th>
-                            <th>Subtotal</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in order.items.all %}
-                        <tr>
-                            <td>{{ item.product.name }}</td>
-                            <td>{{ item.quantity }}</td>
-                            <td>R$ {{ item.product.price|floatformat:2 }}</td>
-                            <td>R$ {{ item.product.price|mul:item.quantity|floatformat:2 }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+
+                <!-- Desktop/Tablet Table -->
+                <div class="table-container">
+                    <table class="items-table">
+                        <thead>
+                            <tr>
+                                <th class="name-col">Produto</th>
+                                <th class="quantity-col">Quantidade</th>
+                                <th class="price-col">Preço Unitário</th>
+                                <th class="subtotal-col">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in order.items.all %}
+                            <tr>
+                                <td class="name-col">{{ item.product.name }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>R$ {{ item.product.price|floatformat:2 }}</td>
+                                <td>R$ {{ item.product.price|mul:item.quantity|floatformat:2 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Mobile Cards -->
+                <div class="mobile-items">
+                    {% for item in order.items.all %}
+                    <div class="item-card">
+                        <h5>{{ item.product.name }}</h5>
+                        <div class="item-details">
+                            <div class="item-detail">
+                                <strong>Quantidade</strong>
+                                <span>{{ item.quantity }} unidade{{ item.quantity|pluralize }}</span>
+                            </div>
+                            <div class="item-detail">
+                                <strong>Preço Unitário</strong>
+                                <span>R$ {{ item.product.price|floatformat:2 }}</span>
+                            </div>
+                            <div class="item-detail subtotal">
+                                <strong>Subtotal</strong>
+                                <span>R$ {{ item.product.price|mul:item.quantity|floatformat:2 }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
 
                 <div class="order-total">
                     <div class="total-amount">

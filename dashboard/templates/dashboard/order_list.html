@@ -304,6 +304,17 @@
         transform: scale(1);
     }
 
+    /* Garantir que o hover funcione no botão de criar pedido */
+    .add-btn {
+        display: inline-block;
+        transition: var(--transition);
+    }
+
+    .add-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-hover);
+    }
+
     @media (max-width: 768px) {
         .container {
             padding: 0 1rem;
@@ -343,6 +354,7 @@
         .orders-cards {
             display: flex;
             flex-direction: column;
+            margin-top: 2rem;
         }
 
         .order-card-details {
@@ -459,7 +471,7 @@
             </select>
         </section>
 
-        <a href="{% url 'dashboard:order_create' %}" class="add-btn add-space-bottom">Criar Novo Pedido</a>
+        <a href="{% url 'dashboard:order_create' %}" class="add-btn">Criar Novo Pedido</a>
 
         <!-- Orders Table -->
         <section class="orders-section">
