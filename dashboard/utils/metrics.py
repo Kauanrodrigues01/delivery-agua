@@ -32,11 +32,7 @@ def calculate_metrics():
     )
 
     # Pedidos atrasados (pendentes há mais de 25 minutos)
-    cutoff_time = now() - timedelta(minutes=25)
-    late_orders_count = Order.objects.filter(
-        status="pending", 
-        created_at__lt=cutoff_time
-    ).count()
+    late_orders_count = Order.objects.late().count()
 
     return {
         "total_products": total_products,

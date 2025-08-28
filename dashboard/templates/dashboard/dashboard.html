@@ -64,8 +64,7 @@
                 <div class="quick-stat-label">Ticket Médio</div>
             </div>
             <div class="quick-stat {% if metrics.late_orders_count > 0 %}late-orders-alert{% endif %}">
-                <div class="quick-stat-value {% if metrics.late_orders_count > 0 %}late-orders-value{% endif %}">{{
-                    metrics.late_orders_count }}</div>
+                <div class="quick-stat-value {% if metrics.late_orders_count > 0 %}late-orders-value{% endif %}">{{ metrics.late_orders_count }}</div>
                 <div class="quick-stat-label {% if metrics.late_orders_count > 0 %}late-orders-label{% endif %}">Pedidos
                     Atrasados</div>
             </div>
