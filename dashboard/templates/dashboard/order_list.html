@@ -228,6 +228,11 @@
             background: var(--destructive) !important;
             color: var(--destructive-foreground) !important;
         }
+
+        .complete-btn {
+            background: #28a745 !important;
+            color: white !important;
+        }
     }
 
     /* Accessibility improvements */
@@ -315,6 +320,33 @@
         font-size: 0.9rem;
         min-width: 70px;
         text-align: center;
+    }
+
+    /* Complete button for mobile cards */
+    .complete-btn {
+        background: #28a745 !important;
+        color: white !important;
+        border: 1px solid #28a745;
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-sm);
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        text-decoration: none;
+        min-width: 70px;
+        text-align: center;
+    }
+
+    .complete-btn:hover {
+        background: #218838 !important;
+        color: white !important;
+        transform: scale(1.05);
+        box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+    }
+
+    .complete-btn:active {
+        transform: scale(0.98);
     }
 
     .modal {
@@ -430,6 +462,11 @@
             color: var(--destructive-foreground) !important;
         }
 
+        .order-card-actions .complete-btn {
+            background: #28a745 !important;
+            color: white !important;
+        }
+
         .modal-content {
             margin: 1rem;
             width: calc(100% - 2rem);
@@ -493,6 +530,11 @@
         .order-card-actions .delete-btn {
             background: var(--destructive) !important;
             color: var(--destructive-foreground) !important;
+        }
+
+        .order-card-actions .complete-btn {
+            background: #28a745 !important;
+            color: white !important;
         }
 
         .late-indicator {
@@ -565,13 +607,20 @@
                             <td>{{ order.phone }}</td>
                             <td>
                                 <span
-                                    class="{% if order.status == 'pending' %}order-pending{% elif order.status == 'completed' %}order-completed{% else %}order-cancelled{% endif %}">
+                                    class="
                                     {% if order.status == 'pending' %}
-                                    Pendente
+                                    order-pending
                                     {% elif order.status == 'completed' %}
-                                    Concluído
+                                    order-completed
                                     {% else %}
-                                    Cancelado
+                                    order-cancelled
+                                    {% endif %}">
+                                    {% if order.status == 'pending' %}
+                                        Pendente
+                                    {% elif order.status == 'completed' %}
+                                        Concluído
+                                    {% elif order.status == 'cancelled' %}
+                                        Cancelado
                                     {% endif %}
                                 </span>
                                 {% if order.is_late %}
@@ -583,7 +632,7 @@
                             <td>
                                 <div class="order-actions">
                                     <a href="{% url 'dashboard:order_detail' order.pk %}">Ver</a>
-                                    {% if order.status != 'cancelled' %}
+                                    {% if order.status == 'pending' %}
                                     <a href="{% url 'dashboard:order_edit' order.pk %}">Editar</a>
                                     <button class="delete-btn" data-order-id="{{ order.id }}">Cancelar</button>
                                     {% endif %}
@@ -608,8 +657,13 @@
                         </div>
                         <div
                             class="order-card-status {% if order.status == 'pending' %}pending{% elif order.status == 'completed' %}completed{% else %}cancelled{% endif %}">
-                            {% if order.status == 'pending' %}Pendente{% elif order.status == 'completed' %}Concluído{%
-                            else %}Cancelado{% endif %}
+                            {% if order.status == 'pending' %}
+                                Pendente
+                            {% elif order.status == 'completed' %}
+                                Concluído
+                            {% else %}
+                                Cancelado
+                            {% endif %}
                         </div>
                     </div>
 
@@ -634,8 +688,10 @@
 
                     <div class="order-card-actions">
                         <a href="{% url 'dashboard:order_detail' order.pk %}" class="add-btn">Ver</a>
-                        {% if order.status != 'cancelled' %}
+                        {% if order.status == 'pending' %}
                         <a href="{% url 'dashboard:order_edit' order.pk %}" class="add-btn">Editar</a>
+                        <button class="complete-btn" data-order-id="{{ order.id }}"
+                            data-action="complete">Concluir</button>
                         <button class="delete-btn" data-order-id="{{ order.id }}">Cancelar</button>
                         {% endif %}
                     </div>
@@ -660,6 +716,19 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal Confirm Complete Order -->
+    <div class="modal" id="modalConfirmCompleteOrder">
+        <div class="modal-content form-section">
+            <h3 class="form-title" style="margin-bottom: 0;">Confirmar Conclusão</h3>
+            <p style="margin-bottom: 1rem;">Você tem certeza que deseja marcar este pedido como concluído?</p>
+            <input type="hidden" name="id" id="confirmCompleteOrderId">
+            <div class="form-group">
+                <button type="button" class="add-btn w-100" id="confirmCompleteButton">Confirmar</button>
+                <button type="button" class="cancel-btn w-100" id="closeModalButtonComplete">Cancelar</button>
+            </div>
+        </div>
+    </div>
 </main>
 
 <script>
@@ -679,6 +748,15 @@
             const orderId = event.target.dataset.orderId;
             document.getElementById('confirmDeleteOrderId').value = orderId;
             toggleModal('modalConfirmDeleteOrder');
+        });
+    });
+
+    // Complete Order Action
+    document.querySelectorAll('.complete-btn').forEach(button => {
+        button.addEventListener('click', (event) => {
+            const orderId = event.target.dataset.orderId;
+            document.getElementById('confirmCompleteOrderId').value = orderId;
+            toggleModal('modalConfirmCompleteOrder');
         });
     });
 
@@ -718,10 +796,50 @@
         toggleModal('modalConfirmDeleteOrder', false);
     });
 
+    // Modal Confirm Complete Order
+    document.getElementById('confirmCompleteButton').addEventListener('click', () => {
+        const orderId = document.getElementById('confirmCompleteOrderId').value;
+
+        // Add loading state
+        const tableRow = document.querySelector(`tr[data-id="${orderId}"]`);
+        const card = document.querySelector(`.order-card[data-id="${orderId}"]`);
+
+        if (tableRow) tableRow.classList.add('deleting');
+        if (card) card.classList.add('deleting');
+
+        fetch(`/dashboard/orders/${orderId}/toggle-status/`, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': document.querySelector('#csrf-form [name=csrfmiddlewaretoken]').value },
+        }).then(response => {
+            if (response.ok) {
+                // Reload the page to show updated status
+                window.location.reload();
+            } else {
+                // Remove loading state if failed
+                if (tableRow) tableRow.classList.remove('deleting');
+                if (card) card.classList.remove('deleting');
+                alert('Erro ao concluir o pedido.');
+            }
+        }).catch(() => {
+            // Remove loading state if failed
+            if (tableRow) tableRow.classList.remove('deleting');
+            if (card) card.classList.remove('deleting');
+            alert('Erro ao concluir o pedido.');
+        });
+        toggleModal('modalConfirmCompleteOrder', false);
+    });
+
+    document.getElementById('closeModalButtonComplete').addEventListener('click', () => {
+        toggleModal('modalConfirmCompleteOrder', false);
+    });
+
     // Fechar modal clicando fora
     window.addEventListener('click', (event) => {
         if (event.target === document.getElementById('modalConfirmDeleteOrder')) {
             toggleModal('modalConfirmDeleteOrder', false);
+        }
+        if (event.target === document.getElementById('modalConfirmCompleteOrder')) {
+            toggleModal('modalConfirmCompleteOrder', false);
         }
     });
 

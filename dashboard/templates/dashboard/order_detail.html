@@ -410,8 +410,13 @@
                 </h2>
                 <div
                     class="order-status {% if order.status == 'pending' %}status-pending{% elif order.status == 'completed' %}status-completed{% else %}status-cancelled{% endif %}">
-                    {% if order.status == 'pending' %}Pendente{% elif order.status == 'completed' %}Concluído{% else
-                    %}Cancelado{% endif %}
+                    {% if order.status == 'pending' %}
+                    Pendente
+                    {% elif order.status == 'completed' %}
+                    Concluído
+                    {% else %}
+                    Cancelado
+                    {% endif %}
                 </div>
             </div>
 
@@ -498,20 +503,16 @@
                 <a href="{% url 'dashboard:order_list' %}" class="btn btn-secondary">
                     Voltar à Lista
                 </a>
-                {% if order.status != 'cancelled' %}
+                {% if order.status == 'pending' %}
                 <a href="{% url 'dashboard:order_edit' order.pk %}" class="btn btn-primary">
                     Editar Pedido
                 </a>
                 <form method="post" action="{% url 'dashboard:order_toggle_status' order.pk %}" style="flex: 1;">
                     {% csrf_token %}
                     <button type="submit"
-                        class="btn {% if order.status == 'pending' %}btn-success{% else %}btn-secondary{% endif %}"
+                        class="btn btn-success"
                         style="width: 100%;">
-                        {% if order.status == 'pending' %}
                         Marcar como Concluído
-                        {% else %}
-                        Marcar como Pendente
-                        {% endif %}
                     </button>
                 </form>
                 <button class="btn btn-danger" onclick="confirmCancel('{{ order.id }}')">
