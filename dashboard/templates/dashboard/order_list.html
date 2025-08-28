@@ -8,6 +8,10 @@
 <link rel="stylesheet" href="{% static 'global/buttons-default-style.css' %}">
 
 <style>
+    .container {
+        max-width: 1245px;
+    }
+
     .warning {
         color: var(--destructive);
         font-weight: bold;
@@ -44,6 +48,31 @@
     .order-cancelled {
         color: #dc3545;
         font-weight: bold;
+    }
+
+    .order-late {
+        color: #ff8c00;
+        font-weight: bold;
+        animation: pulse 2s infinite;
+    }
+
+    .late-indicator {
+        display: inline-flex;
+        align-items: center;
+        margin-left: 0.5rem;
+        padding: 0.2rem 0.5rem;
+        background: rgba(255, 140, 0, 0.1);
+        border: 1px solid #ff8c00;
+        border-radius: var(--radius-sm);
+        font-size: 0.75rem;
+        font-weight: bold;
+        color: #ff8c00;
+        animation: pulse 2s infinite;
+    }
+
+    .late-indicator::before {
+        content: "⚠";
+        margin-right: 0.25rem;
     }
 
     .orders-table {
@@ -112,6 +141,10 @@
         font-weight: bold;
         font-size: 1.1rem;
         color: var(--primary);
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
     }
 
     .order-card-status {
@@ -134,6 +167,12 @@
     .order-card-status.cancelled {
         background: rgba(220, 53, 69, 0.1);
         color: #dc3545;
+    }
+
+    .order-card-status.late {
+        background: rgba(255, 140, 0, 0.1);
+        color: #ff8c00;
+        animation: pulse 2s infinite;
     }
 
     .order-card-details {
@@ -455,6 +494,22 @@
             background: var(--destructive) !important;
             color: var(--destructive-foreground) !important;
         }
+
+        .late-indicator {
+            font-size: 0.65rem;
+            padding: 0.15rem 0.4rem;
+        }
+    }
+
+    /* Late order styling */
+    .order-row-late {
+        background-color: rgba(255, 140, 0, 0.05);
+        border-left: 3px solid #ff8c00;
+    }
+
+    .order-card-late {
+        border-left-color: #ff8c00 !important;
+        background-color: rgba(255, 140, 0, 0.05);
     }
 </style>
 {% endblock %}
@@ -479,6 +534,7 @@
                 <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pendentes</option>
                 <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Concluídos</option>
                 <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>Cancelados</option>
+                <option value="late" {% if status_filter == 'late' %}selected{% endif %}>Atrasados</option>
             </select>
         </section>
 
@@ -503,15 +559,24 @@
                     </thead>
                     <tbody>
                         {% for order in orders %}
-                        <tr data-id="{{ order.id }}">
+                        <tr data-id="{{ order.id }}" {% if order.is_late %}class="order-row-late" {% endif %}>
                             <td>#{{ order.id }}</td>
                             <td>{{ order.customer_name }}</td>
                             <td>{{ order.phone }}</td>
                             <td>
                                 <span
                                     class="{% if order.status == 'pending' %}order-pending{% elif order.status == 'completed' %}order-completed{% else %}order-cancelled{% endif %}">
-                                    {% if order.status == 'pending' %}Pendente{% elif order.status == 'completed' %}Concluído{% else %}Cancelado{% endif %}
+                                    {% if order.status == 'pending' %}
+                                    Pendente
+                                    {% elif order.status == 'completed' %}
+                                    Concluído
+                                    {% else %}
+                                    Cancelado
+                                    {% endif %}
                                 </span>
+                                {% if order.is_late %}
+                                <span class="late-indicator">ATRASADO</span>
+                                {% endif %}
                             </td>
                             <td>R$ {{ order.total_price|floatformat:2 }}</td>
                             <td>{{ order.created_at|date:"d/m/Y H:i" }}</td>
@@ -533,12 +598,18 @@
             <!-- Mobile Cards View -->
             <div class="orders-cards">
                 {% for order in orders %}
-                <div class="order-card" data-id="{{ order.id }}">
+                <div class="order-card{% if order.is_late %} order-card-late{% endif %}" data-id="{{ order.id }}">
                     <div class="order-card-header">
-                        <div class="order-card-id">#{{ order.id }}</div>
+                        <div class="order-card-id">
+                            #{{ order.id }}
+                            {% if order.is_late %}
+                            <span class="late-indicator">ATRASADO</span>
+                            {% endif %}
+                        </div>
                         <div
                             class="order-card-status {% if order.status == 'pending' %}pending{% elif order.status == 'completed' %}completed{% else %}cancelled{% endif %}">
-                            {% if order.status == 'pending' %}Pendente{% elif order.status == 'completed' %}Concluído{% else %}Cancelado{% endif %}
+                            {% if order.status == 'pending' %}Pendente{% elif order.status == 'completed' %}Concluído{%
+                            else %}Cancelado{% endif %}
                         </div>
                     </div>
 

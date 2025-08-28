@@ -113,6 +113,15 @@ def order_list(request):
         orders = Order.objects.filter(status="completed").order_by("-created_at")
     elif status_filter == "cancelled":
         orders = Order.objects.filter(status="cancelled").order_by("-created_at")
+    elif status_filter == "late":
+        # Filtrar pedidos atrasados (pendentes há mais de 25 minutos)
+        from django.utils import timezone
+        from datetime import timedelta
+        cutoff_time = timezone.now() - timedelta(minutes=25)
+        orders = Order.objects.filter(
+            status="pending", 
+            created_at__lt=cutoff_time
+        ).order_by("-created_at")
     else:
         orders = Order.objects.all().order_by("-created_at")
 

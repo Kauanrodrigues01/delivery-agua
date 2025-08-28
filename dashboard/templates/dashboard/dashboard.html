@@ -4,6 +4,36 @@
 
 {% block head %}
 <link rel="stylesheet" href="{% static 'dashboard/styles.css' %}">
+<style>
+    .late-orders-alert {
+        background-color: rgba(255, 140, 0, 0.1) !important;
+        border: 2px solid #ff8c00 !important;
+    }
+
+    .late-orders-value {
+        color: #ff8c00 !important;
+        animation: pulse 2s infinite;
+    }
+
+    .late-orders-label {
+        color: #ff8c00 !important;
+        font-weight: bold !important;
+    }
+
+    @keyframes pulse {
+        0% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.7;
+        }
+
+        100% {
+            opacity: 1;
+        }
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -32,6 +62,12 @@
             <div class="quick-stat">
                 <div class="quick-stat-value">R$ {{ metrics.ticket_medio|floatformat:2 }}</div>
                 <div class="quick-stat-label">Ticket Médio</div>
+            </div>
+            <div class="quick-stat {% if metrics.late_orders_count > 0 %}late-orders-alert{% endif %}">
+                <div class="quick-stat-value {% if metrics.late_orders_count > 0 %}late-orders-value{% endif %}">{{
+                    metrics.late_orders_count }}</div>
+                <div class="quick-stat-label {% if metrics.late_orders_count > 0 %}late-orders-label{% endif %}">Pedidos
+                    Atrasados</div>
             </div>
         </section>
 

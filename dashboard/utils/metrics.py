@@ -31,6 +31,13 @@ def calculate_metrics():
         for order in active_orders.filter(created_at__gte=last_30_days)
     )
 
+    # Pedidos atrasados (pendentes há mais de 25 minutos)
+    cutoff_time = now() - timedelta(minutes=25)
+    late_orders_count = Order.objects.filter(
+        status="pending", 
+        created_at__lt=cutoff_time
+    ).count()
+
     return {
         "total_products": total_products,
         "total_active_products": total_active_products,
@@ -42,4 +49,5 @@ def calculate_metrics():
         "revenue_last_7_days": revenue_last_7_days,
         "sales_last_30_days": sales_last_30_days,
         "revenue_last_30_days": revenue_last_30_days,
+        "late_orders_count": late_orders_count,
     }

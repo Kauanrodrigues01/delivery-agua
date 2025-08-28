@@ -1,4 +1,7 @@
+from datetime import timedelta
+
 from django.db import models
+from django.utils import timezone
 
 from products.models import Product
 
@@ -21,6 +24,11 @@ class Order(models.Model):
     @property
     def total_price(self):
         return sum(item.quantity * item.product.price for item in self.items.all())
+
+    @property
+    def is_late(self):
+        elapsed_time = timezone.now() - self.created_at
+        return (elapsed_time > timedelta(minutes=25)) and self.status == "pending"
 
     class Meta:
         verbose_name = "Pedido"

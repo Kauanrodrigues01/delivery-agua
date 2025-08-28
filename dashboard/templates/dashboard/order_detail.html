@@ -45,6 +45,39 @@
         background: #dc3545;
     }
 
+    .late-indicator {
+        display: inline-flex;
+        align-items: center;
+        margin-left: 1rem;
+        padding: 0.3rem 0.7rem;
+        background: rgba(255, 140, 0, 0.1);
+        border: 1px solid #ff8c00;
+        border-radius: var(--radius-sm);
+        font-size: 0.8rem;
+        font-weight: bold;
+        color: #ff8c00;
+        animation: pulse 2s infinite;
+    }
+
+    .late-indicator::before {
+        content: "⚠";
+        margin-right: 0.3rem;
+    }
+
+    @keyframes pulse {
+        0% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.7;
+        }
+
+        100% {
+            opacity: 1;
+        }
+    }
+
     .order-info {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -355,6 +388,12 @@
             display: block !important;
         }
     }
+
+    /* Late order styling */
+    .late-warning-text {
+        color: #ff8c00;
+        font-weight: bold;
+    }
 </style>
 {% endblock %}
 
@@ -363,10 +402,16 @@
     <div class="container">
         <div class="order-detail">
             <div class="order-header">
-                <h2>Pedido #{{ order.id }}</h2>
+                <h2>
+                    Pedido #{{ order.id }}
+                    {% if order.is_late %}
+                    <span class="late-indicator">ATRASADO</span>
+                    {% endif %}
+                </h2>
                 <div
                     class="order-status {% if order.status == 'pending' %}status-pending{% elif order.status == 'completed' %}status-completed{% else %}status-cancelled{% endif %}">
-                    {% if order.status == 'pending' %}Pendente{% elif order.status == 'completed' %}Concluído{% else %}Cancelado{% endif %}
+                    {% if order.status == 'pending' %}Pendente{% elif order.status == 'completed' %}Concluído{% else
+                    %}Cancelado{% endif %}
                 </div>
             </div>
 
@@ -382,6 +427,9 @@
                 <div class="info-group">
                     <h4>Data do Pedido</h4>
                     <p>{{ order.created_at|date:"d/m/Y H:i" }}</p>
+                    {% if order.is_late %}
+                    <small class="late-warning-text">⚠ Pedido em atraso (mais de 25 minutos)</small>
+                    {% endif %}
                 </div>
                 <div class="info-group">
                     <h4>Endereço de Entrega</h4>
