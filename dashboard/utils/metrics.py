@@ -10,23 +10,25 @@ def calculate_metrics():
     total_active_products = Product.objects.filter(is_active=True).count()
     total_inactive_products = Product.objects.filter(is_active=False).count()
 
-    total_sales = Order.objects.count()
-    total_revenue = sum(order.total_price for order in Order.objects.all())
+    # Excluir pedidos cancelados das métricas de vendas
+    active_orders = Order.objects.exclude(status="cancelled")
+    total_sales = active_orders.count()
+    total_revenue = sum(order.total_price for order in active_orders)
     ticket_medio = total_revenue / total_sales if total_sales > 0 else 0
 
-    # Vendas nos últimos 7 dias
+    # Vendas nos últimos 7 dias (excluindo cancelados)
     last_7_days = now() - timedelta(days=7)
-    sales_last_7_days = Order.objects.filter(created_at__gte=last_7_days).count()
+    sales_last_7_days = active_orders.filter(created_at__gte=last_7_days).count()
     revenue_last_7_days = sum(
-        order.total_price for order in Order.objects.filter(created_at__gte=last_7_days)
+        order.total_price for order in active_orders.filter(created_at__gte=last_7_days)
     )
 
-    # Vendas nos últimos 30 dias
+    # Vendas nos últimos 30 dias (excluindo cancelados)
     last_30_days = now() - timedelta(days=30)
-    sales_last_30_days = Order.objects.filter(created_at__gte=last_30_days).count()
+    sales_last_30_days = active_orders.filter(created_at__gte=last_30_days).count()
     revenue_last_30_days = sum(
         order.total_price
-        for order in Order.objects.filter(created_at__gte=last_30_days)
+        for order in active_orders.filter(created_at__gte=last_30_days)
     )
 
     return {

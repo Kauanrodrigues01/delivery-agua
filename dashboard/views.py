@@ -111,6 +111,8 @@ def order_list(request):
         orders = Order.objects.filter(status="pending").order_by("-created_at")
     elif status_filter == "completed":
         orders = Order.objects.filter(status="completed").order_by("-created_at")
+    elif status_filter == "cancelled":
+        orders = Order.objects.filter(status="cancelled").order_by("-created_at")
     else:
         orders = Order.objects.all().order_by("-created_at")
 
@@ -219,10 +221,11 @@ def order_edit(request, pk):
 
 
 @login_required
-@require_http_methods(["DELETE"])
-def order_delete(request, pk):
+@require_http_methods(["POST"])
+def order_cancel(request, pk):
     order = get_object_or_404(Order, pk=pk)
-    order.delete()
+    order.status = "cancelled"
+    order.save()
     return redirect("dashboard:order_list")
 
 
@@ -230,6 +233,10 @@ def order_delete(request, pk):
 @require_POST
 def order_toggle_status(request, pk):
     order = get_object_or_404(Order, pk=pk)
+    # Não permitir alterar status de pedidos cancelados
+    if order.status == "cancelled":
+        return redirect("dashboard:order_detail", pk=order.pk)
+    
     if order.status == "pending":
         order.status = "completed"
     else:

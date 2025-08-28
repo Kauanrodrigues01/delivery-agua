@@ -41,6 +41,10 @@
         background: #28a745;
     }
 
+    .status-cancelled {
+        background: #dc3545;
+    }
+
     .order-info {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -361,8 +365,8 @@
             <div class="order-header">
                 <h2>Pedido #{{ order.id }}</h2>
                 <div
-                    class="order-status {% if order.status == 'pending' %}status-pending{% else %}status-completed{% endif %}">
-                    {% if order.status == 'pending' %}Pendente{% else %}Concluído{% endif %}
+                    class="order-status {% if order.status == 'pending' %}status-pending{% elif order.status == 'completed' %}status-completed{% else %}status-cancelled{% endif %}">
+                    {% if order.status == 'pending' %}Pendente{% elif order.status == 'completed' %}Concluído{% else %}Cancelado{% endif %}
                 </div>
             </div>
 
@@ -446,6 +450,7 @@
                 <a href="{% url 'dashboard:order_list' %}" class="btn btn-secondary">
                     Voltar à Lista
                 </a>
+                {% if order.status != 'cancelled' %}
                 <a href="{% url 'dashboard:order_edit' order.pk %}" class="btn btn-primary">
                     Editar Pedido
                 </a>
@@ -461,19 +466,20 @@
                         {% endif %}
                     </button>
                 </form>
-                <button class="btn btn-danger" onclick="confirmDelete('{{ order.id }}')">
-                    Excluir Pedido
+                <button class="btn btn-danger" onclick="confirmCancel('{{ order.id }}')">
+                    Cancelar Pedido
                 </button>
+                {% endif %}
             </div>
         </div>
     </div>
 </main>
 
 <script>
-    function confirmDelete(orderId) {
-        if (confirm('Tem certeza que deseja excluir este pedido? Esta ação não pode ser desfeita.')) {
-            fetch(`/dashboard/orders/${orderId}/delete/`, {
-                method: 'DELETE',
+    function confirmCancel(orderId) {
+        if (confirm('Tem certeza que deseja cancelar este pedido? Esta ação não pode ser desfeita.')) {
+            fetch(`/dashboard/orders/${orderId}/cancel/`, {
+                method: 'POST',
                 headers: {
                     'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
                 },
@@ -481,10 +487,10 @@
                 if (response.ok) {
                     window.location.href = '{% url "dashboard:order_list" %}';
                 } else {
-                    alert('Erro ao excluir o pedido.');
+                    alert('Erro ao cancelar o pedido.');
                 }
             }).catch(() => {
-                alert('Erro ao excluir o pedido.');
+                alert('Erro ao cancelar o pedido.');
             });
         }
     }

@@ -41,6 +41,11 @@
         font-weight: bold;
     }
 
+    .order-cancelled {
+        color: #dc3545;
+        font-weight: bold;
+    }
+
     .orders-table {
         width: 100%;
         border-collapse: collapse;
@@ -124,6 +129,11 @@
     .order-card-status.completed {
         background: rgba(40, 167, 69, 0.1);
         color: #28a745;
+    }
+
+    .order-card-status.cancelled {
+        background: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
     }
 
     .order-card-details {
@@ -468,6 +478,7 @@
                 <option value="">Todos</option>
                 <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pendentes</option>
                 <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Concluídos</option>
+                <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>Cancelados</option>
             </select>
         </section>
 
@@ -498,8 +509,8 @@
                             <td>{{ order.phone }}</td>
                             <td>
                                 <span
-                                    class="{% if order.status == 'pending' %}order-pending{% else %}order-completed{% endif %}">
-                                    {% if order.status == 'pending' %}Pendente{% else %}Concluído{% endif %}
+                                    class="{% if order.status == 'pending' %}order-pending{% elif order.status == 'completed' %}order-completed{% else %}order-cancelled{% endif %}">
+                                    {% if order.status == 'pending' %}Pendente{% elif order.status == 'completed' %}Concluído{% else %}Cancelado{% endif %}
                                 </span>
                             </td>
                             <td>R$ {{ order.total_price|floatformat:2 }}</td>
@@ -507,8 +518,10 @@
                             <td>
                                 <div class="order-actions">
                                     <a href="{% url 'dashboard:order_detail' order.pk %}">Ver</a>
+                                    {% if order.status != 'cancelled' %}
                                     <a href="{% url 'dashboard:order_edit' order.pk %}">Editar</a>
-                                    <button class="delete-btn" data-order-id="{{ order.id }}">Excluir</button>
+                                    <button class="delete-btn" data-order-id="{{ order.id }}">Cancelar</button>
+                                    {% endif %}
                                 </div>
                             </td>
                         </tr>
@@ -524,8 +537,8 @@
                     <div class="order-card-header">
                         <div class="order-card-id">#{{ order.id }}</div>
                         <div
-                            class="order-card-status {% if order.status == 'pending' %}pending{% else %}completed{% endif %}">
-                            {% if order.status == 'pending' %}Pendente{% else %}Concluído{% endif %}
+                            class="order-card-status {% if order.status == 'pending' %}pending{% elif order.status == 'completed' %}completed{% else %}cancelled{% endif %}">
+                            {% if order.status == 'pending' %}Pendente{% elif order.status == 'completed' %}Concluído{% else %}Cancelado{% endif %}
                         </div>
                     </div>
 
@@ -550,8 +563,10 @@
 
                     <div class="order-card-actions">
                         <a href="{% url 'dashboard:order_detail' order.pk %}" class="add-btn">Ver</a>
+                        {% if order.status != 'cancelled' %}
                         <a href="{% url 'dashboard:order_edit' order.pk %}" class="add-btn">Editar</a>
-                        <button class="delete-btn" data-order-id="{{ order.id }}">Excluir</button>
+                        <button class="delete-btn" data-order-id="{{ order.id }}">Cancelar</button>
+                        {% endif %}
                     </div>
                 </div>
                 {% endfor %}
@@ -562,11 +577,11 @@
         </section>
     </div>
 
-    <!-- Modal Confirm Delete Order -->
+    <!-- Modal Confirm Cancel Order -->
     <div class="modal" id="modalConfirmDeleteOrder">
         <div class="modal-content form-section">
-            <h3 class="form-title" style="margin-bottom: 0;">Confirmar Exclusão</h3>
-            <p style="margin-bottom: 1rem;">Você tem certeza que deseja excluir este pedido?</p>
+            <h3 class="form-title" style="margin-bottom: 0;">Confirmar Cancelamento</h3>
+            <p style="margin-bottom: 1rem;">Você tem certeza que deseja cancelar este pedido?</p>
             <input type="hidden" name="id" id="confirmDeleteOrderId">
             <div class="form-group">
                 <button type="button" class="add-btn w-100" id="confirmDeleteButton">Confirmar</button>
@@ -606,36 +621,24 @@
         if (tableRow) tableRow.classList.add('deleting');
         if (card) card.classList.add('deleting');
 
-        fetch(`/dashboard/orders/${orderId}/delete/`, {
-            method: 'DELETE',
+        fetch(`/dashboard/orders/${orderId}/cancel/`, {
+            method: 'POST',
             headers: { 'X-CSRFToken': document.querySelector('#csrf-form [name=csrfmiddlewaretoken]').value },
         }).then(response => {
             if (response.ok) {
-                // Remove from table view
-                if (tableRow) tableRow.remove();
-
-                // Remove from cards view
-                if (card) card.remove();
-
-                // Check if no orders left
-                const remainingTableRows = document.querySelectorAll('.orders-table tbody tr');
-                const remainingCards = document.querySelectorAll('.order-card');
-
-                if (remainingTableRows.length === 0 && remainingCards.length === 0) {
-                    document.querySelector('.orders-section').innerHTML =
-                        '<p style="text-align: center; padding: 2rem; color: var(--muted-foreground);">Nenhum pedido encontrado.</p>';
-                }
+                // Reload the page to show updated status
+                window.location.reload();
             } else {
                 // Remove loading state if failed
                 if (tableRow) tableRow.classList.remove('deleting');
                 if (card) card.classList.remove('deleting');
-                alert('Erro ao excluir o pedido.');
+                alert('Erro ao cancelar o pedido.');
             }
         }).catch(() => {
             // Remove loading state if failed
             if (tableRow) tableRow.classList.remove('deleting');
             if (card) card.classList.remove('deleting');
-            alert('Erro ao excluir o pedido.');
+            alert('Erro ao cancelar o pedido.');
         });
         toggleModal('modalConfirmDeleteOrder', false);
     });
