@@ -1,7 +1,7 @@
 from django.conf import settings
 
-from services.evolution import EvolutionAPI
 from services.callmebot import CallMeBot
+from services.evolution import EvolutionAPI
 
 
 def send_order_notifications(order):

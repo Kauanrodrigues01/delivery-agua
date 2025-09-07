@@ -1,6 +1,6 @@
-from products.models import Product
 from checkout.models import Order, OrderItem
 from dashboard.utils.metrics import calculate_metrics
+from products.models import Product
 
 
 def populate_database():

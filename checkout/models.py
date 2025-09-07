@@ -10,13 +10,13 @@ class OrderQuerySet(models.QuerySet):
     def late(self):
         cutoff_time = timezone.now() - timedelta(minutes=25)
         return self.filter(status="pending", created_at__lt=cutoff_time)
-    
+
     def pending(self):
         return self.filter(status="pending")
-    
+
     def completed(self):
         return self.filter(status="completed")
-    
+
     def cancelled(self):
         return self.filter(status="cancelled")
 
@@ -32,7 +32,7 @@ class Order(models.Model):
     address = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
-    
+
     objects = OrderQuerySet.as_manager()
 
     def __str__(self):

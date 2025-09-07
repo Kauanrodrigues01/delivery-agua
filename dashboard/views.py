@@ -1,10 +1,12 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import login, authenticate, logout
-from django.views.decorators.http import require_http_methods, require_POST
 from django.db import transaction
-from products.models import Product
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_http_methods, require_POST
+
 from checkout.models import Order, OrderItem
+from products.models import Product
+
 from .utils.metrics import calculate_metrics
 
 
@@ -115,12 +117,13 @@ def order_list(request):
         orders = Order.objects.filter(status="cancelled").order_by("-created_at")
     elif status_filter == "late":
         # Filtrar pedidos atrasados (pendentes há mais de 25 minutos)
-        from django.utils import timezone
         from datetime import timedelta
+
+        from django.utils import timezone
+
         cutoff_time = timezone.now() - timedelta(minutes=25)
         orders = Order.objects.filter(
-            status="pending", 
-            created_at__lt=cutoff_time
+            status="pending", created_at__lt=cutoff_time
         ).order_by("-created_at")
     else:
         orders = Order.objects.all().order_by("-created_at")
@@ -157,7 +160,7 @@ def order_create(request):
             )
 
             # Create order items
-            for product_id, quantity in zip(product_ids, quantities):
+            for product_id, quantity in zip(product_ids, quantities, strict=False):
                 if product_id and quantity and int(quantity) > 0:
                     product = Product.objects.get(pk=product_id)
                     OrderItem.objects.create(
@@ -193,7 +196,7 @@ def order_edit(request, pk):
             order.items.all().delete()
 
             # Create new order items
-            for product_id, quantity in zip(product_ids, quantities):
+            for product_id, quantity in zip(product_ids, quantities, strict=False):
                 if product_id and quantity and int(quantity) > 0:
                     product = Product.objects.get(pk=product_id)
                     OrderItem.objects.create(
@@ -245,7 +248,7 @@ def order_toggle_status(request, pk):
     # Não permitir alterar status de pedidos cancelados
     if order.status == "cancelled":
         return redirect("dashboard:order_detail", pk=order.pk)
-    
+
     if order.status == "pending":
         order.status = "completed"
     else:

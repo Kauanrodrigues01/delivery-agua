@@ -1,7 +1,9 @@
 from datetime import timedelta
+
 from django.utils.timezone import now
-from products.models import Product
+
 from checkout.models import Order
+from products.models import Product
 
 
 # Função para calcular todas as métricas
