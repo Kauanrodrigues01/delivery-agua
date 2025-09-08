@@ -23,7 +23,7 @@ def add_to_cart(request):
         item.quantity += 1
         item.save()
 
-    return JsonResponse({"success": True, "cart_count": cart.items.count()})
+    return JsonResponse({"success": True, "cart_count": cart.total_quantity})
 
 
 class ProductListView(ListView):
@@ -35,7 +35,7 @@ class ProductListView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         cart = get_cart(self.request)
-        context["cart_count"] = cart.items.count() if cart else 0
+        context["cart_count"] = cart.total_quantity if cart else 0
         return context
 
     def get(self, request, *args, **kwargs):

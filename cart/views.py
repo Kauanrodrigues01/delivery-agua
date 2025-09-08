@@ -18,7 +18,7 @@ def increase_cart_item(request):
     item.save()
     # Calcular novo total
     cart_items = cart.items.select_related("product").all()
-    cart_total = sum(i.product.price * i.quantity for i in cart_items)
+    cart_total = cart.total_price
     return JsonResponse(
         {"success": True, "quantity": item.quantity, "cart_total": float(cart_total)}
     )
@@ -34,7 +34,7 @@ def decrease_cart_item(request):
         item.quantity -= 1
         item.save()
         cart_items = cart.items.select_related("product").all()
-        cart_total = sum(i.product.price * i.quantity for i in cart_items)
+        cart_total = cart.total_price
         return JsonResponse(
             {
                 "success": True,
@@ -44,8 +44,7 @@ def decrease_cart_item(request):
         )
     else:
         item.delete()
-        cart_items = cart.items.select_related("product").all()
-        cart_total = sum(i.product.price * i.quantity for i in cart_items)
+        cart_total = cart.total_price
         return JsonResponse(
             {"success": True, "quantity": 0, "cart_total": float(cart_total)}
         )
@@ -58,8 +57,7 @@ def remove_cart_item(request):
     cart = get_cart(request)
     item = get_object_or_404(CartItem, cart=cart, product_id=product_id)
     item.delete()
-    cart_items = cart.items.select_related("product").all()
-    cart_total = sum(i.product.price * i.quantity for i in cart_items)
+    cart_total = cart.total_price
     return JsonResponse({"success": True, "cart_total": float(cart_total)})
 
 
@@ -82,7 +80,7 @@ class AddToCartView(View):
         if not created:
             item.quantity += 1
             item.save()
-        return JsonResponse({"success": True, "cart_count": cart.items.count()})
+        return JsonResponse({"success": True, "cart_count": cart.total_quantity})
 
 
 class CartDetailView(TemplateView):
@@ -92,9 +90,9 @@ class CartDetailView(TemplateView):
         context = super().get_context_data(**kwargs)
         cart = get_cart(self.request)
         cart_items = cart.items.select_related("product").all()
-        total = sum(item.product.price * item.quantity for item in cart_items)
+        total = cart.total_price
         context["cart"] = cart
         context["cart_items"] = cart_items
-        context["cart_count"] = cart.items.count()
+        context["cart_count"] = cart.total_quantity
         context["cart_total"] = total
         return context

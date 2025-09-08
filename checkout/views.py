@@ -16,16 +16,15 @@ class CheckoutView(TemplateView):
         context = super().get_context_data(**kwargs)
         cart = get_cart(self.request)
         cart_items = cart.items.select_related("product").all()
-        total = sum(item.product.price * item.quantity for item in cart_items)
-        context["cart_total"] = total
+        context["cart_total"] = cart.total_price
         context["cart_items"] = cart_items
-        context["cart_count"] = cart.items.count()
+        context["cart_count"] = cart.total_quantity
         return context
 
     def post(self, request, *args, **kwargs):
         cart = get_cart(request)
         cart_items = cart.items.select_related("product").all()
-        total = sum(item.product.price * item.quantity for item in cart_items)
+        total = cart.total_price  # Usando a propriedade do modelo
         name = request.POST.get("name")
         phone = request.POST.get("phone")
         address = request.POST.get("address")

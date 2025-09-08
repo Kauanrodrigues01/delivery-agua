@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Sum, F
 
 from products.models import Product
 
@@ -9,6 +10,23 @@ class Cart(models.Model):
     class Meta:
         verbose_name = "Carrinho"
         verbose_name_plural = "Carrinhos"
+    
+    @property
+    def total_quantity(self):
+        """Return the total quantity of items in the cart"""
+        return self.items.aggregate(total=Sum("quantity"))["total"] or 0
+
+    @property
+    def unique_items_count(self):
+        """Return the number of unique products in the cart"""
+        return self.items.count()
+    
+    @property
+    def total_price(self):
+        """Return the total price of all items in the cart"""
+        return self.items.aggregate(
+            total=Sum(F("quantity") * F("product__price"))
+        )["total"] or 0
 
 
 class CartItem(models.Model):
