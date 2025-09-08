@@ -42,9 +42,6 @@ class CheckoutView(TemplateView):
                 return render(request, "checkout/error.html", context)
 
         try:
-            # Define o status de pagamento baseado no método
-            payment_status = "paid" if payment_method == "dinheiro" else "pending"
-            
             # Cria o pedido
             order = Order.objects.create(
                 customer_name=name,
@@ -52,7 +49,7 @@ class CheckoutView(TemplateView):
                 address=address,
                 payment_method=payment_method,
                 cash_value=cash_value if payment_method == "dinheiro" else None,
-                payment_status=payment_status,
+                payment_status="pending",
             )
             for item in cart_items:
                 OrderItem.objects.create(
