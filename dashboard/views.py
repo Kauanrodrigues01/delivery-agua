@@ -105,33 +105,46 @@ def logout_view(request):
 # Order CRUD views
 @login_required
 def order_list(request):
-    # Get filter parameter from the request
+    # Get filter parameters from the request
     status_filter = request.GET.get("status")
+    payment_status_filter = request.GET.get("payment_status")
+
+    # Start with all orders
+    orders = Order.objects.all()
 
     # Filter orders based on the status
     if status_filter == "pending":
-        orders = Order.objects.filter(status="pending").order_by("-created_at")
+        orders = orders.filter(status="pending")
     elif status_filter == "completed":
-        orders = Order.objects.filter(status="completed").order_by("-created_at")
+        orders = orders.filter(status="completed")
     elif status_filter == "cancelled":
-        orders = Order.objects.filter(status="cancelled").order_by("-created_at")
+        orders = orders.filter(status="cancelled")
     elif status_filter == "late":
         # Filtrar pedidos atrasados (pendentes há mais de 25 minutos)
         from datetime import timedelta
-
         from django.utils import timezone
-
         cutoff_time = timezone.now() - timedelta(minutes=25)
-        orders = Order.objects.filter(
-            status="pending", created_at__lt=cutoff_time
-        ).order_by("-created_at")
-    else:
-        orders = Order.objects.all().order_by("-created_at")
+        orders = orders.filter(status="pending", created_at__lt=cutoff_time)
+
+    # Filter by payment status
+    if payment_status_filter == "pending":
+        orders = orders.filter(payment_status="pending")
+    elif payment_status_filter == "paid":
+        orders = orders.filter(payment_status="paid")
+    elif payment_status_filter == "cancelled":
+        orders = orders.filter(payment_status="cancelled")
+
+    # Order by most recent
+    orders = orders.order_by("-created_at")
 
     return render(
         request,
         "dashboard/order_list.html",
-        {"orders": orders, "status_filter": status_filter},
+        {
+            "orders": orders, 
+            "status_filter": status_filter,
+            "payment_status_filter": payment_status_filter
+        },
     )
 
 
@@ -177,6 +190,10 @@ def order_create(request):
 @login_required
 def order_edit(request, pk):
     order = get_object_or_404(Order, pk=pk)
+    
+    # Não permitir editar pedido se está finalizado (concluído e pago)
+    if order.is_finalized:
+        return redirect("dashboard:order_detail", pk=order.pk)
 
     if request.method == "POST":
         order.customer_name = request.POST.get("customer_name")
@@ -236,6 +253,10 @@ def order_edit(request, pk):
 @require_http_methods(["POST"])
 def order_cancel(request, pk):
     order = get_object_or_404(Order, pk=pk)
+    # Não permitir cancelar pedido se está finalizado (concluído e pago)
+    if order.is_finalized:
+        return redirect("dashboard:order_detail", pk=order.pk)
+    
     order.status = "cancelled"
     order.save()
     return redirect("dashboard:order_list")
@@ -248,10 +269,49 @@ def order_toggle_status(request, pk):
     # Não permitir alterar status de pedidos cancelados
     if order.status == "cancelled":
         return redirect("dashboard:order_detail", pk=order.pk)
+    
+    # Não permitir alterar status se pedido está finalizado (concluído e pago)
+    if order.is_finalized:
+        return redirect("dashboard:order_detail", pk=order.pk)
 
     if order.status == "pending":
         order.status = "completed"
     else:
         order.status = "pending"
     order.save()
+    return redirect("dashboard:order_detail", pk=order.pk)
+
+
+@login_required
+@require_POST
+def order_toggle_payment_status(request, pk):
+    order = get_object_or_404(Order, pk=pk)
+    # Permitir alteração apenas se o pagamento não estiver cancelado
+    if order.payment_status == "cancelled":
+        return redirect("dashboard:order_detail", pk=order.pk)
+    
+    # Não permitir alterar pagamento se pedido está finalizado (concluído e pago)
+    if order.is_finalized:
+        return redirect("dashboard:order_detail", pk=order.pk)
+
+    if order.payment_status == "pending":
+        order.payment_status = "paid"
+    else:
+        order.payment_status = "pending"
+    order.save()
+    return redirect("dashboard:order_list")
+
+
+@login_required
+@require_POST
+def order_cancel_payment(request, pk):
+    order = get_object_or_404(Order, pk=pk)
+    # Não permitir cancelar pagamento se pedido está finalizado (concluído e pago)
+    if order.is_finalized:
+        return redirect("dashboard:order_detail", pk=order.pk)
+    
+    # Só permite cancelar pagamento se não estiver já cancelado
+    if order.payment_status != "cancelled":
+        order.payment_status = "cancelled"
+        order.save()
     return redirect("dashboard:order_detail", pk=order.pk)

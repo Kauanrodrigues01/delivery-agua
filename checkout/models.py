@@ -19,6 +19,15 @@ class OrderQuerySet(models.QuerySet):
 
     def cancelled(self):
         return self.filter(status="cancelled")
+    
+    def payment_pending(self):
+        return self.filter(payment_status="pending")
+    
+    def paid(self):
+        return self.filter(payment_status="paid")
+    
+    def payment_cancelled(self):
+        return self.filter(payment_status="cancelled")
 
 
 class Order(models.Model):
@@ -32,11 +41,17 @@ class Order(models.Model):
         ("dinheiro", "Dinheiro"),
         ("cartao", "Cartão"),
     ]
+    PAYMENT_STATUS_CHOICES = [
+        ("pending", "Pendente"),
+        ("paid", "Pago"),
+        ("cancelled", "Cancelado/Devolvido"),
+    ]
     customer_name = models.CharField(max_length=100)
     phone = models.CharField(max_length=20)
     address = models.TextField()
     payment_method = models.CharField(max_length=20, choices=PAYMENT_CHOICES, default="pix")
     cash_value = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default="pending")
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
 
@@ -57,9 +72,24 @@ class Order(models.Model):
         return 0
 
     @property
+    def is_payment_pending(self):
+        """Verifica se o pagamento está pendente"""
+        return self.payment_status == "pending"
+
+    @property
+    def is_paid(self):
+        """Verifica se o pagamento foi realizado"""
+        return self.payment_status == "paid"
+
+    @property
     def is_late(self):
         elapsed_time = timezone.now() - self.created_at
         return (elapsed_time > timedelta(minutes=25)) and self.status == "pending"
+
+    @property
+    def is_finalized(self):
+        """Verifica se o pedido está finalizado (concluído e pago) - não pode mais ser alterado"""
+        return self.status == "completed" and self.payment_status == "paid"
 
     class Meta:
         verbose_name = "Pedido"

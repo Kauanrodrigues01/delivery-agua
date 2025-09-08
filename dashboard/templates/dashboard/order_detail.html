@@ -60,7 +60,7 @@
     }
 
     .late-indicator::before {
-        content: "⚠";
+        content: "!";
         margin-right: 0.3rem;
     }
 
@@ -137,45 +137,121 @@
 
     .action-buttons {
         display: flex;
+        flex-wrap: wrap;
         gap: 1rem;
         margin-top: 2rem;
     }
 
     .action-buttons .btn {
         flex: 1;
+        min-width: 150px;
         padding: 0.75rem 1.5rem;
         border: none;
         border-radius: var(--radius);
         font-weight: bold;
         text-decoration: none;
         text-align: center;
-        transition: var(--transition);
+        transition: all 0.3s ease;
         cursor: pointer;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .btn-primary {
         background: var(--primary);
         color: var(--primary-foreground);
+        border: 2px solid var(--primary);
+    }
+
+    .btn-primary:hover {
+        background: color-mix(in srgb, var(--primary) 85%, black);
+        border-color: color-mix(in srgb, var(--primary) 85%, black);
     }
 
     .btn-secondary {
         background: var(--muted);
         color: var(--muted-foreground);
+        border: 2px solid var(--muted);
+    }
+
+    .btn-secondary:hover {
+        background: color-mix(in srgb, var(--muted) 85%, black);
+        border-color: color-mix(in srgb, var(--muted) 85%, black);
     }
 
     .btn-success {
         background: #28a745;
         color: white;
+        border: 2px solid #28a745;
+    }
+
+    .btn-success:hover {
+        background: #218838;
+        border-color: #218838;
     }
 
     .btn-danger {
         background: var(--destructive);
         color: var(--destructive-foreground);
+        border: 2px solid var(--destructive);
+    }
+
+    .btn-danger:hover {
+        background: color-mix(in srgb, var(--destructive) 85%, black);
+        border-color: color-mix(in srgb, var(--destructive) 85%, black);
+    }
+
+    /* Payment button specific styling */
+    .btn-payment {
+        background: #007bff;
+        color: white;
+        border: 2px solid #007bff;
+    }
+
+    .btn-payment:hover {
+        background: #0056b3;
+        border-color: #0056b3;
+    }
+
+    /* Warning button for payment cancellation */
+    .btn-warning {
+        background: #ffc107;
+        color: #212529;
+        border: 2px solid #ffc107;
+    }
+
+    .btn-warning:hover {
+        background: #e0a800;
+        border-color: #d39e00;
+        color: #212529;
     }
 
     .btn:hover {
         transform: translateY(-2px);
         box-shadow: var(--shadow-hover);
+    }
+
+    .btn:focus {
+        outline: 3px solid rgba(0, 123, 255, 0.25);
+        outline-offset: 2px;
+    }
+
+    .btn:active {
+        transform: translateY(0);
+        transition: transform 0.1s ease;
+    }
+
+    /* Touch device optimizations */
+    @media (hover: none) and (pointer: coarse) {
+        .btn:hover {
+            transform: none;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+            transition: transform 0.1s ease;
+        }
     }
 
     .items-table {
@@ -299,6 +375,42 @@
         font-size: 1.1rem;
     }
 
+    /* Tablet responsiveness */
+    @media (max-width: 1024px) and (min-width: 769px) {
+        .action-buttons {
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .action-buttons .btn {
+            min-width: 180px;
+            max-width: 250px;
+        }
+
+        .action-buttons form {
+            flex: 0 1 auto;
+            min-width: 180px;
+            max-width: 250px;
+        }
+    }
+
+    /* Small tablets and large phones */
+    @media (max-width: 768px) and (min-width: 481px) {
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .action-buttons .btn:first-child {
+            grid-column: 1 / -1;
+        }
+
+        .action-buttons form {
+            width: 100% !important;
+        }
+    }
+
     @media (max-width: 768px) {
         .container {
             padding: 0;
@@ -315,17 +427,32 @@
             text-align: center;
         }
 
+        .order-info {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
         .action-buttons {
             flex-direction: column;
+            gap: 0.75rem;
         }
 
         .action-buttons .btn {
             width: 100%;
+            min-width: auto;
+            padding: 1rem;
+            font-size: 1rem;
+            flex: none;
+        }
+
+        .action-buttons form {
+            width: 100% !important;
+            flex: none !important;
         }
 
         .action-buttons button.btn {
-            padding-top: 1rem;
-            padding-bottom: 1rem;
+            padding: 1rem;
+            font-size: 1rem;
         }
 
         .items-table {
@@ -387,6 +514,64 @@
         .mobile-items {
             display: block !important;
         }
+
+        .order-detail {
+            margin: 0.5rem;
+            padding: 1rem;
+        }
+
+        .action-buttons {
+            gap: 0.5rem;
+        }
+
+        .action-buttons .btn {
+            padding: 1.25rem 1rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .order-info {
+            gap: 0.75rem;
+        }
+
+        .info-group {
+            padding: 0.75rem;
+            background: var(--muted);
+            border-radius: var(--radius);
+        }
+
+        .order-header h2 {
+            font-size: 1.25rem;
+        }
+    }
+
+    /* Loading state for buttons */
+    .btn.loading {
+        opacity: 0.7;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    .btn.loading::after {
+        content: "";
+        width: 16px;
+        height: 16px;
+        margin-left: 8px;
+        border: 2px solid transparent;
+        border-top: 2px solid currentColor;
+        border-radius: 50%;
+        display: inline-block;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
     }
 
     /* Late order styling */
@@ -433,9 +618,40 @@
                     <h4>Data do Pedido</h4>
                     <p>{{ order.created_at|date:"d/m/Y H:i" }}</p>
                     {% if order.is_late %}
-                    <small class="late-warning-text">⚠ Pedido em atraso (mais de 25 minutos)</small>
+                    <small class="late-warning-text">Pedido em atraso (mais de 25 minutos)</small>
                     {% endif %}
                 </div>
+                <div class="info-group">
+                    <h4>Método de Pagamento</h4>
+                    <p>{{ order.get_payment_method_display }}</p>
+                </div>
+                <div class="info-group">
+                    <h4>Status do Pagamento</h4>
+                    <p>
+                        {% if order.payment_status == 'pending' %}
+                        <span style="color: #ffc107; font-weight: bold;">Pendente</span>
+                        {% elif order.payment_status == 'paid' %}
+                        <span style="color: #28a745; font-weight: bold;">Pago</span>
+                        {% else %}
+                        <span style="color: #dc3545; font-weight: bold;">Cancelado/Devolvido</span>
+                        {% endif %}
+                    </p>
+                    {% if order.payment_status == 'cancelled' %}
+                    <small style="color: #6c757d; font-style: italic;">
+                        Pagamento cancelado - dinheiro devolvido ou transação cancelada
+                    </small>
+                    {% endif %}
+                </div>
+                {% if order.payment_method == 'dinheiro' and order.cash_value %}
+                <div class="info-group">
+                    <h4>Valor Recebido</h4>
+                    <p>R$ {{ order.cash_value|floatformat:2 }}</p>
+                </div>
+                <div class="info-group">
+                    <h4>Troco</h4>
+                    <p>R$ {{ order.change_amount|floatformat:2 }}</p>
+                </div>
+                {% endif %}
                 <div class="info-group">
                     <h4>Endereço de Entrega</h4>
                     <p>{{ order.address }}</p>
@@ -503,18 +719,44 @@
                 <a href="{% url 'dashboard:order_list' %}" class="btn btn-secondary">
                     Voltar à Lista
                 </a>
-                {% if order.status == 'pending' %}
+                {% if order.is_finalized %}
+                <div
+                    style="flex: 1; text-align: center; padding: 1rem; background: #d4edda; border: 1px solid #c3e6cb; border-radius: var(--radius); color: #155724;">
+                    <strong>✅ Pedido Finalizado</strong><br>
+                    <small>Este pedido foi concluído e pago. Não é possível fazer mais alterações.</small>
+                </div>
+                {% endif %}
+                {% if order.status == 'pending' and not order.is_finalized %}
                 <a href="{% url 'dashboard:order_edit' order.pk %}" class="btn btn-primary">
                     Editar Pedido
                 </a>
                 <form method="post" action="{% url 'dashboard:order_toggle_status' order.pk %}" style="flex: 1;">
                     {% csrf_token %}
-                    <button type="submit"
-                        class="btn btn-success"
-                        style="width: 100%;">
+                    <button type="submit" class="btn btn-success" style="width: 100%;">
                         Marcar como Concluído
                     </button>
                 </form>
+                {% endif %}
+                {% if order.payment_status != 'cancelled' and not order.is_finalized %}
+                <form method="post" action="{% url 'dashboard:order_toggle_payment_status' order.pk %}"
+                    style="flex: 1;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-payment" style="width: 100%;">
+                        {% if order.payment_status == 'pending' %}Marcar como Pago{% else %}Marcar como Pendente{% endif
+                        %}
+                    </button>
+                </form>
+                {% endif %}
+                {% if order.payment_status != 'cancelled' and not order.is_finalized %}
+                <form method="post" action="{% url 'dashboard:order_cancel_payment' order.pk %}" style="flex: 1;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-warning" style="width: 100%;"
+                        onclick="return confirm('Tem certeza que deseja marcar este pagamento como cancelado/devolvido? Esta ação pode ser necessária quando há devolução de dinheiro.')">
+                        Cancelar Pagamento
+                    </button>
+                </form>
+                {% endif %}
+                {% if order.status == 'pending' and not order.is_finalized %}
                 <button class="btn btn-danger" onclick="confirmCancel('{{ order.id }}')">
                     Cancelar Pedido
                 </button>
@@ -527,6 +769,10 @@
 <script>
     function confirmCancel(orderId) {
         if (confirm('Tem certeza que deseja cancelar este pedido? Esta ação não pode ser desfeita.')) {
+            const cancelBtn = event.target;
+            cancelBtn.classList.add('loading');
+            cancelBtn.textContent = 'Cancelando...';
+
             fetch(`/dashboard/orders/${orderId}/cancel/`, {
                 method: 'POST',
                 headers: {
@@ -537,11 +783,57 @@
                     window.location.href = '{% url "dashboard:order_list" %}';
                 } else {
                     alert('Erro ao cancelar o pedido.');
+                    cancelBtn.classList.remove('loading');
+                    cancelBtn.textContent = 'Cancelar Pedido';
                 }
             }).catch(() => {
                 alert('Erro ao cancelar o pedido.');
+                cancelBtn.classList.remove('loading');
+                cancelBtn.textContent = 'Cancelar Pedido';
             });
         }
     }
+
+    // Add loading state to form submission buttons
+    document.addEventListener('DOMContentLoaded', function () {
+        const forms = document.querySelectorAll('form');
+        forms.forEach(form => {
+            form.addEventListener('submit', function (e) {
+                const submitBtn = form.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.classList.add('loading');
+                    const originalText = submitBtn.textContent;
+
+                    if (submitBtn.classList.contains('btn-success')) {
+                        submitBtn.textContent = 'Processando...';
+                    } else if (submitBtn.classList.contains('btn-payment')) {
+                        submitBtn.textContent = 'Alterando...';
+                    } else if (submitBtn.classList.contains('btn-warning')) {
+                        submitBtn.textContent = 'Cancelando...';
+                    }
+
+                    // Reset if form validation fails
+                    setTimeout(() => {
+                        if (submitBtn.classList.contains('loading')) {
+                            submitBtn.classList.remove('loading');
+                            submitBtn.textContent = originalText;
+                        }
+                    }, 5000);
+                }
+            });
+        });
+
+        // Add touch feedback for mobile devices
+        const buttons = document.querySelectorAll('.btn');
+        buttons.forEach(button => {
+            button.addEventListener('touchstart', function () {
+                this.style.transform = 'scale(0.98)';
+            });
+
+            button.addEventListener('touchend', function () {
+                this.style.transform = '';
+            });
+        });
+    });
 </script>
 {% endblock %}

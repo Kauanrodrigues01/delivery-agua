@@ -28,4 +28,14 @@ urlpatterns = [
         views.order_toggle_status,
         name="order_toggle_status",
     ),
+    path(
+        "orders/<int:pk>/toggle-payment-status/",
+        views.order_toggle_payment_status,
+        name="order_toggle_payment_status",
+    ),
+    path(
+        "orders/<int:pk>/cancel-payment/",
+        views.order_cancel_payment,
+        name="order_cancel_payment",
+    ),
 ]
