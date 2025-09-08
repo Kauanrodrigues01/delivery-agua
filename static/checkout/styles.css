@@ -1,3 +1,4 @@
-#cashHelp {
+.cashHelp {
     color: #dc3545; /* Uma coloração vermelha bonita */
+    font-weight: bold;
 }
