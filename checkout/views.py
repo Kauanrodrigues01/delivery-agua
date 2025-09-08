@@ -47,6 +47,8 @@ class CheckoutView(TemplateView):
                 customer_name=name,
                 phone=phone,
                 address=address,
+                payment_method=payment_method,
+                cash_value=cash_value if payment_method == "dinheiro" else None,
             )
             for item in cart_items:
                 OrderItem.objects.create(

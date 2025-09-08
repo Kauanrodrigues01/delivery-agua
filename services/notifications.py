@@ -14,26 +14,44 @@ def send_order_notifications(order):
 
     # Monta a lista de itens com quantidade
     itens_str = "\n".join(
-        [f"- {item.product.name} (x{item.quantity})" for item in order.items.all()]
+        [f"  • {item.product.name} (x{item.quantity})" for item in order.items.all()]
     )
+
+    # Informações de pagamento
+    payment_method_emoji = {
+        "pix": "💳",
+        "dinheiro": "💰", 
+        "cartao": "💳"
+    }.get(order.payment_method, "💳")
+    
+    payment_info = f"{payment_method_emoji} {order.get_payment_method_display()}"
+    if order.payment_method == "dinheiro" and order.cash_value:
+        change = order.change_amount
+        payment_info += f"\nValor a receber: R$ {order.cash_value:.2f}"
+        payment_info += f"\nTroco: R$ {change:.2f}"
 
     # Mensagem para o admin
     admin_message = (
-        f"Novo pedido recebido!\n"
-        f"Cliente: {order.customer_name}\n"
-        f"Telefone: {order.phone}\n"
-        f"Endereço: {order.address}\n"
-        f"Itens:\n{itens_str}\n"
-        f"Total: R$ {order.total_price}\n"
+        f"🚨 *NOVO PEDIDO RECEBIDO!*\n\n"
+        f"*Cliente:* {order.customer_name}\n"
+        f"*Telefone:* {order.phone}\n"
+        f"*Endereço:* {order.address}\n\n"
+        f"*Itens do pedido:*\n{itens_str}\n\n"
+        f"*Total:* R$ {order.total_price:.2f}\n\n"
+        f"*Pagamento:*\n{payment_info}\n\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━━"
     )
     evolution.send_text_message(admin_number, admin_message)
 
     # Mensagem para o cliente
     client_message = (
-        f"Olá {order.customer_name}, seu pedido foi confirmado!\n"
-        f"Resumo do pedido:\n"
-        f"Total: R$ {order.total_price}\n"
-        f"Em breve entraremos em contato para entrega."
+        f"✅ *Pedido Confirmado!*\n\n"
+        f"Olá *{order.customer_name}*, seu pedido foi confirmado com sucesso!\n\n"
+        f"*Resumo do pedido:*\n"
+        f"Total: R$ {order.total_price:.2f}\n"
+        f"Pagamento: {payment_info}\n\n"
+        f"Em breve entraremos em contato para combinar a entrega.\n\n"
+        f"Obrigado pela preferência!"
     )
     try:
         evolution.send_text_message(f"55{client_number}", client_message)
@@ -47,16 +65,31 @@ def send_order_notifications_with_callmebot(order):
 
     # Monta a lista de itens com quantidade
     itens_str = "\n".join(
-        [f"- {item.product.name} (x{item.quantity})" for item in order.items.all()]
+        [f"  • {item.product.name} (x{item.quantity})" for item in order.items.all()]
     )
+
+    # Informações de pagamento
+    payment_method_emoji = {
+        "pix": "💳",
+        "dinheiro": "💰", 
+        "cartao": "💳"
+    }.get(order.payment_method, "💳")
+    
+    payment_info = f"{payment_method_emoji} {order.get_payment_method_display()}"
+    if order.payment_method == "dinheiro" and order.cash_value:
+        change = order.change_amount
+        payment_info += f"\nValor a receber: R$ {order.cash_value:.2f}"
+        payment_info += f"\nTroco: R$ {change:.2f}"
 
     # Mensagem para o admin
     message = (
-        f"Novo pedido recebido!\n"
-        f"Cliente: {order.customer_name}\n"
-        f"Telefone: {order.phone}\n"
-        f"Endereço: {order.address}\n"
-        f"Itens:\n{itens_str}\n"
-        f"Total: R$ {order.total_price}\n"
+        f"🚨 *NOVO PEDIDO RECEBIDO!*\n\n"
+        f"*Cliente:* {order.customer_name}\n"
+        f"*Telefone:* {order.phone}\n"
+        f"*Endereço:* {order.address}\n\n"
+        f"*Itens do pedido:*\n{itens_str}\n\n"
+        f"*Total:* R$ {order.total_price:.2f}\n\n"
+        f"*Pagamento:*\n{payment_info}\n\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━━"
     )
     callmebot.send_text_message(message)

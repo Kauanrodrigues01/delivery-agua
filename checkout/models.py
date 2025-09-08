@@ -27,9 +27,16 @@ class Order(models.Model):
         ("completed", "Completed"),
         ("cancelled", "Cancelled"),
     ]
+    PAYMENT_CHOICES = [
+        ("pix", "PIX"),
+        ("dinheiro", "Dinheiro"),
+        ("cartao", "Cartão"),
+    ]
     customer_name = models.CharField(max_length=100)
     phone = models.CharField(max_length=20)
     address = models.TextField()
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_CHOICES, default="pix")
+    cash_value = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
 
@@ -41,6 +48,13 @@ class Order(models.Model):
     @property
     def total_price(self):
         return sum(item.quantity * item.product.price for item in self.items.all())
+
+    @property
+    def change_amount(self):
+        """Calcula o troco quando o pagamento é em dinheiro"""
+        if self.payment_method == "dinheiro" and self.cash_value:
+            return float(self.cash_value) - float(self.total_price)
+        return 0
 
     @property
     def is_late(self):

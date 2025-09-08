@@ -11,13 +11,14 @@ class OrderItemInline(admin.TabularInline):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ("id", "customer_name", "phone", "status", "created_at")
-    list_filter = ("status", "created_at")
+    list_display = ("id", "customer_name", "phone", "payment_method", "status", "created_at")
+    list_filter = ("status", "payment_method", "created_at")
     search_fields = ("customer_name", "phone", "address")
     inlines = [OrderItemInline]
-    readonly_fields = ("created_at",)
+    readonly_fields = ("created_at", "total_price", "change_amount")
     fieldsets = (
         ("Dados do Cliente", {"fields": ("customer_name", "phone", "address")}),
+        ("Pagamento", {"fields": ("payment_method", "cash_value", "total_price", "change_amount")}),
         ("Status e Datas", {"fields": ("status", "created_at")}),
     )
 
