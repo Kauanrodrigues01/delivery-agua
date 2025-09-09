@@ -6,6 +6,7 @@
 <link rel="stylesheet" href="{% static 'products/styles.css' %}">
 <link rel="stylesheet" href="{% static 'global/form-default-style.css' %}">
 <link rel="stylesheet" href="{% static 'global/buttons-default-style.css' %}">
+<link rel="stylesheet" href="{% static 'dashboard/action-buttons-style.css' %}">
 
 <style>
     .container {
@@ -215,23 +216,13 @@
 
     /* Touch-friendly interactions */
     @media (hover: none) and (pointer: coarse) {
-
         .order-actions button,
         .order-actions a,
         .order-card-actions button,
         .order-card-actions a {
             min-height: 44px;
             min-width: 44px;
-        }
-
-        .delete-btn {
-            background: var(--destructive) !important;
-            color: var(--destructive-foreground) !important;
-        }
-
-        .complete-btn {
-            background: #28a745 !important;
-            color: white !important;
+            padding: 0.75rem 1rem;
         }
     }
 
@@ -258,122 +249,144 @@
         box-shadow: var(--shadow-hover);
     }
 
+    /* Action buttons container */
     .order-actions {
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        font-weight: bold;
+        flex-wrap: wrap;
     }
 
+    /* Base button styling for action buttons */
     .order-actions button,
-    .order-actions a {
-        background: none;
-        border: none;
-        color: var(--primary-dark);
-        text-decoration: none;
-        font-weight: bold;
-        padding: 0.3rem 0.8rem;
+    .order-actions a,
+    .order-card-actions button,
+    .order-card-actions a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.5rem 1rem;
         border-radius: var(--radius-sm);
-        transition: var(--transition);
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-decoration: none;
+        border: 2px solid transparent;
         cursor: pointer;
-        font-size: 0.9rem;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+        min-width: 80px;
+        min-height: 36px;
+        text-align: center;
+        line-height: 1;
     }
 
-    .order-actions button:hover,
-    .order-actions a:hover {
+    /* View button (primary action) */
+    .order-actions a[href*="order_detail"],
+    .order-card-actions a[href*="order_detail"] {
         background: var(--primary);
         color: var(--primary-foreground);
-        transform: scale(1.05);
+        border-color: var(--primary);
     }
 
-    /* Delete button specific styling */
+    .order-actions a[href*="order_detail"]:hover,
+    .order-card-actions a[href*="order_detail"]:hover {
+        background: color-mix(in srgb, var(--primary) 85%, black);
+        border-color: color-mix(in srgb, var(--primary) 85%, black);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Edit button (secondary action) */
+    .order-actions a[href*="order_edit"],
+    .order-card-actions a[href*="order_edit"] {
+        background: var(--muted);
+        color: var(--muted-foreground);
+        border-color: var(--border);
+    }
+
+    .order-actions a[href*="order_edit"]:hover,
+    .order-card-actions a[href*="order_edit"]:hover {
+        background: color-mix(in srgb, var(--muted) 85%, black);
+        border-color: var(--muted-foreground);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Delete/Cancel button */
     .delete-btn {
         background: var(--destructive) !important;
         color: var(--destructive-foreground) !important;
-        border: 1px solid var(--destructive);
-        padding: 0.4rem 0.8rem;
-        border-radius: var(--radius-sm);
-        font-size: 0.85rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: var(--transition);
-        text-decoration: none;
+        border-color: var(--destructive) !important;
     }
 
     .delete-btn:hover {
-        background: hsl(0, 84%, 50%) !important;
-        color: var(--destructive-foreground) !important;
-        transform: scale(1.05);
-        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+        background: color-mix(in srgb, var(--destructive) 85%, black) !important;
+        border-color: color-mix(in srgb, var(--destructive) 85%, black) !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
     }
 
-    .delete-btn:active {
-        transform: scale(0.98);
-    }
-
-    /* Card actions delete button */
-    .order-card-actions .delete-btn {
-        background: var(--destructive) !important;
-        color: var(--destructive-foreground) !important;
-        border: 1px solid var(--destructive);
-        padding: 0.5rem 1rem;
-        font-size: 0.9rem;
-        min-width: 70px;
-        text-align: center;
-    }
-
-    /* Complete button for mobile cards */
+    /* Complete button */
     .complete-btn {
         background: #28a745 !important;
         color: white !important;
-        border: 1px solid #28a745;
-        padding: 0.5rem 1rem;
-        border-radius: var(--radius-sm);
-        font-size: 0.9rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: var(--transition);
-        text-decoration: none;
-        min-width: 70px;
-        text-align: center;
+        border-color: #28a745 !important;
     }
 
     .complete-btn:hover {
         background: #218838 !important;
-        color: white !important;
-        transform: scale(1.05);
-        box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+        border-color: #218838 !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
     }
 
-    .complete-btn:active {
-        transform: scale(0.98);
-    }
-
-    /* Payment button styling */
+    /* Payment button */
     .payment-btn {
         background: #007bff !important;
         color: white !important;
-        border: 1px solid #007bff;
-        padding: 0.3rem 0.8rem;
-        border-radius: var(--radius-sm);
-        font-size: 0.85rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: var(--transition);
-        text-decoration: none;
-        min-width: 70px;
-        text-align: center;
+        border-color: #007bff !important;
     }
 
     .payment-btn:hover {
         background: #0056b3 !important;
-        color: white !important;
-        transform: scale(1.05);
-        box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+        border-color: #0056b3 !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
     }
 
-    .payment-btn:active {
-        transform: scale(0.98);
+    /* Active state for all action buttons */
+    .order-actions button:active,
+    .order-actions a:active,
+    .order-card-actions button:active,
+    .order-card-actions a:active {
+        transform: translateY(0);
+        transition: transform 0.1s ease;
+    }
+
+    /* Focus states for accessibility */
+    .order-actions button:focus,
+    .order-actions a:focus,
+    .order-card-actions button:focus,
+    .order-card-actions a:focus {
+        outline: 2px solid var(--primary);
+        outline-offset: 2px;
+    }
+
+    /* Status indicators (non-interactive) */
+    .order-actions span,
+    .order-card-actions span {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-sm);
+        font-size: 0.875rem;
+        font-weight: 600;
+        min-width: 80px;
+        min-height: 36px;
+        background: var(--muted);
+        color: var(--muted-foreground);
+        border: 2px solid var(--border);
     }
 
     .modal {
@@ -472,26 +485,16 @@
 
         .order-card-actions {
             justify-content: center;
+            gap: 0.75rem;
         }
 
         .order-actions button,
         .order-actions a,
         .order-card-actions button,
         .order-card-actions a {
-            padding: 0.5rem 1rem;
-            font-size: 0.9rem;
-            min-width: 70px;
-            text-align: center;
-        }
-
-        .order-card-actions .delete-btn {
-            background: var(--destructive) !important;
-            color: var(--destructive-foreground) !important;
-        }
-
-        .order-card-actions .complete-btn {
-            background: #28a745 !important;
-            color: white !important;
+            min-width: 90px;
+            padding: 0.625rem 1rem;
+            font-size: 0.875rem;
         }
 
         .modal-content {
@@ -519,18 +522,32 @@
 
         .order-actions {
             flex-direction: column;
-            gap: 0.25rem;
+            gap: 0.5rem;
+            width: 100%;
         }
 
         .order-actions button,
         .order-actions a {
-            font-size: 0.8rem;
-            padding: 0.4rem 0.6rem;
+            width: 100%;
+            min-width: auto;
+            padding: 0.75rem 1rem;
+            font-size: 0.875rem;
+            justify-content: center;
         }
 
-        .delete-btn {
-            background: var(--destructive) !important;
-            color: var(--destructive-foreground) !important;
+        .order-card-actions {
+            flex-direction: column;
+            width: 100%;
+            gap: 0.5rem;
+        }
+
+        .order-card-actions button,
+        .order-card-actions a {
+            width: 100%;
+            min-width: auto;
+            padding: 0.75rem 1rem;
+            font-size: 0.875rem;
+            justify-content: center;
         }
 
         .order-card {
@@ -541,27 +558,6 @@
             flex-direction: column;
             align-items: flex-start;
             gap: 0.75rem;
-        }
-
-        .order-card-actions {
-            flex-direction: column;
-            width: 100%;
-        }
-
-        .order-card-actions button,
-        .order-card-actions a {
-            width: 100%;
-            justify-content: center;
-        }
-
-        .order-card-actions .delete-btn {
-            background: var(--destructive) !important;
-            color: var(--destructive-foreground) !important;
-        }
-
-        .order-card-actions .complete-btn {
-            background: #28a745 !important;
-            color: white !important;
         }
 
         .late-indicator {
@@ -691,7 +687,7 @@
                                         <a href="{% url 'dashboard:order_detail' order.pk %}">Ver</a>
                                         {% if order.is_totally_cancelled %}
                                         <!-- Pedido totalmente cancelado: apenas visualização -->
-                                        <span style="color: #6c757d; font-weight: bold; font-size: 0.8rem;">🚫 Cancelado</span>
+                                        <span class="status-cancelled">Cancelado</span>
                                         {% elif order.status == 'pending' and order.payment_status == 'cancelled' %}
                                         <!-- Pedido pendente com pagamento cancelado: só pode cancelar o pedido -->
                                         <button class="delete-btn" data-order-id="{{ order.id }}">Cancelar Pedido</button>
@@ -709,7 +705,7 @@
                                         <button class="payment-btn" data-order-id="{{ order.id }}" data-current-status="pending">Confirmar Pago</button>
                                         {% elif order.is_finalized %}
                                         <!-- Pedido finalizado: apenas visualização -->
-                                        <span style="color: #28a745; font-weight: bold; font-size: 0.8rem;">✅ Finalizado</span>
+                                        <span class="status-finalized">Finalizado</span>
                                         {% else %}
                                         <!-- Lógica normal para outros casos (pending/pending e pending/paid) -->
                                         {% if order.can_edit_basic_info %}
@@ -795,7 +791,7 @@
                         <a href="{% url 'dashboard:order_detail' order.pk %}" class="add-btn">Ver</a>
                         {% if order.is_totally_cancelled %}
                         <!-- Pedido totalmente cancelado: apenas visualização -->
-                        <span style="color: #6c757d; font-weight: bold; font-size: 0.9rem; padding: 0.5rem;">🚫 Cancelado</span>
+                        <span class="status-cancelled">Cancelado</span>
                         {% elif order.status == 'pending' and order.payment_status == 'cancelled' %}
                         <!-- Pedido pendente com pagamento cancelado: só pode cancelar o pedido -->
                         <button class="delete-btn" data-order-id="{{ order.id }}">Cancelar Pedido</button>
@@ -813,7 +809,7 @@
                         <button class="payment-btn complete-btn" data-order-id="{{ order.id }}" data-current-status="pending">Confirmar Pago</button>
                         {% elif order.is_finalized %}
                         <!-- Pedido finalizado: apenas visualização -->
-                        <span style="color: #28a745; font-weight: bold; font-size: 0.9rem; padding: 0.5rem;">✅ Finalizado</span>
+                        <span class="status-finalized">Finalizado</span>
                         {% else %}
                         <!-- Lógica normal para outros casos (pending/pending e pending/paid) -->
                         {% if order.can_edit_basic_info %}

@@ -6,6 +6,7 @@
 {% block head %}
 <link rel="stylesheet" href="{% static 'global/form-default-style.css' %}">
 <link rel="stylesheet" href="{% static 'global/buttons-default-style.css' %}">
+<link rel="stylesheet" href="{% static 'dashboard/action-buttons-style.css' %}">
 
 <style>
     .order-detail {
@@ -140,100 +141,110 @@
         flex-wrap: wrap;
         gap: 1rem;
         margin-top: 2rem;
+        align-items: stretch;
     }
 
     .action-buttons .btn {
         flex: 1;
-        min-width: 150px;
-        padding: 0.75rem 1.5rem;
-        border: none;
+        min-width: 140px;
+        padding: 0.875rem 1.5rem;
+        border: 2px solid transparent;
         border-radius: var(--radius);
-        font-weight: bold;
+        font-weight: 600;
+        font-size: 0.95rem;
         text-decoration: none;
         text-align: center;
-        transition: all 0.3s ease;
+        transition: all 0.2s ease;
         cursor: pointer;
         white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 48px;
+        line-height: 1.2;
     }
 
     .btn-primary {
         background: var(--primary);
         color: var(--primary-foreground);
-        border: 2px solid var(--primary);
+        border-color: var(--primary);
     }
 
     .btn-primary:hover {
         background: color-mix(in srgb, var(--primary) 85%, black);
         border-color: color-mix(in srgb, var(--primary) 85%, black);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
     }
 
     .btn-secondary {
         background: var(--muted);
         color: var(--muted-foreground);
-        border: 2px solid var(--muted);
+        border-color: var(--border);
     }
 
     .btn-secondary:hover {
         background: color-mix(in srgb, var(--muted) 85%, black);
-        border-color: color-mix(in srgb, var(--muted) 85%, black);
+        border-color: var(--muted-foreground);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
     }
 
     .btn-success {
         background: #28a745;
         color: white;
-        border: 2px solid #28a745;
+        border-color: #28a745;
     }
 
     .btn-success:hover {
         background: #218838;
         border-color: #218838;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(40, 167, 69, 0.3);
     }
 
     .btn-danger {
         background: var(--destructive);
         color: var(--destructive-foreground);
-        border: 2px solid var(--destructive);
+        border-color: var(--destructive);
     }
 
     .btn-danger:hover {
         background: color-mix(in srgb, var(--destructive) 85%, black);
         border-color: color-mix(in srgb, var(--destructive) 85%, black);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(220, 53, 69, 0.3);
     }
 
-    /* Payment button specific styling */
     .btn-payment {
         background: #007bff;
         color: white;
-        border: 2px solid #007bff;
+        border-color: #007bff;
     }
 
     .btn-payment:hover {
         background: #0056b3;
         border-color: #0056b3;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 123, 255, 0.3);
     }
 
-    /* Warning button for payment cancellation */
     .btn-warning {
         background: #ffc107;
         color: #212529;
-        border: 2px solid #ffc107;
+        border-color: #ffc107;
     }
 
     .btn-warning:hover {
         background: #e0a800;
         border-color: #d39e00;
         color: #212529;
-    }
-
-    .btn:hover {
         transform: translateY(-2px);
-        box-shadow: var(--shadow-hover);
+        box-shadow: 0 6px 16px rgba(255, 193, 7, 0.3);
     }
 
     .btn:focus {
-        outline: 3px solid rgba(0, 123, 255, 0.25);
+        outline: 2px solid var(--primary);
         outline-offset: 2px;
     }
 
@@ -242,16 +253,14 @@
         transition: transform 0.1s ease;
     }
 
-    /* Touch device optimizations */
-    @media (hover: none) and (pointer: coarse) {
-        .btn:hover {
-            transform: none;
-        }
+    /* Form buttons need special handling for width */
+    .action-buttons form {
+        flex: 1;
+        min-width: 140px;
+    }
 
-        .btn:active {
-            transform: scale(0.98);
-            transition: transform 0.1s ease;
-        }
+    .action-buttons form .btn {
+        width: 100%;
     }
 
     .items-table {
@@ -375,22 +384,37 @@
         font-size: 1.1rem;
     }
 
+    /* Touch device optimizations */
+    @media (hover: none) and (pointer: coarse) {
+        .btn:hover {
+            transform: none;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+            transition: transform 0.1s ease;
+        }
+
+        .action-buttons .btn {
+            min-height: 52px;
+            padding: 1rem 1.5rem;
+        }
+    }
+
     /* Tablet responsiveness */
     @media (max-width: 1024px) and (min-width: 769px) {
         .action-buttons {
-            flex-wrap: wrap;
             justify-content: center;
         }
 
         .action-buttons .btn {
-            min-width: 180px;
-            max-width: 250px;
+            min-width: 160px;
+            max-width: 200px;
         }
 
         .action-buttons form {
-            flex: 0 1 auto;
-            min-width: 180px;
-            max-width: 250px;
+            min-width: 160px;
+            max-width: 200px;
         }
     }
 
@@ -408,6 +432,11 @@
 
         .action-buttons form {
             width: 100% !important;
+            min-width: auto;
+        }
+
+        .action-buttons .btn {
+            min-width: auto;
         }
     }
 
@@ -434,24 +463,27 @@
 
         .action-buttons {
             flex-direction: column;
-            gap: 0.75rem;
+            gap: 0.875rem;
         }
 
         .action-buttons .btn {
             width: 100%;
             min-width: auto;
-            padding: 1rem;
+            padding: 1.125rem 1rem;
             font-size: 1rem;
+            font-weight: 600;
             flex: none;
+            min-height: 52px;
         }
 
         .action-buttons form {
             width: 100% !important;
             flex: none !important;
+            min-width: auto;
         }
 
         .action-buttons button.btn {
-            padding: 1rem;
+            padding: 1.125rem 1rem;
             font-size: 1rem;
         }
 
@@ -521,13 +553,14 @@
         }
 
         .action-buttons {
-            gap: 0.5rem;
+            gap: 0.75rem;
         }
 
         .action-buttons .btn {
             padding: 1.25rem 1rem;
             font-size: 0.95rem;
             font-weight: 600;
+            min-height: 56px;
         }
 
         .order-info {
@@ -720,23 +753,20 @@
                     Voltar à Lista
                 </a>
                 {% if order.is_finalized %}
-                <div
-                    style="flex: 1; text-align: center; padding: 1rem; background: #d4edda; border: 1px solid #c3e6cb; border-radius: var(--radius); color: #155724;">
-                    <strong>✅ Pedido Finalizado</strong><br>
+                <div class="status-box status-box-success">
+                    <strong>✅ Pedido Finalizado</strong>
                     <small>Este pedido foi concluído e pago. Não é possível fazer mais alterações.</small>
                 </div>
                 {% elif order.is_totally_cancelled %}
                 <!-- Pedido totalmente cancelado: apenas visualização -->
-                <div
-                    style="flex: 1; text-align: center; padding: 1rem; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: var(--radius); color: #6c757d;">
-                    <strong>🚫 Pedido Totalmente Cancelado</strong><br>
+                <div class="status-box status-box-neutral">
+                    <strong>🚫 Pedido Totalmente Cancelado</strong>
                     <small>Este pedido e seu pagamento foram cancelados. Nenhuma alteração é permitida.</small>
                 </div>
                 {% elif order.status == 'pending' and order.payment_status == 'cancelled' %}
                 <!-- Pedido pendente com pagamento cancelado: só pode cancelar o pedido -->
-                <div
-                    style="flex: 1; text-align: center; padding: 1rem; background: #f8d7da; border: 1px solid #f5c6cb; border-radius: var(--radius); color: #721c24;">
-                    <strong>⚠️ Pagamento Cancelado</strong><br>
+                <div class="status-box status-box-danger">
+                    <strong>⚠️ Pagamento Cancelado</strong>
                     <small>Este pedido teve o pagamento cancelado. Apenas o cancelamento do pedido está
                         disponível.</small>
                 </div>
@@ -745,22 +775,23 @@
                 </button>
                 {% elif order.status == 'completed' and order.payment_status == 'cancelled' %}
                 <!-- Entrega concluída com pagamento cancelado: pode cancelar a entrega -->
-                <div
-                    style="flex: 1; text-align: center; padding: 1rem; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: var(--radius); color: #856404;">
-                    <strong>⚠️ Entrega Concluída - Pagamento Devolvido</strong><br>
-                    <small>A entrega foi realizada, mas o pagamento foi cancelado/devolvido. Você pode cancelar a entrega para refletir esta situação.</small>
+                <div class="status-box status-box-warning">
+                    <strong>⚠️ Entrega Concluída - Pagamento Devolvido</strong>
+                    <small>A entrega foi realizada, mas o pagamento foi cancelado/devolvido. Você pode cancelar a
+                        entrega para refletir esta situação.</small>
                 </div>
                 <button class="btn btn-danger" onclick="confirmCancel('{{ order.id }}')">
                     Cancelar Entrega
                 </button>
                 {% elif order.status == 'cancelled' and order.payment_status == 'pending' %}
                 <!-- Pedido cancelado com pagamento pendente: pode alterar pagamento -->
-                <div
-                    style="flex: 1; text-align: center; padding: 1rem; background: #e2e3e5; border: 1px solid #d6d8db; border-radius: var(--radius); color: #383d41;">
-                    <strong>❌ Pedido Cancelado - Pagamento Pendente</strong><br>
-                    <small>O pedido foi cancelado, mas o pagamento ainda está pendente. Você pode alterar o status do pagamento.</small>
+                <div class="status-box status-box-light">
+                    <strong>❌ Pedido Cancelado - Pagamento Pendente</strong>
+                    <small>O pedido foi cancelado, mas o pagamento ainda está pendente. Você pode alterar o status do
+                        pagamento.</small>
                 </div>
-                <form method="post" action="{% url 'dashboard:order_toggle_payment_status' order.pk %}" style="flex: 1;">
+                <form method="post" action="{% url 'dashboard:order_toggle_payment_status' order.pk %}"
+                    style="flex: 1;">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-payment" style="width: 100%;">
                         Marcar como Pago
@@ -775,10 +806,10 @@
                 </form>
                 {% elif order.status == 'cancelled' and order.payment_status == 'paid' %}
                 <!-- Pedido cancelado mas já pago: deve devolver o dinheiro -->
-                <div
-                    style="flex: 1; text-align: center; padding: 1rem; background: #f8d7da; border: 1px solid #f5c6cb; border-radius: var(--radius); color: #721c24;">
-                    <strong>❌ Pedido Cancelado - Precisa Devolver Pagamento</strong><br>
-                    <small>O pedido foi cancelado, mas o pagamento foi recebido. É necessário cancelar o pagamento para devolver o dinheiro ao cliente.</small>
+                <div class="status-box status-box-danger">
+                    <strong>❌ Pedido Cancelado - Precisa Devolver Pagamento</strong>
+                    <small>O pedido foi cancelado, mas o pagamento foi recebido. É necessário cancelar o pagamento para
+                        devolver o dinheiro ao cliente.</small>
                 </div>
                 <form method="post" action="{% url 'dashboard:order_cancel_payment' order.pk %}" style="flex: 1;">
                     {% csrf_token %}
@@ -789,12 +820,12 @@
                 </form>
                 {% elif order.status == 'completed' and order.payment_status == 'pending' %}
                 <!-- Entrega concluída mas pagamento pendente: pode marcar como pago -->
-                <div
-                    style="flex: 1; text-align: center; padding: 1rem; background: #d1ecf1; border: 1px solid #bee5eb; border-radius: var(--radius); color: #0c5460;">
-                    <strong>✅ Entrega Concluída - Aguardando Pagamento</strong><br>
+                <div class="status-box status-box-info">
+                    <strong>✅ Entrega Concluída - Aguardando Pagamento</strong>
                     <small>A entrega foi realizada com sucesso. Confirme o recebimento do pagamento.</small>
                 </div>
-                <form method="post" action="{% url 'dashboard:order_toggle_payment_status' order.pk %}" style="flex: 1;">
+                <form method="post" action="{% url 'dashboard:order_toggle_payment_status' order.pk %}"
+                    style="flex: 1;">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-success" style="width: 100%;">
                         Confirmar Pagamento Recebido
@@ -818,7 +849,11 @@
                     style="flex: 1;">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-payment" style="width: 100%;">
-                        {% if order.payment_status == 'pending' %}Marcar como Pago{% else %}Marcar como Pendente{% endif %}
+                        {% if order.payment_status == 'pending' %}
+                        Marcar como Pago
+                        {% else %}
+                        Marcar como Pendente
+                        {% endif %}
                     </button>
                 </form>
                 {% endif %}

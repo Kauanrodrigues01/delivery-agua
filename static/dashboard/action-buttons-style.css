@@ -1,0 +1,192 @@
+/* Action Buttons Consistent Styling */
+
+/* Status indication boxes (non-interactive) */
+.status-box {
+    flex: 1;
+    text-align: center;
+    padding: 1rem;
+    border-radius: var(--radius);
+    font-weight: 600;
+    line-height: 1.4;
+    min-height: 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid transparent;
+}
+
+.status-box-success {
+    background: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+}
+
+.status-box-danger {
+    background: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+}
+
+.status-box-warning {
+    background: #fff3cd;
+    border-color: #ffeaa7;
+    color: #856404;
+}
+
+.status-box-info {
+    background: #d1ecf1;
+    border-color: #bee5eb;
+    color: #0c5460;
+}
+
+.status-box-neutral {
+    background: #f8f9fa;
+    border-color: #dee2e6;
+    color: #6c757d;
+}
+
+.status-box-light {
+    background: #e2e3e5;
+    border-color: #d6d8db;
+    color: #383d41;
+}
+
+.status-box strong {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-size: 1rem;
+}
+
+.status-box small {
+    font-size: 0.875rem;
+    opacity: 0.9;
+    line-height: 1.3;
+}
+
+/* Button consistency improvements */
+.btn-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-icon::before {
+    font-size: 1rem;
+    line-height: 1;
+}
+
+/* Icon classes for specific status indicators only */
+.status-finalized {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--muted);
+    color: var(--muted-foreground);
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    border: none !important;
+}
+
+.status-finalized::before {
+    content: "✅";
+    font-size: 1rem;
+}
+
+.status-cancelled {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--muted);
+    color: var(--muted-foreground);
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    border: none !important;
+}
+
+.status-cancelled::before {
+    content: "🚫";
+    font-size: 1rem;
+}
+
+/* Loading state improvements */
+.btn.loading {
+    position: relative;
+    color: transparent !important;
+    pointer-events: none;
+}
+
+.btn.loading::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: btn-spin 1s linear infinite;
+    color: white;
+}
+
+@keyframes btn-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Disabled state */
+.btn:disabled,
+.btn.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+    transform: none !important;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .btn {
+        border-width: 3px;
+        font-weight: 700;
+    }
+    
+    .status-box {
+        border-width: 3px;
+        font-weight: 700;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .btn,
+    .status-box {
+        transition: none;
+    }
+    
+    .btn:hover {
+        transform: none;
+    }
+    
+    .btn.loading::after {
+        animation: none;
+    }
+}
+
+/* Print styles */
+@media print {
+    .action-buttons {
+        display: none;
+    }
+    
+    .order-actions {
+        display: none;
+    }
+    
+    .order-card-actions {
+        display: none;
+    }
+}
