@@ -48,7 +48,7 @@ Este documento descreve todas as regras de negócio relacionadas ao ciclo de vid
 | Status Operacional | Status Pagamento | Situação | Ações Permitidas |
 |-------------------|------------------|----------|------------------|
 | `pending` | `pending` | Pedido novo | ✅ Todas as ações |
-| `pending` | `paid` | Pago, aguarda entrega | ✅ Concluir, editar limitado |
+| `pending` | `paid` | Pago, aguarda entrega | ✅ Concluir, editar limitado* |
 | `pending` | `cancelled` | Pagamento devolvido | ✅ Cancelar pedido |
 | `completed` | `pending` | Entregue, aguarda pagamento | ✅ Marcar como pago |
 | `completed` | `paid` | **FINALIZADO** | ❌ Nenhuma alteração |
@@ -78,6 +78,22 @@ Este documento descreve todas as regras de negócio relacionadas ao ciclo de vid
 - **Pedidos Cancelados**: Não podem ter status operacional alterado
 - **Pagamentos Cancelados**: Não podem ser alterados para pago/pendente
 - **Validação de Troco**: Aplicada apenas para pagamento em dinheiro
+
+### 📝 Edição Limitada para Pedidos Pagos
+**Condição**: `payment_status == "paid" AND status != "completed"`
+
+**Edições Permitidas**:
+- ✅ Nome do cliente
+- ✅ Telefone
+- ✅ Endereço de entrega
+- ✅ Status operacional
+
+**Edições Bloqueadas**:
+- ❌ Adicionar produtos
+- ❌ Remover produtos  
+- ❌ Alterar quantidades
+
+**Justificativa**: Após o pagamento, os itens devem permanecer inalterados para garantir que o valor pago corresponda aos produtos entregues.
 
 ---
 
@@ -234,6 +250,20 @@ def is_late(self):
 @property
 def is_finalized(self):
     return self.status == "completed" and self.payment_status == "paid"
+```
+
+### `can_edit_items`
+```python
+@property
+def can_edit_items(self):
+    return self.payment_status != "paid"
+```
+
+### `can_edit_basic_info`
+```python
+@property
+def can_edit_basic_info(self):
+    return not self.is_finalized
 ```
 
 ### `change_amount`
