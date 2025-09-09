@@ -641,72 +641,71 @@
                     </thead>
                     <tbody>
                         {% for order in orders %}
-                        <tr data-id="{{ order.id }}" {% if order.is_late %}class="order-row-late" {% endif %}>
-                            <td>#{{ order.id }}</td>
-                            <td>{{ order.customer_name }}</td>
-                            <td>{{ order.phone }}</td>
-                            <td>
-                                <span class="
-                                    {% if order.status == 'pending' %}
-                                    order-pending
-                                    {% elif order.status == 'completed' %}
-                                    order-completed
-                                    {% else %}
-                                    order-cancelled
-                                    {% endif %}">
-                                    {% if order.status == 'pending' %}
-                                    Pendente
-                                    {% elif order.status == 'completed' %}
-                                    Concluído
-                                    {% elif order.status == 'cancelled' %}
-                                    Cancelado
+                            <tr data-id="{{ order.id }}" {% if order.is_late %}class="order-row-late" {% endif %}>
+                                <td>#{{ order.id }}</td>
+                                <td>{{ order.customer_name }}</td>
+                                <td>{{ order.phone }}</td>
+                                <td>
+                                    <span class="
+                                            {% if order.status == 'pending' %}
+                                            order-pending
+                                            {% elif order.status == 'completed' %}
+                                            order-completed
+                                            {% else %}
+                                            order-cancelled
+                                            {% endif %}">
+                                        {% if order.status == 'pending' %}
+                                        Pendente
+                                        {% elif order.status == 'completed' %}
+                                        Concluído
+                                        {% elif order.status == 'cancelled' %}
+                                        Cancelado
+                                        {% endif %}
+                                    </span>
+                                    {% if order.is_late %}
+                                    <span class="late-indicator">ATRASADO</span>
                                     {% endif %}
-                                </span>
-                                {% if order.is_late %}
-                                <span class="late-indicator">ATRASADO</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <span class="
-                                    {% if order.payment_status == 'pending' %}
-                                    order-pending
-                                    {% elif order.payment_status == 'paid' %}
-                                    order-completed
-                                    {% else %}
-                                    order-cancelled
-                                    {% endif %}">
-                                    {% if order.payment_status == 'pending' %}
-                                    Pendente
-                                    {% elif order.payment_status == 'paid' %}
-                                    Pago
-                                    {% else %}
-                                    Cancelado/Devolvido
-                                    {% endif %}
-                                </span>
-                            </td>
-                            <td>R$ {{ order.total_price|floatformat:2 }}</td>
-                            <td>{{ order.created_at|date:"d/m/Y H:i" }}</td>
-                            <td>
-                                <div class="order-actions">
-                                    <a href="{% url 'dashboard:order_detail' order.pk %}">Ver</a>
-                                    {% if order.status == 'pending' and not order.is_finalized %}
-                                    <a href="{% url 'dashboard:order_edit' order.pk %}">Editar</a>
-                                    <button class="delete-btn" data-order-id="{{ order.id }}">Cancelar</button>
-                                    {% endif %}
-                                    {% if order.payment_status != 'cancelled' and not order.is_finalized %}
-                                    <button class="payment-btn" data-order-id="{{ order.id }}"
-                                        data-current-status="{{ order.payment_status }}">
-                                        {% if order.payment_status == 'pending' %}Marcar Pago{% else %}Marcar Pendente{%
-                                        endif %}
-                                    </button>
-                                    {% endif %}
-                                    {% if order.is_finalized %}
-                                    <span style="color: #28a745; font-weight: bold; font-size: 0.8rem;">✅
-                                        Finalizado</span>
-                                    {% endif %}
-                                </div>
-                            </td>
-                        </tr>
+                                </td>
+                                <td>
+                                    <span class="
+                                            {% if order.payment_status == 'pending' %}
+                                            order-pending
+                                            {% elif order.payment_status == 'paid' %}
+                                            order-completed
+                                            {% else %}
+                                            order-cancelled
+                                            {% endif %}">
+                                        {% if order.payment_status == 'pending' %}
+                                        Pendente
+                                        {% elif order.payment_status == 'paid' %}
+                                        Pago
+                                        {% else %}
+                                        Cancelado/Devolvido
+                                        {% endif %}
+                                    </span>
+                                </td>
+                                <td>R$ {{ order.total_price|floatformat:2 }}</td>
+                                <td>{{ order.created_at|date:"d/m/Y H:i" }}</td>
+                                <td>
+                                    <div class="order-actions">
+                                        <a href="{% url 'dashboard:order_detail' order.pk %}">Ver</a>
+                                        {% if order.status == 'pending' and not order.is_finalized %}
+                                        <a href="{% url 'dashboard:order_edit' order.pk %}">Editar</a>
+                                        <button class="delete-btn" data-order-id="{{ order.id }}">Cancelar</button>
+                                        {% endif %}
+                                        {% if order.payment_status != 'cancelled' and not order.is_finalized %}
+                                        <button class="payment-btn" data-order-id="{{ order.id }}"
+                                            data-current-status="{{ order.payment_status }}">
+                                            {% if order.payment_status == 'pending' %}Marcar Pago{% else %}Marcar Pendente{% endif %}
+                                        </button>
+                                        {% endif %}
+                                        {% if order.is_finalized %}
+                                        <span style="color: #28a745; font-weight: bold; font-size: 0.8rem;">✅
+                                            Finalizado</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
                         {% endfor %}
                     </tbody>
                 </table>
