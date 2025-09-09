@@ -742,8 +742,7 @@
                     style="flex: 1;">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-payment" style="width: 100%;">
-                        {% if order.payment_status == 'pending' %}Marcar como Pago{% else %}Marcar como Pendente{% endif
-                        %}
+                        {% if order.payment_status == 'pending' %}Marcar como Pago{% else %}Marcar como Pendente{% endif %}
                     </button>
                 </form>
                 {% endif %}
