@@ -91,6 +91,16 @@ class Order(models.Model):
         """Verifica se o pedido está finalizado (concluído e pago) - não pode mais ser alterado"""
         return self.status == "completed" and self.payment_status == "paid"
 
+    @property
+    def can_edit_items(self):
+        """Verifica se é possível editar itens (adicionar/remover produtos) do pedido"""
+        return self.payment_status != "paid"
+
+    @property
+    def can_edit_basic_info(self):
+        """Verifica se é possível editar informações básicas (nome, endereço, etc.)"""
+        return not self.is_finalized
+
     class Meta:
         verbose_name = "Pedido"
         verbose_name_plural = "Pedidos"

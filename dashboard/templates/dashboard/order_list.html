@@ -689,8 +689,14 @@
                                 <td>
                                     <div class="order-actions">
                                         <a href="{% url 'dashboard:order_detail' order.pk %}">Ver</a>
+                                        {% if order.can_edit_basic_info %}
+                                            {% if order.can_edit_items %}
+                                                <a href="{% url 'dashboard:order_edit' order.pk %}">Editar</a>
+                                            {% else %}
+                                                <a href="{% url 'dashboard:order_edit' order.pk %}" title="Editar apenas informações básicas (pedido pago)">Editar Info</a>
+                                            {% endif %}
+                                        {% endif %}
                                         {% if order.status == 'pending' and not order.is_finalized %}
-                                        <a href="{% url 'dashboard:order_edit' order.pk %}">Editar</a>
                                         <button class="delete-btn" data-order-id="{{ order.id }}">Cancelar</button>
                                         {% endif %}
                                         {% if order.payment_status != 'cancelled' and not order.is_finalized %}
@@ -767,8 +773,14 @@
 
                     <div class="order-card-actions">
                         <a href="{% url 'dashboard:order_detail' order.pk %}" class="add-btn">Ver</a>
+                        {% if order.can_edit_basic_info %}
+                            {% if order.can_edit_items %}
+                                <a href="{% url 'dashboard:order_edit' order.pk %}" class="add-btn">Editar</a>
+                            {% else %}
+                                <a href="{% url 'dashboard:order_edit' order.pk %}" class="add-btn" title="Editar apenas informações básicas (pedido pago)">Editar Info</a>
+                            {% endif %}
+                        {% endif %}
                         {% if order.status == 'pending' and not order.is_finalized %}
-                        <a href="{% url 'dashboard:order_edit' order.pk %}" class="add-btn">Editar</a>
                         <button class="complete-btn" data-order-id="{{ order.id }}"
                             data-action="complete">Concluir</button>
                         <button class="delete-btn" data-order-id="{{ order.id }}">Cancelar</button>

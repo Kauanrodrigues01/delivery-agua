@@ -563,7 +563,34 @@
                 <!-- Produtos -->
                 <div class="form-section">
                     <h3>Produtos do Pedido</h3>
-
+                    
+                    {% if not order.can_edit_items %}
+                    <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: var(--radius); padding: 1rem; margin-bottom: 1rem; color: #856404;">
+                        <strong>⚠️ Atenção:</strong> Este pedido já foi pago. Não é possível adicionar ou remover produtos, apenas editar informações básicas como nome, telefone e endereço.
+                    </div>
+                    
+                    <!-- Lista de Produtos (apenas visualização) -->
+                    <div class="added-products-section">
+                        <h4>Produtos no Pedido (não editável)</h4>
+                        <div class="products-list">
+                            {% for item in order.items.all %}
+                            <div class="product-item" style="opacity: 0.8;">
+                                <div class="product-info">
+                                    <div class="product-name">{{ item.product.name }}</div>
+                                    <div class="product-price">R$ {{ item.product.price|floatformat:2 }} cada</div>
+                                </div>
+                                <div style="margin-left: 1rem;">
+                                    <strong>{{ item.quantity }} unidade{{ item.quantity|pluralize }}</strong>
+                                </div>
+                                <div style="margin-left: 1rem;">
+                                    <strong>R$ {{ item.product.price|floatformat:2 }}</strong>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            <div class="product-total">Total do Pedido: R$ {{ order.total_price|floatformat:2 }}</div>
+                        </div>
+                    </div>
+                    {% else %}
                     <!-- Adicionar Produto -->
                     <div class="add-product-section">
                         <div class="form-row">
@@ -602,6 +629,7 @@
 
                     <!-- Hidden inputs para envio do formulário -->
                     <div id="hidden_inputs_container"></div>
+                    {% endif %}
                 </div>
 
                 <div class="action-buttons">
@@ -628,6 +656,8 @@
 
     // Initialize Select2
     $(document).ready(function () {
+        // Só inicializar Select2 se pode editar itens
+        {% if order.can_edit_items %}
         // Destroy any existing Select2 instance
         if ($('#product_select').hasClass("select2-hidden-accessible")) {
             $('#product_select').select2('destroy');
@@ -742,10 +772,12 @@
 
         // Load existing products after Select2 is initialized
         loadExistingProducts();
+        {% endif %}
     });
 
     // Load existing products function
     function loadExistingProducts() {
+        {% if order.can_edit_items %}
         // Carregar produtos existentes do pedido via dados do template
         {% for product_info in products_with_order_info %}
         {% if product_info.is_in_order %}
@@ -762,9 +794,11 @@
 
         updateProductsList();
         updateHiddenInputs();
+        {% endif %}
     }
 
     // Adicionar produto ao pedido
+    {% if order.can_edit_items %}
     document.getElementById('add_product_btn').addEventListener('click', function () {
         const select = document.getElementById('product_select');
         const quantityInput = document.getElementById('product_quantity');
@@ -805,6 +839,7 @@
         $('#product_select').val(null).trigger('change');
         quantityInput.value = 1;
     });
+    {% endif %}
 
     // Atualizar lista visual de produtos
     function updateProductsList() {
@@ -882,11 +917,13 @@
 
     // Validação do formulário
     document.querySelector('form').addEventListener('submit', function (e) {
+        {% if order.can_edit_items %}
         if (addedProducts.length === 0) {
             e.preventDefault();
             alert('Adicione pelo menos um produto ao pedido.');
             return false;
         }
+        {% endif %}
     });
 </script>
 {% endblock %}

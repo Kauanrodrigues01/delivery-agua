@@ -191,34 +191,40 @@ def order_create(request):
 def order_edit(request, pk):
     order = get_object_or_404(Order, pk=pk)
     
-    # Não permitir editar pedido se está finalizado (concluído e pago)
-    if order.is_finalized:
+    # Não permitir editar pedido se não pode editar informações básicas (finalizado)
+    if not order.can_edit_basic_info:
         return redirect("dashboard:order_detail", pk=order.pk)
 
     if request.method == "POST":
+        # Sempre permitir edição de informações básicas se can_edit_basic_info é True
         order.customer_name = request.POST.get("customer_name")
         order.phone = request.POST.get("phone")
         order.address = request.POST.get("address")
         order.status = request.POST.get("status")
 
-        # Get product IDs and quantities from the form
-        product_ids = request.POST.getlist("product_id")
-        quantities = request.POST.getlist("quantity")
+        # Só permitir edição de itens se can_edit_items for True
+        if order.can_edit_items:
+            # Get product IDs and quantities from the form
+            product_ids = request.POST.getlist("product_id")
+            quantities = request.POST.getlist("quantity")
 
-        # Update order and items in a transaction
-        with transaction.atomic():
+            # Update order and items in a transaction
+            with transaction.atomic():
+                order.save()
+
+                # Delete existing items and create new ones
+                order.items.all().delete()
+
+                # Create new order items
+                for product_id, quantity in zip(product_ids, quantities, strict=False):
+                    if product_id and quantity and int(quantity) > 0:
+                        product = Product.objects.get(pk=product_id)
+                        OrderItem.objects.create(
+                            order=order, product=product, quantity=int(quantity)
+                        )
+        else:
+            # Se não pode editar itens, apenas salva as informações básicas
             order.save()
-
-            # Delete existing items and create new ones
-            order.items.all().delete()
-
-            # Create new order items
-            for product_id, quantity in zip(product_ids, quantities, strict=False):
-                if product_id and quantity and int(quantity) > 0:
-                    product = Product.objects.get(pk=product_id)
-                    OrderItem.objects.create(
-                        order=order, product=product, quantity=int(quantity)
-                    )
 
         return redirect("dashboard:order_detail", pk=order.pk)
 
