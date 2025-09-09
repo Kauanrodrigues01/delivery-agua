@@ -689,6 +689,29 @@
                                 <td>
                                     <div class="order-actions">
                                         <a href="{% url 'dashboard:order_detail' order.pk %}">Ver</a>
+                                        {% if order.is_totally_cancelled %}
+                                        <!-- Pedido totalmente cancelado: apenas visualização -->
+                                        <span style="color: #6c757d; font-weight: bold; font-size: 0.8rem;">🚫 Cancelado</span>
+                                        {% elif order.status == 'pending' and order.payment_status == 'cancelled' %}
+                                        <!-- Pedido pendente com pagamento cancelado: só pode cancelar o pedido -->
+                                        <button class="delete-btn" data-order-id="{{ order.id }}">Cancelar Pedido</button>
+                                        {% elif order.status == 'completed' and order.payment_status == 'cancelled' %}
+                                        <!-- Entrega concluída com pagamento cancelado: pode cancelar a entrega -->
+                                        <button class="delete-btn" data-order-id="{{ order.id }}">Cancelar Entrega</button>
+                                        {% elif order.status == 'cancelled' and order.payment_status == 'pending' %}
+                                        <!-- Pedido cancelado com pagamento pendente: pode alterar pagamento -->
+                                        <button class="payment-btn" data-order-id="{{ order.id }}" data-current-status="pending">Marcar Pago</button>
+                                        {% elif order.status == 'cancelled' and order.payment_status == 'paid' %}
+                                        <!-- Pedido cancelado mas já pago: deve devolver o dinheiro -->
+                                        <span style="color: #dc3545; font-weight: bold; font-size: 0.8rem;">💰 Devolver</span>
+                                        {% elif order.status == 'completed' and order.payment_status == 'pending' %}
+                                        <!-- Entrega concluída mas pagamento pendente: pode marcar como pago -->
+                                        <button class="payment-btn" data-order-id="{{ order.id }}" data-current-status="pending">Confirmar Pago</button>
+                                        {% elif order.is_finalized %}
+                                        <!-- Pedido finalizado: apenas visualização -->
+                                        <span style="color: #28a745; font-weight: bold; font-size: 0.8rem;">✅ Finalizado</span>
+                                        {% else %}
+                                        <!-- Lógica normal para outros casos (pending/pending e pending/paid) -->
                                         {% if order.can_edit_basic_info %}
                                             {% if order.can_edit_items %}
                                                 <a href="{% url 'dashboard:order_edit' order.pk %}">Editar</a>
@@ -699,15 +722,12 @@
                                         {% if order.status == 'pending' and not order.is_finalized %}
                                         <button class="delete-btn" data-order-id="{{ order.id }}">Cancelar</button>
                                         {% endif %}
-                                        {% if order.payment_status != 'cancelled' and not order.is_finalized %}
+                                        {% if order.payment_status != 'cancelled' and not order.is_finalized and order.status != 'completed' and order.status != 'cancelled' %}
                                         <button class="payment-btn" data-order-id="{{ order.id }}"
                                             data-current-status="{{ order.payment_status }}">
                                             {% if order.payment_status == 'pending' %}Marcar Pago{% else %}Marcar Pendente{% endif %}
                                         </button>
                                         {% endif %}
-                                        {% if order.is_finalized %}
-                                        <span style="color: #28a745; font-weight: bold; font-size: 0.8rem;">✅
-                                            Finalizado</span>
                                         {% endif %}
                                     </div>
                                 </td>
@@ -773,6 +793,29 @@
 
                     <div class="order-card-actions">
                         <a href="{% url 'dashboard:order_detail' order.pk %}" class="add-btn">Ver</a>
+                        {% if order.is_totally_cancelled %}
+                        <!-- Pedido totalmente cancelado: apenas visualização -->
+                        <span style="color: #6c757d; font-weight: bold; font-size: 0.9rem; padding: 0.5rem;">🚫 Cancelado</span>
+                        {% elif order.status == 'pending' and order.payment_status == 'cancelled' %}
+                        <!-- Pedido pendente com pagamento cancelado: só pode cancelar o pedido -->
+                        <button class="delete-btn" data-order-id="{{ order.id }}">Cancelar Pedido</button>
+                        {% elif order.status == 'completed' and order.payment_status == 'cancelled' %}
+                        <!-- Entrega concluída com pagamento cancelado: pode cancelar a entrega -->
+                        <button class="delete-btn" data-order-id="{{ order.id }}">Cancelar Entrega</button>
+                        {% elif order.status == 'cancelled' and order.payment_status == 'pending' %}
+                        <!-- Pedido cancelado com pagamento pendente: pode alterar pagamento -->
+                        <button class="payment-btn complete-btn" data-order-id="{{ order.id }}" data-current-status="pending">Marcar Pago</button>
+                        {% elif order.status == 'cancelled' and order.payment_status == 'paid' %}
+                        <!-- Pedido cancelado mas já pago: deve devolver o dinheiro -->
+                        <span style="color: #dc3545; font-weight: bold; font-size: 0.9rem; padding: 0.5rem;">💰 Devolver</span>
+                        {% elif order.status == 'completed' and order.payment_status == 'pending' %}
+                        <!-- Entrega concluída mas pagamento pendente: pode marcar como pago -->
+                        <button class="payment-btn complete-btn" data-order-id="{{ order.id }}" data-current-status="pending">Confirmar Pago</button>
+                        {% elif order.is_finalized %}
+                        <!-- Pedido finalizado: apenas visualização -->
+                        <span style="color: #28a745; font-weight: bold; font-size: 0.9rem; padding: 0.5rem;">✅ Finalizado</span>
+                        {% else %}
+                        <!-- Lógica normal para outros casos (pending/pending e pending/paid) -->
                         {% if order.can_edit_basic_info %}
                             {% if order.can_edit_items %}
                                 <a href="{% url 'dashboard:order_edit' order.pk %}" class="add-btn">Editar</a>
@@ -785,15 +828,12 @@
                             data-action="complete">Concluir</button>
                         <button class="delete-btn" data-order-id="{{ order.id }}">Cancelar</button>
                         {% endif %}
-                        {% if order.payment_status != 'cancelled' and not order.is_finalized %}
+                        {% if order.payment_status != 'cancelled' and not order.is_finalized and order.status != 'completed' and order.status != 'cancelled' %}
                         <button class="payment-btn complete-btn" data-order-id="{{ order.id }}"
                             data-current-status="{{ order.payment_status }}">
                             {% if order.payment_status == 'pending' %}Marcar Pago{% else %}Marcar Pendente{% endif %}
                         </button>
                         {% endif %}
-                        {% if order.is_finalized %}
-                        <span style="color: #28a745; font-weight: bold; font-size: 0.9rem; padding: 0.5rem;">✅
-                            Finalizado</span>
                         {% endif %}
                     </div>
                 </div>

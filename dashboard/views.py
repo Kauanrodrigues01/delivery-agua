@@ -263,8 +263,18 @@ def order_cancel(request, pk):
     if order.is_finalized:
         return redirect("dashboard:order_detail", pk=order.pk)
     
-    order.status = "cancelled"
-    order.save()
+    # Permitir cancelar se a entrega foi concluída mas o pagamento foi cancelado
+    # Isso faz sentido quando houve problema com o produto e foi devolvido o dinheiro
+    if order.status == "completed" and order.payment_status == "cancelled":
+        order.status = "cancelled"
+        order.save()
+        return redirect("dashboard:order_list")
+    
+    # Para outros casos, só permite cancelar se o status for "pending"
+    if order.status == "pending":
+        order.status = "cancelled"
+        order.save()
+    
     return redirect("dashboard:order_list")
 
 
@@ -300,12 +310,13 @@ def order_toggle_payment_status(request, pk):
     if order.is_finalized:
         return redirect("dashboard:order_detail", pk=order.pk)
 
+    # Permitir alterar pagamento mesmo para pedidos cancelados (exceto se finalizado)
     if order.payment_status == "pending":
         order.payment_status = "paid"
     else:
         order.payment_status = "pending"
     order.save()
-    return redirect("dashboard:order_list")
+    return redirect("dashboard:order_detail", pk=order.pk)
 
 
 @login_required

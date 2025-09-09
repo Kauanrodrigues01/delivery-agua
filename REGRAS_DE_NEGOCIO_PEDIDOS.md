@@ -45,17 +45,24 @@ Este documento descreve todas as regras de negócio relacionadas ao ciclo de vid
 
 ## 📊 Matriz de Estados Possíveis
 
-| Status Operacional | Status Pagamento | Situação | Ações Permitidas |
-|-------------------|------------------|----------|------------------|
-| `pending` | `pending` | Pedido novo | ✅ Todas as ações |
-| `pending` | `paid` | Pago, aguarda entrega | ✅ Concluir, editar limitado* |
-| `pending` | `cancelled` | Pagamento devolvido | ✅ Cancelar pedido |
-| `completed` | `pending` | Entregue, aguarda pagamento | ✅ Marcar como pago |
-| `completed` | `paid` | **FINALIZADO** | ❌ Nenhuma alteração |
-| `completed` | `cancelled` | Entregue, pagamento devolvido | ❌ Nenhuma alteração |
-| `cancelled` | `pending` | Cancelado, sem pagamento | ✅ Alterar pagamento |
-| `cancelled` | `paid` | Cancelado, deve devolver | ✅ Cancelar pagamento |
-| `cancelled` | `cancelled` | Totalmente cancelado | ❌ Nenhuma alteração |
+| Status Operacional | Status Pagamento | Situação | Ações Permitidas | Interface |
+|-------------------|------------------|----------|------------------|-----------|
+| `pending` | `pending` | Pedido novo | ✅ Todas as ações | Botões: Editar, Concluir, Pagar, Cancelar |
+| `pending` | `paid` | Pago, aguarda entrega | ✅ Concluir, editar limitado* | Botões: Editar Info, Concluir, Cancelar |
+| `pending` | `cancelled` | Pagamento devolvido | ⚠️ Apenas cancelar pedido | Banner vermelho + Botão: Cancelar |
+| `completed` | `pending` | Entregue, aguarda pagamento | ✅ Marcar como pago | Banner azul + Botão: Confirmar Pago |
+| `completed` | `paid` | **FINALIZADO** | ❌ Nenhuma alteração | Banner verde: "Finalizado" |
+| `completed` | `cancelled` | Entregue, pagamento devolvido | ⚠️ Permitir cancelar entrega* | Banner amarelo + Botão: Cancelar Entrega |
+| `cancelled` | `pending` | Cancelado, sem pagamento | ✅ Alterar pagamento | Banner cinza + Botão: Marcar Pago |
+| `cancelled` | `paid` | Cancelado, deve devolver | ✅ Cancelar pagamento | Banner vermelho + Botão: Devolver |
+| `cancelled` | `cancelled` | Totalmente cancelado | ❌ Nenhuma alteração | Banner cinza: "Cancelado" |
+
+**Legenda de Cores dos Banners**:
+- 🟢 **Verde**: Estado finalizado (sucesso completo)
+- 🟡 **Amarelo**: Situação especial que requer atenção
+- 🔴 **Vermelho**: Problema que requer ação corretiva
+- 🔵 **Azul**: Aguardando confirmação de pagamento
+- ⚫ **Cinza**: Estados cancelados ou sem ações disponíveis
 
 ---
 
@@ -73,6 +80,19 @@ Este documento descreve todas as regras de negócio relacionadas ao ciclo de vid
 - ✅ Apenas visualização permitida
 
 **Justificativa**: Representa uma transação comercial concluída que deve ser imutável para auditoria.
+
+### 🚫 Estado Totalmente Cancelado (`is_totally_cancelled`)
+**Condição**: `status == "cancelled" AND payment_status == "cancelled"`
+
+**Bloqueios Aplicados**:
+- ❌ Editar pedido (qualquer tipo)
+- ❌ Alterar status operacional
+- ❌ Alterar status de pagamento
+- ❌ Cancelar pedido (já cancelado)
+- ❌ Todas as operações exceto visualização
+- ✅ Apenas visualização permitida
+
+**Justificativa**: Pedido e pagamento cancelados representam uma transação encerrada que não deve ser modificada.
 
 ### ⚠️ Outras Proteções
 - **Pedidos Cancelados**: Não podem ter status operacional alterado
@@ -94,6 +114,37 @@ Este documento descreve todas as regras de negócio relacionadas ao ciclo de vid
 - ❌ Alterar quantidades
 
 **Justificativa**: Após o pagamento, os itens devem permanecer inalterados para garantir que o valor pago corresponda aos produtos entregues.
+
+### 🚫 Restrições para Pedidos com Pagamento Cancelado
+**Condição**: `status == "pending" AND payment_status == "cancelled"`
+
+**Ações Permitidas**:
+- ✅ Visualizar pedido
+- ✅ Cancelar pedido
+
+**Ações Bloqueadas**:
+- ❌ Editar pedido (informações ou itens)
+- ❌ Marcar como concluído
+- ❌ Alterar status de pagamento
+- ❌ Outras operações de pagamento
+
+**Justificativa**: Quando o pagamento é cancelado/devolvido, o pedido deve ser encerrado via cancelamento para manter a integridade financeira.
+
+### ⚠️ Caso Especial: Entrega Concluída com Pagamento Cancelado
+**Condição**: `status == "completed" AND payment_status == "cancelled"`
+
+**Cenário de Uso**: 
+- A entrega foi realizada
+- Posteriormente foi identificado problema com o produto (defeito, item errado, etc.)
+- O dinheiro foi devolvido ao cliente (pagamento cancelado)
+- Faz sentido também cancelar a entrega para refletir que a transação foi desfeita
+
+**Ação Permitida**:
+- ✅ Cancelar entrega (alterar status para "cancelled")
+
+**Resultado Final**: Pedido fica como `cancelled/cancelled` (totalmente cancelado)
+
+**Justificativa**: Quando uma entrega é concluída mas há devolução de dinheiro por problemas com o produto, é lógico permitir cancelar a entrega também, para que o sistema reflita corretamente que a transação foi totalmente desfeita.
 
 ---
 
@@ -134,11 +185,14 @@ Este documento descreve todas as regras de negócio relacionadas ao ciclo de vid
 
 ### ❌ Cancelar Pedido
 **Disponível quando**:
-- `status == "pending"`
+- `status == "pending"` OU
+- `status == "completed" AND payment_status == "cancelled"` (caso especial)
 - `NOT is_finalized`
 
 **Resultado**: Define `status = "cancelled"`
 **Nota**: NÃO altera automaticamente o status de pagamento
+
+**Caso Especial Explicado**: Quando uma entrega foi concluída mas o pagamento foi cancelado (por exemplo, produto com defeito e dinheiro devolvido), é possível cancelar também a entrega para refletir que a transação foi totalmente desfeita.
 
 ---
 
@@ -179,14 +233,31 @@ def change_amount(self):
 - 🟢 **Pago**: Texto verde
 - 🔴 **Cancelado/Devolvido**: Texto vermelho + explicação
 
-#### Estado Finalizado
-- ✅ **Banner Verde**: "Pedido Finalizado - Não é possível fazer mais alterações"
-- 🔒 **Botões Ocultos**: Todas as ações de modificação removidas
+#### Banners Informativos por Estado
+- **🟢 Finalizado**: "✅ Pedido Finalizado - Não é possível fazer mais alterações"
+- **⚫ Totalmente Cancelado**: "🚫 Pedido Totalmente Cancelado - Nenhuma alteração é permitida"
+- **🔴 Pending + Cancelled**: "⚠️ Pagamento Cancelado - Apenas o cancelamento do pedido está disponível"
+- **🟡 Completed + Cancelled**: "⚠️ Entrega Concluída - Pagamento Devolvido - Você pode cancelar a entrega"
+- **⚫ Cancelled + Pending**: "❌ Pedido Cancelado - Pagamento Pendente - Você pode alterar o status do pagamento"
+- **🔴 Cancelled + Paid**: "❌ Pedido Cancelado - Precisa Devolver Pagamento - É necessário cancelar o pagamento"
+- **🔵 Completed + Pending**: "✅ Entrega Concluída - Aguardando Pagamento - Confirme o recebimento"
 
 ### 📋 Lista de Pedidos
 - **Filtros**: Por status operacional e status de pagamento
-- **Ações Condicionais**: Botões aparecem apenas quando aplicáveis
-- **Indicador Mobile**: "✅ Finalizado" substitui botões de ação
+- **Ações Condicionais**: Botões aparecem apenas quando aplicáveis conforme matriz de estados
+- **Indicador Mobile**: Estados especiais têm indicadores visuais específicos
+- **Responsividade**: Interface adaptada para desktop e mobile
+
+#### Ações Específicas por Estado na Lista:
+- **Finalizado**: "✅ Finalizado" (apenas texto)
+- **Totalmente Cancelado**: "🚫 Cancelado" (apenas texto)
+- **Pending + Cancelled**: Botão "Cancelar Pedido"
+- **Completed + Cancelled**: Botão "Cancelar Entrega"
+- **Cancelled + Pending**: Botão "Marcar Pago"
+- **Cancelled + Paid**: Texto "💰 Devolver"
+- **Completed + Pending**: Botão "Confirmar Pago"
+- **Pending + Pending**: Botões "Editar", "Concluir", "Marcar Pago", "Cancelar"
+- **Pending + Paid**: Botões "Editar Info", "Concluir", "Cancelar"
 
 ---
 
@@ -263,7 +334,14 @@ def can_edit_items(self):
 ```python
 @property
 def can_edit_basic_info(self):
-    return not self.is_finalized
+    return not self.is_finalized and not self.is_totally_cancelled
+```
+
+### `is_totally_cancelled`
+```python
+@property
+def is_totally_cancelled(self):
+    return self.status == "cancelled" and self.payment_status == "cancelled"
 ```
 
 ### `change_amount`
@@ -280,23 +358,34 @@ def change_amount(self):
 ## 📈 Fluxos de Trabalho Típicos
 
 ### 🟢 Fluxo Ideal (Pagamento Antecipado)
-1. **Cliente faz pedido** → `pending/pending`
-2. **Cliente paga** → `pending/paid`
-3. **Entrega realizada** → `completed/paid` (**FINALIZADO**)
+1. **Cliente faz pedido** → `pending/pending` → Interface: Todas as ações disponíveis
+2. **Cliente paga** → `pending/paid` → Interface: Edição limitada, pode concluir
+3. **Entrega realizada** → `completed/paid` → Interface: Banner verde "**FINALIZADO**"
 
 ### 🟡 Fluxo Padrão (Pagamento na Entrega)
-1. **Cliente faz pedido** → `pending/pending`
-2. **Entrega realizada** → `completed/pending`
-3. **Pagamento confirmado** → `completed/paid` (**FINALIZADO**)
+1. **Cliente faz pedido** → `pending/pending` → Interface: Todas as ações disponíveis
+2. **Entrega realizada** → `completed/pending` → Interface: Banner azul "Confirmar Pagamento"
+3. **Pagamento confirmado** → `completed/paid` → Interface: Banner verde "**FINALIZADO**"
 
 ### 🔴 Fluxo de Cancelamento (Antes do Pagamento)
-1. **Cliente faz pedido** → `pending/pending`
-2. **Pedido cancelado** → `cancelled/pending`
+1. **Cliente faz pedido** → `pending/pending` → Interface: Todas as ações disponíveis
+2. **Pedido cancelado** → `cancelled/pending` → Interface: Banner cinza, pode alterar pagamento
 
 ### 🔄 Fluxo de Devolução (Após Pagamento)
-1. **Pedido pago** → `any/paid`
-2. **Pedido cancelado** → `cancelled/paid`
-3. **Dinheiro devolvido** → `cancelled/cancelled`
+1. **Pedido pago** → `any/paid` → Interface: Ações limitadas
+2. **Pedido cancelado** → `cancelled/paid` → Interface: Banner vermelho "Deve Devolver"
+3. **Dinheiro devolvido** → `cancelled/cancelled` → Interface: Banner cinza "**TOTALMENTE CANCELADO**"
+
+### ⚠️ Fluxo Especial (Problema Pós-Entrega)
+1. **Entrega concluída** → `completed/pending` → Interface: Banner azul "Confirmar Pagamento"
+2. **Pagamento confirmado** → `completed/paid` → Interface: Banner verde "**FINALIZADO**"
+3. **Problema identificado** → `completed/cancelled` → Interface: Banner amarelo "Cancelar Entrega"
+4. **Entrega cancelada** → `cancelled/cancelled` → Interface: Banner cinza "**TOTALMENTE CANCELADO**"
+
+### 🚫 Fluxo de Rejeição (Pagamento Devolvido)
+1. **Cliente faz pedido** → `pending/pending` → Interface: Todas as ações disponíveis
+2. **Pagamento devolvido** → `pending/cancelled` → Interface: Banner vermelho "Apenas Cancelar"
+3. **Pedido cancelado** → `cancelled/cancelled` → Interface: Banner cinza "**TOTALMENTE CANCELADO**"
 
 ---
 
@@ -340,6 +429,37 @@ python manage.py check
 
 ---
 
-*Documento criado em: Setembro 2025*  
-*Versão: 1.0*  
-*Sistema: Delivery de Água*
+## 🎯 Resumo de Implementação
+
+### ✅ Estados Totalmente Implementados
+Todos os **9 casos** da matriz de estados estão implementados com:
+- **Interface específica** para cada combinação de status
+- **Ações condicionais** que aparecem apenas quando aplicáveis
+- **Banners informativos** com cores e mensagens específicas
+- **Proteções de negócio** que impedem operações inválidas
+
+### 🛡️ Proteções Implementadas
+- **Pedidos Finalizados**: Imutáveis (completed + paid)
+- **Pedidos Totalmente Cancelados**: Imutáveis (cancelled + cancelled)
+- **Edição Limitada**: Pedidos pagos só permitem editar informações básicas
+- **Caso Especial**: Entrega concluída + pagamento cancelado permite cancelar entrega
+
+### 🎨 Interface Responsiva
+- **Desktop**: Tabela com ações inline
+- **Mobile**: Cards com ações em botões
+- **Filtros**: Por status operacional e de pagamento
+- **Indicadores visuais**: Cores e emojis para cada estado
+
+### 📊 Relatórios e Métricas
+O sistema permite análise completa através de:
+- Filtros por combinação de estados
+- Identificação de pedidos que precisam de ação
+- Rastreamento de devoluções e cancelamentos
+- Monitoramento de pedidos atrasados
+
+---
+
+*Documento atualizado em: Setembro 2025*  
+*Versão: 2.0 - Implementação Completa*  
+*Sistema: Delivery de Água*  
+*Status: ✅ Totalmente Implementado*

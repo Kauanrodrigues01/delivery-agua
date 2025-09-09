@@ -67,9 +67,10 @@ class Order(models.Model):
     @property
     def change_amount(self):
         """Calcula o troco quando o pagamento é em dinheiro"""
+        from decimal import Decimal
         if self.payment_method == "dinheiro" and self.cash_value:
-            return float(self.cash_value) - float(self.total_price)
-        return 0
+            return max(Decimal('0.00'), self.cash_value - self.total_price)
+        return Decimal('0.00')
 
     @property
     def is_payment_pending(self):
@@ -99,7 +100,12 @@ class Order(models.Model):
     @property
     def can_edit_basic_info(self):
         """Verifica se é possível editar informações básicas (nome, endereço, etc.)"""
-        return not self.is_finalized
+        return not self.is_finalized and not self.is_totally_cancelled
+
+    @property
+    def is_totally_cancelled(self):
+        """Verifica se o pedido está totalmente cancelado (status e pagamento cancelados)"""
+        return self.status == "cancelled" and self.payment_status == "cancelled"
 
     class Meta:
         verbose_name = "Pedido"
