@@ -36,8 +36,3 @@ urlpatterns = [
     path("dashboard/", include("dashboard.urls")),
     path("health/", health_check, name="health_check"),
 ]
-
-
-# Servir arquivos de mídia locais apenas em DEBUG (útil para desenvolvimento)
-if settings.DEBUG and not settings.DEPLOY:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
