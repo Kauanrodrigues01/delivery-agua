@@ -4,122 +4,504 @@
 
 {% block head %}
 <link rel="stylesheet" href="{% static 'dashboard/styles.css' %}">
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-    .late-orders-alert {
-        background-color: rgba(255, 140, 0, 0.1) !important;
-        border: 2px solid #ff8c00 !important;
+    /* Dashboard Styles */
+    .dashboard-container {
+        padding: 2rem;
+        background: #f8f9fa;
+        min-height: 100vh;
     }
 
-    .late-orders-value {
-        color: #ff8c00 !important;
+    .dashboard-title {
+        color: #2c3e50;
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .dashboard-subtitle {
+        color: #7f8c8d;
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+    }
+
+    /* Section Headers */
+    .section-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .section-icon {
+        margin-right: 0.5rem;
+        font-size: 1.8rem;
+    }
+
+    /* Cards Grid */
+    .metrics-grid {
+        display: grid;
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .grid-4 {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+
+    .grid-3 {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+
+    .grid-2 {
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    }
+
+    /* Metric Cards */
+    .metric-card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+        border: 1px solid #e9ecef;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .metric-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .metric-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(90deg, #3498db, #2980b9);
+    }
+
+    .metric-card.success::before {
+        background: linear-gradient(90deg, #27ae60, #229954);
+    }
+
+    .metric-card.warning::before {
+        background: linear-gradient(90deg, #f39c12, #e67e22);
+    }
+
+    .metric-card.danger::before {
+        background: linear-gradient(90deg, #e74c3c, #c0392b);
+    }
+
+    .metric-card.info::before {
+        background: linear-gradient(90deg, #3498db, #2980b9);
+    }
+
+    .metric-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .metric-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        font-size: 1.5rem;
+        color: white;
+    }
+
+    .metric-icon.primary {
+        background: linear-gradient(135deg, #3498db, #2980b9);
+    }
+
+    .metric-icon.success {
+        background: linear-gradient(135deg, #27ae60, #229954);
+    }
+
+    .metric-icon.warning {
+        background: linear-gradient(135deg, #f39c12, #e67e22);
+    }
+
+    .metric-icon.danger {
+        background: linear-gradient(135deg, #e74c3c, #c0392b);
+    }
+
+    .metric-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #7f8c8d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .metric-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin: 0.5rem 0;
+        line-height: 1;
+    }
+
+    .metric-subtitle {
+        font-size: 0.95rem;
+        color: #95a5a6;
+        margin-top: 0.5rem;
+    }
+
+    /* Status específicos */
+    .pending-alert {
         animation: pulse 2s infinite;
     }
 
-    .late-orders-label {
-        color: #ff8c00 !important;
-        font-weight: bold !important;
+    .late-alert {
+        animation: urgentPulse 1.5s infinite;
+        color: #e74c3c !important;
     }
 
     @keyframes pulse {
-        0% {
+
+        0%,
+        100% {
             opacity: 1;
         }
 
         50% {
             opacity: 0.7;
         }
+    }
 
+    @keyframes urgentPulse {
+
+        0%,
         100% {
             opacity: 1;
+            transform: scale(1);
+        }
+
+        50% {
+            opacity: 0.8;
+            transform: scale(1.05);
+        }
+    }
+
+    /* Chart Cards */
+    .chart-card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+        border: 1px solid #e9ecef;
+        height: 400px;
+    }
+
+    .chart-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+
+    .chart-container {
+        position: relative;
+        height: 300px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .dashboard-container {
+            padding: 1rem;
+        }
+
+        .metrics-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+        }
+
+        .dashboard-title {
+            font-size: 2rem;
         }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<main class="main-content">
-    <div class="container">
-        <!-- Dashboard Header -->
-        <section class="dashboard-header">
-            <h1>Dashboard</h1>
-            <p>Painel de visualização de dados</p>
-        </section>
-
-        <!-- Quick Stats -->
-        <section class="quick-stats">
-            <div class="quick-stat">
-                <div class="quick-stat-value">{{ metrics.total_products }}</div>
-                <div class="quick-stat-label">Total de Produtos</div>
-            </div>
-            <div class="quick-stat">
-                <div class="quick-stat-value">{{ metrics.total_sales }}</div>
-                <div class="quick-stat-label">Total de Vendas</div>
-            </div>
-            <div class="quick-stat">
-                <div class="quick-stat-value">R$ {{ metrics.total_revenue|floatformat:2 }}</div>
-                <div class="quick-stat-label">Receita Total</div>
-            </div>
-            <div class="quick-stat">
-                <div class="quick-stat-value">R$ {{ metrics.ticket_medio|floatformat:2 }}</div>
-                <div class="quick-stat-label">Ticket Médio</div>
-            </div>
-            <div class="quick-stat {% if metrics.late_orders_count > 0 %}late-orders-alert{% endif %}">
-                <div class="quick-stat-value {% if metrics.late_orders_count > 0 %}late-orders-value{% endif %}">{{ metrics.late_orders_count }}</div>
-                <div class="quick-stat-label {% if metrics.late_orders_count > 0 %}late-orders-label{% endif %}">Pedidos
-                    Atrasados</div>
-            </div>
-        </section>
-
-        <!-- Detailed Metrics -->
-        <section class="metrics-container">
-            <div class="metric-card">
-                <h3>Produtos</h3>
-                <div class="metric-value">{{ metrics.total_products }}</div>
-                <div class="metric-description">
-                    {{ metrics.total_active_products }} ativos, {{ metrics.total_inactive_products }} inativos
-                </div>
-            </div>
-
-            <div class="metric-card">
-                <h3>Vendas Totais</h3>
-                <div class="metric-value">{{ metrics.total_sales }}</div>
-                <div class="metric-description">
-                    Todos os pedidos realizados
-                </div>
-            </div>
-
-            <div class="metric-card">
-                <h3>Receita Total</h3>
-                <div class="metric-value currency">R$ {{ metrics.total_revenue|floatformat:2 }}</div>
-                <div class="metric-description">
-                    Valor total arrecadado
-                </div>
-            </div>
-
-            <div class="metric-card">
-                <h3>Ticket Médio</h3>
-                <div class="metric-value currency">R$ {{ metrics.ticket_medio|floatformat:2 }}</div>
-                <div class="metric-description">
-                    Valor médio por pedido
-                </div>
-            </div>
-
-            <div class="metric-card">
-                <h3>Vendas (7 dias)</h3>
-                <div class="metric-value">{{ metrics.sales_last_7_days }}</div>
-                <div class="metric-description">
-                    R$ {{ metrics.revenue_last_7_days|floatformat:2 }} em receita
-                </div>
-            </div>
-
-            <div class="metric-card">
-                <h3>Vendas (30 dias)</h3>
-                <div class="metric-value">{{ metrics.sales_last_30_days }}</div>
-                <div class="metric-description">
-                    R$ {{ metrics.revenue_last_30_days|floatformat:2 }} em receita
-                </div>
-            </div>
-        </section>
+<div class="dashboard-container">
+    <!-- Dashboard Header -->
+    <div class="text-center mb-4">
+        <h1 class="dashboard-title">Dashboard de Vendas</h1>
+        <p class="dashboard-subtitle">Painel de controle e métricas em tempo real</p>
     </div>
-</main>
+
+    <!-- 1. MÉTRICAS DO DIA (Prioridade ALTA) -->
+    <div class="section-header">
+        <span class="section-icon">📈</span>
+        OPERAÇÕES DO DIA
+    </div>
+
+    <div class="metrics-grid grid-4">
+        <div class="metric-card success">
+            <div class="metric-header">
+                <div class="metric-icon success">📦</div>
+                <div class="metric-title">Pedidos Hoje</div>
+            </div>
+            <div class="metric-value">{{ metrics.orders_today }}</div>
+            <div class="metric-subtitle">Total de pedidos criados hoje</div>
+        </div>
+
+        <div class="metric-card primary">
+            <div class="metric-header">
+                <div class="metric-icon primary">💰</div>
+                <div class="metric-title">Receita Hoje</div>
+            </div>
+            <div class="metric-value">R$ {{ metrics.revenue_today|floatformat:2 }}</div>
+            <div class="metric-subtitle">Faturamento total do dia</div>
+        </div>
+
+        <div class="metric-card warning">
+            <div class="metric-header">
+                <div class="metric-icon warning">⏳</div>
+                <div class="metric-title">Pendentes Hoje</div>
+            </div>
+            <div class="metric-value {% if metrics.orders_pending_today > 0 %}pending-alert{% endif %}">{{ metrics.orders_pending_today }}</div>
+            <div class="metric-subtitle">Pedidos aguardando processamento</div>
+        </div>
+
+        <div class="metric-card {% if metrics.orders_late_today > 0 %}danger{% else %}success{% endif %}">
+            <div class="metric-header">
+                <div class="metric-icon {% if metrics.orders_late_today > 0 %}danger{% else %}success{% endif %}">🚨
+                </div>
+                <div class="metric-title">Atrasados Hoje</div>
+            </div>
+            <div class="metric-value {% if metrics.orders_late_today > 0 %}late-alert{% endif %}">{{ metrics.orders_late_today }}</div>
+            <div class="metric-subtitle">Pedidos com mais de 25min</div>
+        </div>
+    </div>
+
+    <!-- Receitas por Status -->
+    <div class="metrics-grid grid-2" style="margin-bottom: 3rem;">
+        <div class="metric-card success">
+            <div class="metric-header">
+                <div class="metric-icon success">✅</div>
+                <div class="metric-title">Receita Paga Hoje</div>
+            </div>
+            <div class="metric-value">R$ {{ metrics.revenue_paid_today|floatformat:2 }}</div>
+            <div class="metric-subtitle">Valores já recebidos</div>
+        </div>
+
+        <div class="metric-card warning">
+            <div class="metric-header">
+                <div class="metric-icon warning">⏰</div>
+                <div class="metric-title">Receita Pendente Hoje</div>
+            </div>
+            <div class="metric-value">R$ {{ metrics.revenue_pending_today|floatformat:2 }}</div>
+            <div class="metric-subtitle">Valores a receber</div>
+        </div>
+    </div>
+
+    <!-- 2. MÉTRICAS GERAIS (Visão do Negócio) -->
+    <div class="section-header">
+        <span class="section-icon">🎯</span>
+        PERFORMANCE GERAL
+    </div>
+
+    <div class="metrics-grid grid-4">
+        <div class="metric-card primary">
+            <div class="metric-header">
+                <div class="metric-icon primary">🏆</div>
+                <div class="metric-title">Vendas Efetivas</div>
+            </div>
+            <div class="metric-value">{{ metrics.total_effective_sales }}</div>
+            <div class="metric-subtitle">Total de vendas concluídas e pagas</div>
+        </div>
+
+        <div class="metric-card success">
+            <div class="metric-header">
+                <div class="metric-icon success">💎</div>
+                <div class="metric-title">Receita Efetiva</div>
+            </div>
+            <div class="metric-value">R$ {{ metrics.total_effective_revenue|floatformat:2 }}</div>
+            <div class="metric-subtitle">Receita real confirmada</div>
+        </div>
+
+        <div class="metric-card info">
+            <div class="metric-header">
+                <div class="metric-icon primary">📊</div>
+                <div class="metric-title">Últimos 7 Dias</div>
+            </div>
+            <div class="metric-value">{{ metrics.effective_sales_last_7_days }}</div>
+            <div class="metric-subtitle">R$ {{ metrics.effective_revenue_last_7_days|floatformat:2 }} em receita</div>
+        </div>
+
+        <div class="metric-card info">
+            <div class="metric-header">
+                <div class="metric-icon primary">📈</div>
+                <div class="metric-title">Últimos 30 Dias</div>
+            </div>
+            <div class="metric-value">{{ metrics.effective_sales_last_30_days }}</div>
+            <div class="metric-subtitle">R$ {{ metrics.effective_revenue_last_30_days|floatformat:2 }} em receita</div>
+        </div>
+    </div>
+
+    <!-- Produtos -->
+    <div class="section-header" style="margin-top: 2rem;">
+        <span class="section-icon">📦</span>
+        PRODUTOS
+    </div>
+
+    <div class="metrics-grid grid-2">
+        <div class="metric-card success">
+            <div class="metric-header">
+                <div class="metric-icon success">✅</div>
+                <div class="metric-title">Produtos Ativos</div>
+            </div>
+            <div class="metric-value">{{ metrics.total_active_products }}</div>
+            <div class="metric-subtitle">Disponíveis para venda</div>
+        </div>
+
+        <div class="metric-card warning">
+            <div class="metric-header">
+                <div class="metric-icon warning">⏸️</div>
+                <div class="metric-title">Produtos Inativos</div>
+            </div>
+            <div class="metric-value">{{ metrics.total_inactive_products }}</div>
+            <div class="metric-subtitle">Indisponíveis temporariamente</div>
+        </div>
+    </div>
+
+    <!-- 3. GRÁFICOS (Tendências Visuais) -->
+    <div class="section-header" style="margin-top: 3rem;">
+        <span class="section-icon">📊</span>
+        TENDÊNCIAS DE VENDAS
+    </div>
+
+    <div class="metrics-grid grid-2">
+        <div class="chart-card">
+            <h4 class="chart-title">📈 Vendas Efetivas - Últimos 7 Dias</h4>
+            <div class="chart-container">
+                <canvas id="revenueChart7Days"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <h4 class="chart-title">📊 Vendas Efetivas - Últimos 30 Dias</h4>
+            <div class="chart-container">
+                <canvas id="revenueChart30Days"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js Script -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Dados dos gráficos
+        const revenueData7Days = {{ metrics.effective_revenue_chart_7_days| safe }};
+        const revenueData30Days = {{ metrics.effective_revenue_chart_30_days| safe }};
+        const labels7Days = [{% for label in metrics.chart_labels_7_days %}"{{ label }}"{% if not forloop.last %}, {% endif %} {% endfor %}];
+        const labels30Days = [{% for label in metrics.chart_labels_30_days %}"{{ label }}"{% if not forloop.last %}, {% endif %} {% endfor %}];
+
+        // Configuração comum
+        const commonOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleColor: 'white',
+                    bodyColor: 'white',
+                    cornerRadius: 8,
+                    callbacks: {
+                        label: function (context) {
+                            return 'Receita: R$ ' + context.parsed.y.toLocaleString('pt-BR', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                            });
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    },
+                    ticks: {
+                        callback: function (value) {
+                            return 'R$ ' + value.toLocaleString('pt-BR');
+                        }
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        };
+
+        // Gráfico 7 dias
+        new Chart(document.getElementById('revenueChart7Days'), {
+            type: 'line',
+            data: {
+                labels: labels7Days,
+                datasets: [{
+                    data: revenueData7Days,
+                    borderColor: '#27ae60',
+                    backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#27ae60',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                }]
+            },
+            options: commonOptions
+        });
+
+        // Gráfico 30 dias
+        new Chart(document.getElementById('revenueChart30Days'), {
+            type: 'line',
+            data: {
+                labels: labels30Days,
+                datasets: [{
+                    data: revenueData30Days,
+                    borderColor: '#3498db',
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#3498db',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 3,
+                    pointHoverRadius: 5
+                }]
+            },
+            options: commonOptions
+        });
+    });
+</script>
 {% endblock %}

@@ -28,6 +28,57 @@ class OrderQuerySet(models.QuerySet):
     
     def payment_cancelled(self):
         return self.filter(payment_status="cancelled")
+    
+    # Novos methods para facilitar métricas
+    def today(self):
+        """Pedidos criados hoje"""
+        today_start = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        today_end = today_start + timedelta(days=1)
+        return self.filter(created_at__gte=today_start, created_at__lt=today_end)
+    
+    def effective(self):
+        """Pedidos efetivos (completed + paid)"""
+        return self.filter(status="completed", payment_status="paid")
+    
+    def last_days(self, days):
+        """Pedidos dos últimos N dias"""
+        cutoff = timezone.now() - timedelta(days=days)
+        return self.filter(created_at__gte=cutoff)
+    
+    def total_revenue(self):
+        """Calcula receita total dos pedidos no queryset"""
+        from decimal import Decimal
+        total = sum(order.total_price for order in self)
+        return float(total) if total else 0.0
+    
+    def daily_revenue_last_days(self, days):
+        """
+        Retorna lista com receita diária dos últimos N dias para gráficos
+        Formato: [valor_dia_1, valor_dia_2, ..., valor_dia_N]
+        """
+        from django.db.models import Sum
+        from collections import defaultdict
+        from decimal import Decimal
+        
+        # Buscar pedidos dos últimos N dias
+        cutoff = timezone.now() - timedelta(days=days)
+        orders = self.filter(created_at__gte=cutoff)
+        
+        # Organizar por data - usar Decimal em vez de float
+        daily_data = defaultdict(lambda: Decimal('0'))
+        
+        for order in orders:
+            date_key = order.created_at.date()
+            daily_data[date_key] += order.total_price
+        
+        # Gerar lista dos últimos N dias (mesmo se não houver vendas)
+        result = []
+        for i in range(days):
+            target_date = (timezone.now() - timedelta(days=days-1-i)).date()
+            # Converter para float para compatibilidade com Chart.js
+            result.append(float(daily_data.get(target_date, Decimal('0'))))
+        
+        return result
 
 
 class Order(models.Model):
