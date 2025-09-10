@@ -55,12 +55,15 @@ def calculate_metrics():
     total_effective_sales = effective_orders.count()
     total_effective_revenue = effective_orders.total_revenue()
     
-    # Vendas efetivas dos últimos períodos
-    effective_sales_last_7_days = effective_orders.last_days(7).count()
-    effective_revenue_last_7_days = effective_orders.last_days(7).total_revenue()
+    effective_orders_last_7_days = Order.objects.effective().last_days(7)
+    effective_orders_last_30_days = Order.objects.effective().last_days(30)
     
-    effective_sales_last_30_days = effective_orders.last_days(30).count()
-    effective_revenue_last_30_days = effective_orders.last_days(30).total_revenue()
+    # Vendas efetivas dos últimos períodos
+    effective_sales_last_7_days = effective_orders_last_7_days.count()
+    effective_revenue_last_7_days = effective_orders_last_7_days.total_revenue()
+
+    effective_sales_last_30_days = effective_orders_last_30_days.count()
+    effective_revenue_last_30_days = effective_orders_last_30_days.total_revenue()
 
     # Pedidos atrasados (globais)
     late_orders_count = Order.objects.late().count()

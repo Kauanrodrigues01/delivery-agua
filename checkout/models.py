@@ -51,9 +51,7 @@ class OrderQuerySet(models.QuerySet):
         from decimal import Decimal
         from django.db.models import Sum, F
         
-        # CORREÇÃO: Usar agregação do Django para evitar problema N+1
-        # Calcula o total usando uma única query com JOIN
-        total = self.select_related().prefetch_related('items__product').aggregate(
+        total = self.aggregate(
             total_revenue=Sum(F('items__quantity') * F('items__product__price'))
         )['total_revenue']
         
@@ -70,11 +68,8 @@ class OrderQuerySet(models.QuerySet):
         
         # Buscar pedidos dos últimos N dias com agregação otimizada
         cutoff = timezone.now() - timedelta(days=days)
-        
-        # CORREÇÃO: Usar agregação do Django em vez de loop Python
-        orders_with_totals = self.filter(created_at__gte=cutoff).select_related().prefetch_related(
-            'items__product'
-        ).annotate(
+
+        orders_with_totals = self.filter(created_at__gte=cutoff).annotate(
             total=Sum(F('items__quantity') * F('items__product__price'))
         ).values('created_at__date', 'total')
         
