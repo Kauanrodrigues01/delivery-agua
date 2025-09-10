@@ -47,10 +47,6 @@ RUN mkdir -p /app/staticfiles /app/static \
 # Instalar curl e ferramentas básicas
 RUN apk add --no-cache curl
 
-# Coletar static como root para evitar erros de permissão
-USER root
-RUN python manage.py collectstatic --noinput
-
 # Porta exposta
 EXPOSE 8000
 
