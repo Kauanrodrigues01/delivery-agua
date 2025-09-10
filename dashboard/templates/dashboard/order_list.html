@@ -100,6 +100,8 @@
         text-align: left;
         border-bottom: 1px solid var(--border);
         white-space: nowrap;
+        vertical-align: middle;
+        height: 60px;
     }
 
     .orders-table th {
@@ -253,8 +255,11 @@
     .order-actions {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
-        flex-wrap: wrap;
+        gap: 0.25rem;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        min-height: 40px;
+        width: 100%;
     }
 
     /* Base button styling for action buttons */
@@ -265,19 +270,20 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        padding: 0.5rem 1rem;
+        padding: 0.4rem 0.75rem;
         border-radius: var(--radius-sm);
-        font-size: 0.875rem;
+        font-size: 0.8rem;
         font-weight: 600;
         text-decoration: none;
-        border: 2px solid transparent;
+        border: 1px solid transparent;
         cursor: pointer;
         transition: all 0.2s ease;
         white-space: nowrap;
-        min-width: 80px;
-        min-height: 36px;
+        min-width: 70px;
+        height: 32px;
         text-align: center;
         line-height: 1;
+        flex-shrink: 0;
     }
 
     /* View button (primary action) */
@@ -293,23 +299,7 @@
         background: color-mix(in srgb, var(--primary) 85%, black);
         border-color: color-mix(in srgb, var(--primary) 85%, black);
         transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-    }
-
-    /* Edit button (secondary action) */
-    .order-actions a[href*="order_edit"],
-    .order-card-actions a[href*="order_edit"] {
-        background: var(--muted);
-        color: var(--muted-foreground);
-        border-color: var(--border);
-    }
-
-    .order-actions a[href*="order_edit"]:hover,
-    .order-card-actions a[href*="order_edit"]:hover {
-        background: color-mix(in srgb, var(--muted) 85%, black);
-        border-color: var(--muted-foreground);
-        transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
     }
 
     /* Delete/Cancel button */
@@ -323,7 +313,7 @@
         background: color-mix(in srgb, var(--destructive) 85%, black) !important;
         border-color: color-mix(in srgb, var(--destructive) 85%, black) !important;
         transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+        box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
     }
 
     /* Complete button */
@@ -337,7 +327,7 @@
         background: #218838 !important;
         border-color: #218838 !important;
         transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+        box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
     }
 
     /* Payment button */
@@ -351,7 +341,7 @@
         background: #0056b3 !important;
         border-color: #0056b3 !important;
         transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+        box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
     }
 
     /* Active state for all action buttons */
@@ -378,15 +368,36 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        padding: 0.5rem 1rem;
+        padding: 0.4rem 0.75rem;
         border-radius: var(--radius-sm);
-        font-size: 0.875rem;
+        font-size: 0.8rem;
         font-weight: 600;
-        min-width: 80px;
-        min-height: 36px;
+        min-width: 70px;
+        height: 32px;
         background: var(--muted);
         color: var(--muted-foreground);
-        border: 2px solid var(--border);
+        border: 1px solid var(--border);
+        flex-shrink: 0;
+    }
+
+    /* Specific status styles */
+    .status-cancelled {
+        background: rgba(220, 53, 69, 0.1) !important;
+        color: #dc3545 !important;
+        border-color: #dc3545 !important;
+    }
+
+    .status-finalized {
+        background: rgba(40, 167, 69, 0.1) !important;
+        color: #28a745 !important;
+        border-color: #28a745 !important;
+    }
+
+    /* Adjust table cell for actions */
+    .orders-table td:last-child {
+        width: 220px;
+        min-width: 220px;
+        padding: 0.75rem 1rem;
     }
 
     .modal {
@@ -521,18 +532,18 @@
         }
 
         .order-actions {
-            flex-direction: column;
+            flex-direction: row;
+            flex-wrap: wrap;
             gap: 0.5rem;
             width: 100%;
         }
 
         .order-actions button,
         .order-actions a {
-            width: 100%;
-            min-width: auto;
-            padding: 0.75rem 1rem;
-            font-size: 0.875rem;
-            justify-content: center;
+            min-width: 70px;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.8rem;
+            height: 36px;
         }
 
         .order-card-actions {
@@ -570,6 +581,14 @@
     .order-row-late {
         background-color: rgba(255, 140, 0, 0.05);
         border-left: 3px solid #ff8c00;
+    }
+
+    .order-status {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 0.4rem;
     }
 
     .order-card-late {
@@ -642,25 +661,27 @@
                                 <td>{{ order.customer_name }}</td>
                                 <td>{{ order.phone }}</td>
                                 <td>
-                                    <span class="
+                                    <div class="order-status">
+                                        <span class="
+                                                {% if order.status == 'pending' %}
+                                                order-pending
+                                                {% elif order.status == 'completed' %}
+                                                order-completed
+                                                {% else %}
+                                                order-cancelled
+                                                {% endif %}">
                                             {% if order.status == 'pending' %}
-                                            order-pending
+                                            Pendente
                                             {% elif order.status == 'completed' %}
-                                            order-completed
-                                            {% else %}
-                                            order-cancelled
-                                            {% endif %}">
-                                        {% if order.status == 'pending' %}
-                                        Pendente
-                                        {% elif order.status == 'completed' %}
-                                        Concluído
-                                        {% elif order.status == 'cancelled' %}
-                                        Cancelado
+                                            Concluído
+                                            {% elif order.status == 'cancelled' %}
+                                            Cancelado
+                                            {% endif %}
+                                        </span>
+                                        {% if order.is_late %}
+                                        <span class="late-indicator">ATRASADO</span>
                                         {% endif %}
-                                    </span>
-                                    {% if order.is_late %}
-                                    <span class="late-indicator">ATRASADO</span>
-                                    {% endif %}
+                                    </div>
                                 </td>
                                 <td>
                                     <span class="
@@ -676,7 +697,7 @@
                                         {% elif order.payment_status == 'paid' %}
                                         Pago
                                         {% else %}
-                                        Cancelado/Devolvido
+                                        Cancelado
                                         {% endif %}
                                     </span>
                                 </td>
@@ -708,13 +729,6 @@
                                         <span class="status-finalized">Finalizado</span>
                                         {% else %}
                                         <!-- Lógica normal para outros casos (pending/pending e pending/paid) -->
-                                        {% if order.can_edit_basic_info %}
-                                            {% if order.can_edit_items %}
-                                                <a href="{% url 'dashboard:order_edit' order.pk %}">Editar</a>
-                                            {% else %}
-                                                <a href="{% url 'dashboard:order_edit' order.pk %}" title="Editar apenas informações básicas (pedido pago)">Editar Info</a>
-                                            {% endif %}
-                                        {% endif %}
                                         {% if order.status == 'pending' and not order.is_finalized %}
                                         <button class="delete-btn" data-order-id="{{ order.id }}">Cancelar</button>
                                         {% endif %}
@@ -812,13 +826,6 @@
                         <span class="status-finalized">Finalizado</span>
                         {% else %}
                         <!-- Lógica normal para outros casos (pending/pending e pending/paid) -->
-                        {% if order.can_edit_basic_info %}
-                            {% if order.can_edit_items %}
-                                <a href="{% url 'dashboard:order_edit' order.pk %}" class="add-btn">Editar</a>
-                            {% else %}
-                                <a href="{% url 'dashboard:order_edit' order.pk %}" class="add-btn" title="Editar apenas informações básicas (pedido pago)">Editar Info</a>
-                            {% endif %}
-                        {% endif %}
                         {% if order.status == 'pending' and not order.is_finalized %}
                         <button class="complete-btn" data-order-id="{{ order.id }}"
                             data-action="complete">Concluir</button>
