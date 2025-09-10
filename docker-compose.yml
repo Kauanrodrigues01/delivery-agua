@@ -16,6 +16,7 @@ services:
       # Django Settings
       - SECRET_KEY=${SECRET_KEY}
       - DEBUG=${DEBUG:-False}
+      - DEPLOY_ENV=${DEPLOY_ENV:-True}
       - ALLOWED_HOSTS=${ALLOWED_HOSTS}
       - CSRF_TRUSTED_ORIGINS=${CSRF_TRUSTED_ORIGINS}
       - LANGUAGE_CODE=${LANGUAGE_CODE:-pt-br}

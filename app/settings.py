@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Variáveis de ambiente
 SECRET_KEY = config("SECRET_KEY")
-DEBUG = False
+DEBUG = config("DEBUG", default=False, cast=bool)
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="*", cast=Csv())
 CSRF_TRUSTED_ORIGINS = config(
     "CSRF_TRUSTED_ORIGINS", default="http://localhost:8000", cast=Csv()
@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "cloudinary_storage", # Precisa ficar depois do staticfiles para evitar conflito no collectstatic
+    "cloudinary_storage",  # Para upload de media files apenas
     "cloudinary",
     "products",
     "cart",
@@ -56,11 +56,13 @@ INSTALLED_APPS = [
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 CLOUDINARY_STORAGE = {
-    "CLOUD_NAME": config("CLOUD_NAME"),
-    "API_KEY": config("CLOUD_API_KEY"),
-    "API_SECRET": config("CLOUD_API_SECRET"),
+    "CLOUD_NAME": config("CLOUD_NAME", default=""),
+    "API_KEY": config("CLOUD_API_KEY", default=""),
+    "API_SECRET": config("CLOUD_API_SECRET", default=""),
     "SECURE": True,
 }
+
+DEPLOY_ENV = config("DEPLOY_ENV", default=False, cast=bool)
 
 if DEBUG:
     # Local storage para desenvolvimento
@@ -73,7 +75,7 @@ if DEBUG:
         },
     }
 else:
-    # Cloudinary para produção
+    # Cloudinary para produção com WhiteNoise para arquivos estáticos
     STORAGES = {
         "default": {
             "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
@@ -178,7 +180,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 EVOLUTION_API_BASE_URL = config("EVOLUTION_API_BASE_URL", default=None)
 EVOLUTION_API_KEY = config("EVOLUTION_API_KEY", default=None)
 INSTANCE_NAME = config("INSTANCE_NAME", default=None)
-WHATSAPP_ADMIN_NUMBER = config("WHATSAPP_ADMIN_NUMBER")
+WHATSAPP_ADMIN_NUMBER = config("WHATSAPP_ADMIN_NUMBER", default=None)
 
 CALLMEBOT_API_URL = config("CALLMEBOT_API_URL", default=None)
 CALLMEBOT_API_KEY = config("CALLMEBOT_API_KEY", default=None)
@@ -188,9 +190,8 @@ CALLMEBOT_PHONE_NUMBER = config("CALLMEBOT_PHONE_NUMBER", default=None)
 LOGIN_URL = "/dashboard/login/"
 LOGIN_REDIRECT_URL = "/dashboard/"
 
-# WhiteNoise configurações apenas para produção
+# WhiteNoise configurações para produção
 if not DEBUG:
-    # Essa configuração tá aqu só para verificar se é o whitenoise tá funcionando, olhando o Header, mas não vai ser aplicado por causa do CompressedStaticFilesStorage (que não suporta cache manifest)
     WHITENOISE_MAX_AGE = 31536000  # Cache por 1 ano em produção
     WHITENOISE_AUTOREFRESH = False
     WHITENOISE_USE_FINDERS = False
