@@ -50,5 +50,8 @@ RUN apk add --no-cache curl
 # Porta exposta
 EXPOSE 8000
 
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl --fail http://localhost:8000/health/ || exit 1
+
 # Rodar como usuário não-root
 USER userapp
