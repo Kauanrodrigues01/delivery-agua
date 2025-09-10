@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Variáveis de ambiente
 SECRET_KEY = config("SECRET_KEY")
-DEBUG = config("DEBUG", default=False, cast=bool)
+DEBUG = False
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="*", cast=Csv())
 CSRF_TRUSTED_ORIGINS = config(
     "CSRF_TRUSTED_ORIGINS", default="http://localhost:8000", cast=Csv()
@@ -37,13 +37,13 @@ TIME_ZONE = config("TIME_ZONE", default="America/Sao_Paulo")
 # Application definition
 
 INSTALLED_APPS = [
-    "cloudinary_storage",  # Precisa vir antes do staticfiles para sobrescrever collectstatic
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "cloudinary_storage", # Precisa ficar depois do staticfiles para evitar conflito no collectstatic
     "cloudinary",
     "products",
     "cart",
@@ -52,7 +52,7 @@ INSTALLED_APPS = [
     "dashboard",
 ]
 
-# Media files (uploads) para Django 5.0
+# Media files (uploads) para Django 5.1
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 CLOUDINARY_STORAGE = {
@@ -62,17 +62,30 @@ CLOUDINARY_STORAGE = {
     "SECURE": True,
 }
 
-DEPLOY = config("DEPLOY_ENV", default=False, cast=bool)
-
-if not DEPLOY:
-    # Local storage para dev
-    DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
+if DEBUG:
+    # Local storage para desenvolvimento
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
 else:
     # Cloudinary para produção
-    DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+    STORAGES = {
+        "default": {
+            "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+        },
+    }
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -174,3 +187,10 @@ CALLMEBOT_PHONE_NUMBER = config("CALLMEBOT_PHONE_NUMBER", default=None)
 # Authentication settings
 LOGIN_URL = "/dashboard/login/"
 LOGIN_REDIRECT_URL = "/dashboard/"
+
+# WhiteNoise configurações apenas para produção
+if not DEBUG:
+    # Essa configuração tá aqu só para verificar se é o whitenoise tá funcionando, olhando o Header, mas não vai ser aplicado por causa do CompressedStaticFilesStorage (que não suporta cache manifest)
+    WHITENOISE_MAX_AGE = 31536000  # Cache por 1 ano em produção
+    WHITENOISE_AUTOREFRESH = False
+    WHITENOISE_USE_FINDERS = False

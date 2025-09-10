@@ -6,7 +6,7 @@ services:
     container_name: delivery-agua-app
     restart: unless-stopped
     ports:
-      - "${HOST_PORT}:8000"
+      - "${HOST_PORT:-8000}:8000"
     env_file:
       - .env
     environment:
@@ -15,13 +15,12 @@ services:
       
       # Django Settings
       - SECRET_KEY=${SECRET_KEY}
-      - DEBUG=${DEBUG}
-      - DEPLOY_ENV=${DEPLOY_ENV}
+      - DEBUG=${DEBUG:-False}
       - ALLOWED_HOSTS=${ALLOWED_HOSTS}
       - CSRF_TRUSTED_ORIGINS=${CSRF_TRUSTED_ORIGINS}
-      - LANGUAGE_CODE=${LANGUAGE_CODE}
-      - TIME_ZONE=${TIME_ZONE}
-      
+      - LANGUAGE_CODE=${LANGUAGE_CODE:-pt-br}
+      - TIME_ZONE=${TIME_ZONE:-America/Sao_Paulo}
+
       # Superuser Settings
       - SUPERUSER_USERNAME=${SUPERUSER_USERNAME}
       - SUPERUSER_EMAIL=${SUPERUSER_EMAIL}
@@ -42,7 +41,7 @@ services:
       - CLOUD_NAME=${CLOUD_NAME}
       - CLOUD_API_KEY=${CLOUD_API_KEY}
       - CLOUD_API_SECRET=${CLOUD_API_SECRET}
-    command: sh -c "python manage.py migrate && python manage.py collectstatic --noinput && python manage.py create_admin_user && python manage.py runserver 0.0.0.0:8000"
+    command: sh -c "python manage.py migrate && python manage.py collectstatic --noinput && uvicorn app.asgi:application --host 0.0.0.0 --port 8000 --workers ${WORKERS:-1} --log-level info"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/admin/"]
       interval: 30s

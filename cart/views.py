@@ -2,10 +2,14 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView, View
+from django.conf import settings
 
 from products.models import Product
 
 from .models import Cart, CartItem
+
+def get_status_debug(request):
+    return JsonResponse({"debug": settings.DEBUG})
 
 
 # AJAX: aumentar quantidade
