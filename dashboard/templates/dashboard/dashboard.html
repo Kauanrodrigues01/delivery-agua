@@ -6,238 +6,7 @@
 <link rel="stylesheet" href="{% static 'dashboard/styles.css' %}">
 <!-- Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<style>
-    /* Dashboard Styles */
-    .dashboard-container {
-        padding: 2rem;
-        background: #f8f9fa;
-        min-height: 100vh;
-    }
 
-    .dashboard-title {
-        color: #2c3e50;
-        font-size: 2.5rem;
-        font-weight: 700;
-        margin-bottom: 0.5rem;
-    }
-
-    .dashboard-subtitle {
-        color: #7f8c8d;
-        font-size: 1.1rem;
-        margin-bottom: 2rem;
-    }
-
-    /* Section Headers */
-    .section-header {
-        display: flex;
-        align-items: center;
-        margin-bottom: 1.5rem;
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: #2c3e50;
-    }
-
-    .section-icon {
-        margin-right: 0.5rem;
-        font-size: 1.8rem;
-    }
-
-    /* Cards Grid */
-    .metrics-grid {
-        display: grid;
-        gap: 1.5rem;
-        margin-bottom: 3rem;
-    }
-
-    .grid-4 {
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    }
-
-    .grid-3 {
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    }
-
-    .grid-2 {
-        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    }
-
-    /* Metric Cards */
-    .metric-card {
-        background: white;
-        border-radius: 12px;
-        padding: 2rem;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
-        border: 1px solid #e9ecef;
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .metric-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-    }
-
-    .metric-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 4px;
-        background: linear-gradient(90deg, #3498db, #2980b9);
-    }
-
-    .metric-card.success::before {
-        background: linear-gradient(90deg, #27ae60, #229954);
-    }
-
-    .metric-card.warning::before {
-        background: linear-gradient(90deg, #f39c12, #e67e22);
-    }
-
-    .metric-card.danger::before {
-        background: linear-gradient(90deg, #e74c3c, #c0392b);
-    }
-
-    .metric-card.info::before {
-        background: linear-gradient(90deg, #3498db, #2980b9);
-    }
-
-    .metric-header {
-        display: flex;
-        align-items: center;
-        margin-bottom: 1rem;
-    }
-
-    .metric-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 1rem;
-        font-size: 1.5rem;
-        color: white;
-    }
-
-    .metric-icon.primary {
-        background: linear-gradient(135deg, #3498db, #2980b9);
-    }
-
-    .metric-icon.success {
-        background: linear-gradient(135deg, #27ae60, #229954);
-    }
-
-    .metric-icon.warning {
-        background: linear-gradient(135deg, #f39c12, #e67e22);
-    }
-
-    .metric-icon.danger {
-        background: linear-gradient(135deg, #e74c3c, #c0392b);
-    }
-
-    .metric-title {
-        font-size: 0.9rem;
-        font-weight: 600;
-        color: #7f8c8d;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .metric-value {
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: #2c3e50;
-        margin: 0.5rem 0;
-        line-height: 1;
-    }
-
-    .metric-subtitle {
-        font-size: 0.95rem;
-        color: #95a5a6;
-        margin-top: 0.5rem;
-    }
-
-    /* Status específicos */
-    .pending-alert {
-        animation: pulse 2s infinite;
-    }
-
-    .late-alert {
-        animation: urgentPulse 1.5s infinite;
-        color: #e74c3c !important;
-    }
-
-    @keyframes pulse {
-
-        0%,
-        100% {
-            opacity: 1;
-        }
-
-        50% {
-            opacity: 0.7;
-        }
-    }
-
-    @keyframes urgentPulse {
-
-        0%,
-        100% {
-            opacity: 1;
-            transform: scale(1);
-        }
-
-        50% {
-            opacity: 0.8;
-            transform: scale(1.05);
-        }
-    }
-
-    /* Chart Cards */
-    .chart-card {
-        background: white;
-        border-radius: 12px;
-        padding: 2rem;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
-        border: 1px solid #e9ecef;
-        height: 400px;
-    }
-
-    .chart-title {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #2c3e50;
-        margin-bottom: 1.5rem;
-        text-align: center;
-    }
-
-    .chart-container {
-        position: relative;
-        height: 300px;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-        .dashboard-container {
-            padding: 1rem;
-        }
-
-        .metrics-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .metric-value {
-            font-size: 2rem;
-        }
-
-        .dashboard-title {
-            font-size: 2rem;
-        }
-    }
-</style>
 {% endblock %}
 
 {% block content %}
@@ -254,25 +23,36 @@
         OPERAÇÕES DO DIA
     </div>
 
-    <div class="metrics-grid grid-4">
-        <div class="metric-card success">
+    <div class="metrics-grid grid-3">
+        <div class="metric-card primary">
             <div class="metric-header">
-                <div class="metric-icon success">📦</div>
+                <div class="metric-icon primary">📦</div>
                 <div class="metric-title">Pedidos Hoje</div>
             </div>
             <div class="metric-value">{{ metrics.orders_today }}</div>
             <div class="metric-subtitle">Total de pedidos criados hoje</div>
         </div>
 
-        <div class="metric-card primary">
+        <div class="metric-card success">
             <div class="metric-header">
-                <div class="metric-icon primary">💰</div>
-                <div class="metric-title">Receita Hoje</div>
+                <div class="metric-icon success">📦</div>
+                <div class="metric-title">Concluídos Hoje</div>
             </div>
-            <div class="metric-value">R$ {{ metrics.revenue_today|floatformat:2 }}</div>
-            <div class="metric-subtitle">Faturamento total do dia</div>
+            <div class="metric-value">{{ metrics.orders_completed_today }}</div>
+            <div class="metric-subtitle">Total de pedidos concluídos hoje</div>
         </div>
 
+        <div class="metric-card danger">
+            <div class="metric-header">
+                <div class="metric-icon danger">📦</div>
+                <div class="metric-title">Cancelados Hoje</div>
+            </div>
+            <div class="metric-value">{{ metrics.orders_cancelled_today }}</div>
+            <div class="metric-subtitle">Total de pedidos cancelados hoje</div>
+        </div>
+    </div>
+
+    <div class="metrics-grid grid-2">
         <div class="metric-card warning">
             <div class="metric-header">
                 <div class="metric-icon warning">⏳</div>
@@ -295,13 +75,13 @@
 
     <!-- Receitas por Status -->
     <div class="metrics-grid grid-2" style="margin-bottom: 3rem;">
-        <div class="metric-card success">
+        <div class="metric-card primary">
             <div class="metric-header">
-                <div class="metric-icon success">✅</div>
-                <div class="metric-title">Receita Paga Hoje</div>
+                <div class="metric-icon primary">💰</div>
+                <div class="metric-title">Receita Hoje</div>
             </div>
             <div class="metric-value">R$ {{ metrics.revenue_paid_today|floatformat:2 }}</div>
-            <div class="metric-subtitle">Valores já recebidos</div>
+            <div class="metric-subtitle">Faturamento total do dia, com pagamento confirmado</div>
         </div>
 
         <div class="metric-card warning">
@@ -310,7 +90,7 @@
                 <div class="metric-title">Receita Pendente Hoje</div>
             </div>
             <div class="metric-value">R$ {{ metrics.revenue_pending_today|floatformat:2 }}</div>
-            <div class="metric-subtitle">Valores a receber</div>
+            <div class="metric-subtitle">Valores a receber, com pagamento pendente</div>
         </div>
     </div>
 
@@ -333,10 +113,10 @@
         <div class="metric-card success">
             <div class="metric-header">
                 <div class="metric-icon success">💎</div>
-                <div class="metric-title">Receita Efetiva</div>
+                <div class="metric-title">Receita Concluída</div>
             </div>
             <div class="metric-value">R$ {{ metrics.total_effective_revenue|floatformat:2 }}</div>
-            <div class="metric-subtitle">Receita real confirmada</div>
+            <div class="metric-subtitle">Receita de pedidos concluídos e pagos (efetivos)</div>
         </div>
 
         <div class="metric-card info">
@@ -364,7 +144,16 @@
         PRODUTOS
     </div>
 
-    <div class="metrics-grid grid-2">
+    <div class="metrics-grid grid-3">
+        <div class="metric-card primary">
+            <div class="metric-header">
+                <div class="metric-icon primary">🛒</div>
+                <div class="metric-title">Quantidade de Produtos</div>
+            </div>
+            <div class="metric-value">{{ metrics.total_products }}</div>
+            <div class="metric-subtitle">Total de produtos cadastrados</div>
+        </div>
+
         <div class="metric-card success">
             <div class="metric-header">
                 <div class="metric-icon success">✅</div>
@@ -392,14 +181,14 @@
 
     <div class="metrics-grid grid-2">
         <div class="chart-card">
-            <h4 class="chart-title">📈 Vendas Efetivas - Últimos 7 Dias</h4>
+            <h4 class="chart-title">Vendas Efetivas - Últimos 7 Dias</h4>
             <div class="chart-container">
                 <canvas id="revenueChart7Days"></canvas>
             </div>
         </div>
 
         <div class="chart-card">
-            <h4 class="chart-title">📊 Vendas Efetivas - Últimos 30 Dias</h4>
+            <h4 class="chart-title">Vendas Efetivas - Últimos 30 Dias</h4>
             <div class="chart-container">
                 <canvas id="revenueChart30Days"></canvas>
             </div>
