@@ -20,6 +20,14 @@ def get_date_labels(days):
 
 # Função para calcular todas as métricas
 def calculate_metrics():
+    """
+    Calcula todas as métricas do dashboard
+    
+    CORREÇÕES APLICADAS:
+    - revenue_today agora exclui receitas canceladas
+    - Gráficos usam queryset base para evitar dupla filtragem
+    - Performance otimizada com agregações do Django
+    """
     # ===== MÉTRICAS DO DIA =====
     orders_today = Order.objects.today()
     
@@ -34,7 +42,8 @@ def calculate_metrics():
     revenue_paid_today = orders_today.paid().total_revenue()
     revenue_pending_today = orders_today.payment_pending().total_revenue()
     revenue_cancelled_today = orders_today.payment_cancelled().total_revenue()
-    revenue_today = revenue_paid_today + revenue_pending_today + revenue_cancelled_today
+    # CORREÇÃO: Receita real do dia não deve incluir cancelamentos
+    revenue_today = revenue_paid_today + revenue_pending_today
     
     # ===== MÉTRICAS GERAIS =====
     total_products = Product.objects.count()
@@ -57,11 +66,12 @@ def calculate_metrics():
     late_orders_count = Order.objects.late().count()
 
     # ===== DADOS PARA GRÁFICOS =====
+    # CORREÇÃO: Usar queryset base para gráficos, não o já filtrado
     # Receita efetiva diária dos últimos 7 dias para gráfico
-    effective_revenue_chart_7_days = effective_orders.daily_revenue_last_days(7)
+    effective_revenue_chart_7_days = Order.objects.effective().daily_revenue_last_days(7)
     
     # Receita efetiva diária dos últimos 30 dias para gráfico
-    effective_revenue_chart_30_days = effective_orders.daily_revenue_last_days(30)
+    effective_revenue_chart_30_days = Order.objects.effective().daily_revenue_last_days(30)
     
     # Labels de datas para os gráficos
     chart_labels_7_days = get_date_labels(7)

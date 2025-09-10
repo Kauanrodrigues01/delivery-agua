@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from django.db import models
+from django.db.models import Sum, F
 from django.utils import timezone
 
 from products.models import Product
@@ -46,9 +47,16 @@ class OrderQuerySet(models.QuerySet):
         return self.filter(created_at__gte=cutoff)
     
     def total_revenue(self):
-        """Calcula receita total dos pedidos no queryset"""
+        """Calcula receita total dos pedidos no queryset de forma otimizada"""
         from decimal import Decimal
-        total = sum(order.total_price for order in self)
+        from django.db.models import Sum, F
+        
+        # CORREÇÃO: Usar agregação do Django para evitar problema N+1
+        # Calcula o total usando uma única query com JOIN
+        total = self.select_related().prefetch_related('items__product').aggregate(
+            total_revenue=Sum(F('items__quantity') * F('items__product__price'))
+        )['total_revenue']
+        
         return float(total) if total else 0.0
     
     def daily_revenue_last_days(self, days):
@@ -56,20 +64,27 @@ class OrderQuerySet(models.QuerySet):
         Retorna lista com receita diária dos últimos N dias para gráficos
         Formato: [valor_dia_1, valor_dia_2, ..., valor_dia_N]
         """
-        from django.db.models import Sum
+        from django.db.models import Sum, F
         from collections import defaultdict
         from decimal import Decimal
         
-        # Buscar pedidos dos últimos N dias
+        # Buscar pedidos dos últimos N dias com agregação otimizada
         cutoff = timezone.now() - timedelta(days=days)
-        orders = self.filter(created_at__gte=cutoff)
         
-        # Organizar por data - usar Decimal em vez de float
+        # CORREÇÃO: Usar agregação do Django em vez de loop Python
+        orders_with_totals = self.filter(created_at__gte=cutoff).select_related().prefetch_related(
+            'items__product'
+        ).annotate(
+            total=Sum(F('items__quantity') * F('items__product__price'))
+        ).values('created_at__date', 'total')
+        
+        # Organizar por data
         daily_data = defaultdict(lambda: Decimal('0'))
         
-        for order in orders:
-            date_key = order.created_at.date()
-            daily_data[date_key] += order.total_price
+        for order_data in orders_with_totals:
+            date_key = order_data['created_at__date']
+            if order_data['total']:
+                daily_data[date_key] += Decimal(str(order_data['total']))
         
         # Gerar lista dos últimos N dias (mesmo se não houver vendas)
         result = []
