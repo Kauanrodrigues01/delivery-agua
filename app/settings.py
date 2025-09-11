@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "cloudinary_storage", # Precisa ficar depois do staticfiles para evitar conflito no collectstatic
+    "cloudinary_storage",  # Precisa ficar depois do staticfiles para evitar conflito no collectstatic
     "cloudinary",
     "products",
     "cart",

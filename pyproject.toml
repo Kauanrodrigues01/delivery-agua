@@ -34,7 +34,7 @@ taskipy = "^1.14.1"
 line-length = 88
 target-version = "py310"
 select = ["E", "F", "I", "B"]
-ignore = ["E501"]
+ignore = ["E501", "B904"]
 exclude = ["migrations", ".venv", "venv", "env"]
 
 [tool.taskipy.tasks]

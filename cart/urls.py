@@ -4,9 +4,9 @@ from .views import (
     AddToCartView,
     CartDetailView,
     decrease_cart_item,
+    get_status_debug,
     increase_cart_item,
     remove_cart_item,
-    get_status_debug
 )
 
 urlpatterns = [

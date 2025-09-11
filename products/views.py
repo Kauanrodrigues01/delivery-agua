@@ -34,19 +34,19 @@ class ProductListView(ListView):
 
     def get_queryset(self):
         queryset = Product.objects.filter(is_active=True).order_by("-created_at")
-        
+
         # Filtro de busca por nome
-        search_query = self.request.GET.get('search', '')
+        search_query = self.request.GET.get("search", "")
         if search_query:
             queryset = queryset.filter(name__icontains=search_query)
-        
+
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         cart = get_cart(self.request)
         context["cart_count"] = cart.total_quantity if cart else 0
-        context["search_query"] = self.request.GET.get('search', '')
+        context["search_query"] = self.request.GET.get("search", "")
         return context
 
     def get(self, request, *args, **kwargs):

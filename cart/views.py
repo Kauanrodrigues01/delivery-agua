@@ -1,12 +1,13 @@
+from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView, View
-from django.conf import settings
 
 from products.models import Product
 
 from .models import Cart, CartItem
+
 
 def get_status_debug(request):
     return JsonResponse({"debug": settings.DEBUG})
@@ -20,8 +21,6 @@ def increase_cart_item(request):
     item = get_object_or_404(CartItem, cart=cart, product_id=product_id)
     item.quantity += 1
     item.save()
-    # Calcular novo total
-    cart_items = cart.items.select_related("product").all()
     cart_total = cart.total_price
     return JsonResponse(
         {"success": True, "quantity": item.quantity, "cart_total": float(cart_total)}
@@ -37,7 +36,6 @@ def decrease_cart_item(request):
     if item.quantity > 1:
         item.quantity -= 1
         item.save()
-        cart_items = cart.items.select_related("product").all()
         cart_total = cart.total_price
         return JsonResponse(
             {

@@ -1,7 +1,6 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.db import transaction
-from django.db import models
+from django.db import models, transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods, require_POST
 
@@ -39,7 +38,7 @@ def dashboard_view(request):
 def product_list(request):
     # Get filter parameter from the request
     status_filter = request.GET.get("status")
-    search_query = request.GET.get('search', '')
+    search_query = request.GET.get("search", "")
 
     # Filter products based on the status
     if status_filter == "active":
@@ -58,8 +57,9 @@ def product_list(request):
 
     # Paginação
     from django.core.paginator import Paginator
+
     paginator = Paginator(products, 9)  # 9 produtos por página
-    page_number = request.GET.get('page')
+    page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
     return render(
@@ -129,7 +129,7 @@ def order_list(request):
     # Get filter parameters from the request
     status_filter = request.GET.get("status")
     payment_status_filter = request.GET.get("payment_status")
-    search_query = request.GET.get('search', '')
+    search_query = request.GET.get("search", "")
 
     # Start with all orders
     orders = Order.objects.all()
@@ -144,7 +144,9 @@ def order_list(request):
     elif status_filter == "late":
         # Filtrar pedidos atrasados (pendentes há mais de 25 minutos)
         from datetime import timedelta
+
         from django.utils import timezone
+
         cutoff_time = timezone.now() - timedelta(minutes=25)
         orders = orders.filter(status="pending", created_at__lt=cutoff_time)
 
@@ -159,8 +161,8 @@ def order_list(request):
     # Filter by search query (customer name or phone)
     if search_query:
         orders = orders.filter(
-            models.Q(customer_name__icontains=search_query) |
-            models.Q(phone__icontains=search_query)
+            models.Q(customer_name__icontains=search_query)
+            | models.Q(phone__icontains=search_query)
         )
 
     # Order by most recent
@@ -168,8 +170,9 @@ def order_list(request):
 
     # Paginação
     from django.core.paginator import Paginator
+
     paginator = Paginator(orders, 10)  # 10 pedidos por página
-    page_number = request.GET.get('page')
+    page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
     return render(
@@ -228,7 +231,7 @@ def order_create(request):
 @login_required
 def order_edit(request, pk):
     order = get_object_or_404(Order, pk=pk)
-    
+
     # Não permitir editar pedido se não pode editar informações básicas (finalizado)
     if not order.can_edit_basic_info:
         return redirect("dashboard:order_detail", pk=order.pk)
@@ -300,19 +303,19 @@ def order_cancel(request, pk):
     # Não permitir cancelar pedido se está finalizado (concluído e pago)
     if order.is_finalized:
         return redirect("dashboard:order_detail", pk=order.pk)
-    
+
     # Permitir cancelar se a entrega foi concluída mas o pagamento foi cancelado
     # Isso faz sentido quando houve problema com o produto e foi devolvido o dinheiro
     if order.status == "completed" and order.payment_status == "cancelled":
         order.status = "cancelled"
         order.save()
         return redirect("dashboard:order_list")
-    
+
     # Para outros casos, só permite cancelar se o status for "pending"
     if order.status == "pending":
         order.status = "cancelled"
         order.save()
-    
+
     return redirect("dashboard:order_list")
 
 
@@ -323,7 +326,7 @@ def order_toggle_status(request, pk):
     # Não permitir alterar status de pedidos cancelados
     if order.status == "cancelled":
         return redirect("dashboard:order_detail", pk=order.pk)
-    
+
     # Não permitir alterar status se pedido está finalizado (concluído e pago)
     if order.is_finalized:
         return redirect("dashboard:order_detail", pk=order.pk)
@@ -343,7 +346,7 @@ def order_toggle_payment_status(request, pk):
     # Permitir alteração apenas se o pagamento não estiver cancelado
     if order.payment_status == "cancelled":
         return redirect("dashboard:order_detail", pk=order.pk)
-    
+
     # Não permitir alterar pagamento se pedido está finalizado (concluído e pago)
     if order.is_finalized:
         return redirect("dashboard:order_detail", pk=order.pk)
@@ -364,7 +367,7 @@ def order_cancel_payment(request, pk):
     # Não permitir cancelar pagamento se pedido está finalizado (concluído e pago)
     if order.is_finalized:
         return redirect("dashboard:order_detail", pk=order.pk)
-    
+
     # Só permite cancelar pagamento se não estiver já cancelado
     if order.payment_status != "cancelled":
         order.payment_status = "cancelled"

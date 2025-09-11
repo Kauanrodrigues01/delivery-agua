@@ -18,21 +18,19 @@ def send_order_notifications(order):
     )
 
     # Informações de pagamento
-    payment_method_emoji = {
-        "pix": "💳",
-        "dinheiro": "💰", 
-        "cartao": "💳"
-    }.get(order.payment_method, "💳")
-    
-    payment_status_emoji = {
-        "pending": "⏳",
-        "paid": "✅",
-        "cancelled": "❌"
-    }.get(order.payment_status, "⏳")
-    
+    payment_method_emoji = {"pix": "💳", "dinheiro": "💰", "cartao": "💳"}.get(
+        order.payment_method, "💳"
+    )
+
+    payment_status_emoji = {"pending": "⏳", "paid": "✅", "cancelled": "❌"}.get(
+        order.payment_status, "⏳"
+    )
+
     payment_info = f"{payment_method_emoji} {order.get_payment_method_display()}"
-    payment_info += f"\n{payment_status_emoji} Status: {order.get_payment_status_display()}"
-    
+    payment_info += (
+        f"\n{payment_status_emoji} Status: {order.get_payment_status_display()}"
+    )
+
     if order.payment_method == "dinheiro" and order.cash_value:
         change = order.change_amount
         payment_info += f"\nValor recebido: R$ {order.cash_value:.2f}"
@@ -77,21 +75,19 @@ def send_order_notifications_with_callmebot(order):
     )
 
     # Informações de pagamento
-    payment_method_emoji = {
-        "pix": "💳",
-        "dinheiro": "💰", 
-        "cartao": "💳"
-    }.get(order.payment_method, "💳")
-    
-    payment_status_emoji = {
-        "pending": "⏳",
-        "paid": "✅",
-        "cancelled": "❌"
-    }.get(order.payment_status, "⏳")
-    
+    payment_method_emoji = {"pix": "💳", "dinheiro": "💰", "cartao": "💳"}.get(
+        order.payment_method, "💳"
+    )
+
+    payment_status_emoji = {"pending": "⏳", "paid": "✅", "cancelled": "❌"}.get(
+        order.payment_status, "⏳"
+    )
+
     payment_info = f"{payment_method_emoji} {order.get_payment_method_display()}"
-    payment_info += f"\n{payment_status_emoji} Status: {order.get_payment_status_display()}"
-    
+    payment_info += (
+        f"\n{payment_status_emoji} Status: {order.get_payment_status_display()}"
+    )
+
     if order.payment_method == "dinheiro" and order.cash_value:
         change = order.change_amount
         payment_info += f"\nValor recebido: R$ {order.cash_value:.2f}"

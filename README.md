@@ -11,7 +11,7 @@ Sistema de delivery de água com integração ao WhatsApp via Evolution API.
 
 ## Tecnologias
 - Python 3.10+
-- Django 5.2+
+- Django 5.1+
 - Pillow
 - Requests
 - Python Decouple
