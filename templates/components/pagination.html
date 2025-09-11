@@ -1,0 +1,96 @@
+{% comment %}
+Componente de Paginação Reutilizável
+
+Uso:
+{% include 'components/pagination.html' with page_obj=page_obj search_query=search_query status_filter=status_filter %}
+
+Parâmetros:
+- page_obj: objeto de paginação do Django
+- search_query: (opcional) query de busca atual
+- status_filter: (opcional) filtro de status atual
+- payment_status_filter: (opcional) filtro de status de pagamento atual
+- additional_params: (opcional) string com parâmetros adicionais (ex: "&category=electronics")
+{% endcomment %}
+
+{% if page_obj.paginator.num_pages > 1 %}
+<section class="pagination-section">
+    <div class="pagination-wrapper">
+        <nav aria-label="Navegação de páginas">
+            <ul class="pagination">
+                <!-- Primeira página -->
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link"
+                        href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if payment_status_filter %}&payment_status={{ payment_status_filter }}{% endif %}{{ additional_params|default:'' }}"
+                        aria-label="Primeira página">
+                        <span aria-hidden="true">&laquo;&laquo;</span>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link"
+                        href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if payment_status_filter %}&payment_status={{ payment_status_filter }}{% endif %}{{ additional_params|default:'' }}"
+                        aria-label="Página anterior">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link" aria-hidden="true">&laquo;&laquo;</span>
+                </li>
+                <li class="page-item disabled">
+                    <span class="page-link" aria-hidden="true">&laquo;</span>
+                </li>
+                {% endif %}
+
+                <!-- Páginas numeradas -->
+                {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <li class="page-item active">
+                    <span class="page-link">{{ num }}</span>
+                </li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %} <li class="page-item">
+                    <a class="page-link"
+                        href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if payment_status_filter %}&payment_status={{ payment_status_filter }}{% endif %}{{ additional_params|default:'' }}">
+                        {{ num }}
+                    </a>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+
+                    <!-- Última página -->
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link"
+                            href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if payment_status_filter %}&payment_status={{ payment_status_filter }}{% endif %}{{ additional_params|default:'' }}"
+                            aria-label="Próxima página">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link"
+                            href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if payment_status_filter %}&payment_status={{ payment_status_filter }}{% endif %}{{ additional_params|default:'' }}"
+                            aria-label="Última página">
+                            <span aria-hidden="true">&raquo;&raquo;</span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link" aria-hidden="true">&raquo;</span>
+                    </li>
+                    <li class="page-item disabled">
+                        <span class="page-link" aria-hidden="true">&raquo;&raquo;</span>
+                    </li>
+                    {% endif %}
+            </ul>
+        </nav>
+
+        <!-- Informações da paginação -->
+        <div class="pagination-info">
+            <p>
+                Mostrando {{ page_obj.start_index }} a {{ page_obj.end_index }}
+                de {{ page_obj.paginator.count }} resultados
+            </p>
+        </div>
+    </div>
+</section>
+{% endif %}
