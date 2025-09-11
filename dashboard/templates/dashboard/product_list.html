@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="{% static 'global/buttons-default-style.css' %}">
 
 <link rel="stylesheet" href="{% static 'dashboard/product_list.css' %}">
+<link rel="stylesheet" href="{% static 'global/pagination/pagination.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -436,22 +437,12 @@
                 }, 500);
             });
         }
-
-        // Smooth scroll to pagination
-        const paginationLinks = document.querySelectorAll('.pagination .page-link');
-        paginationLinks.forEach(link => {
-            link.addEventListener('click', function (e) {
-                setTimeout(() => {
-                    const productsSection = document.querySelector('.products-grid');
-                    if (productsSection) {
-                        productsSection.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'start'
-                        });
-                    }
-                }, 100);
-            });
-        });
     });
+</script>
+
+<script src="{% static 'global/pagination/pagination.js' %}"></script>
+<script>
+    // Initialize pagination smooth scroll for products section
+    initializePaginationScroll('.products-grid');
 </script>
 {% endblock %}

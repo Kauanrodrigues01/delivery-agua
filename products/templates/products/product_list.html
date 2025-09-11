@@ -4,6 +4,7 @@
 {% block head %}
 <link rel="stylesheet" href="{% static 'products/styles.css' %}">
 <link rel="stylesheet" href="{% static 'global/buttons-default-style.css' %}">
+<link rel="stylesheet" href="{% static 'global/pagination/pagination.css' %}">
 {% endblock %}
 {% block content %}
 <main class="main-content">
@@ -161,6 +162,11 @@
     </div>
 </div>
 
+<script src="{% static 'global/pagination/pagination.js' %}"></script>
 <script src="{% static '/products/script.js' %}"></script>
 <script src="{% static '/products/filterProductsByName.js' %}"></script>
+<script>
+    // Initialize pagination smooth scroll for products section
+    initializePaginationScroll('.products-grid');
+</script>
 {% endblock %}
