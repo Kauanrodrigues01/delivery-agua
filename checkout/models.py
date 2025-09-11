@@ -30,12 +30,16 @@ class OrderQuerySet(models.QuerySet):
     def payment_cancelled(self):
         return self.filter(payment_status="cancelled")
     
-    # Novos methods para facilitar métricas
     def today(self):
         """Pedidos criados hoje"""
-        today_start = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
-        today_end = today_start + timedelta(days=1)
-        return self.filter(created_at__gte=today_start, created_at__lt=today_end)
+        from django.utils import timezone
+        from datetime import datetime, time
+        
+        today_date = timezone.localtime().date()
+        today_start = timezone.make_aware(datetime.combine(today_date, time.min))
+        today_end = timezone.make_aware(datetime.combine(today_date, time.max))
+        
+        return self.filter(created_at__gte=today_start, created_at__lte=today_end)
     
     def effective(self):
         """Pedidos efetivos (completed + paid)"""
