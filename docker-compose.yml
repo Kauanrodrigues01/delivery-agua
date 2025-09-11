@@ -41,6 +41,12 @@ services:
       - CLOUD_NAME=${CLOUD_NAME}
       - CLOUD_API_KEY=${CLOUD_API_KEY}
       - CLOUD_API_SECRET=${CLOUD_API_SECRET}
+
+      # MercadoPago Settings
+      - MP_PUBLIC_KEY=${MP_PUBLIC_KEY}
+      - MP_ACCESS_TOKEN=${MP_ACCESS_TOKEN}
+      - MP_BASE_API_URL=${MP_BASE_API_URL:-https://api.mercadopago.com}
+      - NOTIFICATION_URL=${NOTIFICATION_URL}
     command: sh -c "python manage.py migrate && python manage.py collectstatic --noinput && uvicorn app.asgi:application --host 0.0.0.0 --port 8000 --workers ${WORKERS:-1} --log-level info"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/admin/"]
