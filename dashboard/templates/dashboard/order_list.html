@@ -218,6 +218,7 @@
 
     /* Touch-friendly interactions */
     @media (hover: none) and (pointer: coarse) {
+
         .order-actions button,
         .order-actions a,
         .order-card-actions button,
@@ -595,6 +596,123 @@
         border-left-color: #ff8c00 !important;
         background-color: rgba(255, 140, 0, 0.05);
     }
+
+    /* Pagination Styles */
+    .pagination-section {
+        margin-top: 3rem;
+        margin-bottom: 2rem;
+    }
+
+    .pagination-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .pagination {
+        display: flex;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        gap: 0.25rem;
+        background: var(--card);
+        border-radius: var(--radius);
+        padding: 0.5rem;
+        box-shadow: var(--shadow-card);
+        border: 1px solid var(--border);
+    }
+
+    .page-item {
+        display: flex;
+    }
+
+    .page-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 2.5rem;
+        height: 2.5rem;
+        padding: 0.5rem 0.75rem;
+        border-radius: var(--radius-sm);
+        text-decoration: none;
+        color: var(--foreground);
+        background: transparent;
+        border: 1px solid transparent;
+        transition: var(--transition-fast);
+        font-weight: 500;
+        font-size: 0.875rem;
+    }
+
+    .page-link:hover {
+        background: var(--muted);
+        color: var(--foreground);
+    }
+
+    .page-item.active .page-link {
+        background: var(--primary);
+        color: var(--primary-foreground);
+        border-color: var(--primary);
+        font-weight: 600;
+    }
+
+    .page-item.disabled .page-link {
+        color: var(--muted-foreground);
+        cursor: not-allowed;
+        opacity: 0.5;
+    }
+
+    .page-item.disabled .page-link:hover {
+        background: transparent;
+        color: var(--muted-foreground);
+    }
+
+    .pagination-info {
+        text-align: center;
+    }
+
+    .pagination-info p {
+        color: var(--muted-foreground);
+        font-size: 0.875rem;
+        margin: 0;
+    }
+
+    /* Responsive Pagination */
+    @media (max-width: 640px) {
+        .pagination {
+            gap: 0.125rem;
+            padding: 0.375rem;
+        }
+
+        .page-link {
+            min-width: 2.25rem;
+            height: 2.25rem;
+            padding: 0.375rem 0.5rem;
+            font-size: 0.8125rem;
+        }
+
+        .pagination-wrapper {
+            margin: 0 1rem;
+        }
+
+        .pagination-info p {
+            font-size: 0.8125rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .pagination {
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .page-link {
+            min-width: 2rem;
+            height: 2rem;
+            padding: 0.25rem 0.375rem;
+            font-size: 0.75rem;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -613,22 +731,32 @@
 
         <section class="orders-filters">
             <p>Use os filtros abaixo para buscar pedidos específicos:</p>
+            <form method="GET" action="" style="margin-bottom: 1rem;">
+                <input type="text" name="search" placeholder="Buscar por nome do cliente ou telefone..."
+                    class="form-control" value="{{ search_query }}" style="max-width: 420px; margin: 0 auto;">
+                {% if status_filter %}
+                <input type="hidden" name="status" value="{{ status_filter }}">
+                {% endif %}
+                {% if payment_status_filter %}
+                <input type="hidden" name="payment_status" value="{{ payment_status_filter }}">
+                {% endif %}
+            </form>
             <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;">
                 <select id="statusFilter" class="form-control" onchange="filterByStatus()"
                     style="flex: 1; min-width: 200px;">
                     <option value="">Status do Pedido - Todos</option>
-                    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pendentes</option>
-                    <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Concluídos</option>
-                    <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>Cancelados</option>
-                    <option value="late" {% if status_filter == 'late' %}selected{% endif %}>Atrasados</option>
+                    <option value="pending" {% if status_filter=='pending' %}selected{% endif %}>Pendentes</option>
+                    <option value="completed" {% if status_filter=='completed' %}selected{% endif %}>Concluídos</option>
+                    <option value="cancelled" {% if status_filter=='cancelled' %}selected{% endif %}>Cancelados</option>
+                    <option value="late" {% if status_filter=='late' %}selected{% endif %}>Atrasados</option>
                 </select>
                 <select id="paymentStatusFilter" class="form-control" onchange="filterByStatus()"
                     style="flex: 1; min-width: 200px;">
                     <option value="">Status do Pagamento - Todos</option>
-                    <option value="pending" {% if payment_status_filter == 'pending' %}selected{% endif %}>Pendente
+                    <option value="pending" {% if payment_status_filter=='pending' %}selected{% endif %}>Pendente
                     </option>
-                    <option value="paid" {% if payment_status_filter == 'paid' %}selected{% endif %}>Pago</option>
-                    <option value="cancelled" {% if payment_status_filter == 'cancelled' %}selected{% endif %}>
+                    <option value="paid" {% if payment_status_filter=='paid' %}selected{% endif %}>Pago</option>
+                    <option value="cancelled" {% if payment_status_filter=='cancelled' %}selected{% endif %}>
                         Cancelado/Devolvido</option>
                 </select>
             </div>
@@ -656,13 +784,13 @@
                     </thead>
                     <tbody>
                         {% for order in orders %}
-                            <tr data-id="{{ order.id }}" {% if order.is_late %}class="order-row-late" {% endif %}>
-                                <td>#{{ order.id }}</td>
-                                <td>{{ order.customer_name }}</td>
-                                <td>{{ order.phone }}</td>
-                                <td>
-                                    <div class="order-status">
-                                        <span class="
+                        <tr data-id="{{ order.id }}" {% if order.is_late %}class="order-row-late" {% endif %}>
+                            <td>#{{ order.id }}</td>
+                            <td>{{ order.customer_name }}</td>
+                            <td>{{ order.phone }}</td>
+                            <td>
+                                <div class="order-status">
+                                    <span class="
                                                 {% if order.status == 'pending' %}
                                                 order-pending
                                                 {% elif order.status == 'completed' %}
@@ -670,21 +798,21 @@
                                                 {% else %}
                                                 order-cancelled
                                                 {% endif %}">
-                                            {% if order.status == 'pending' %}
-                                            Pendente
-                                            {% elif order.status == 'completed' %}
-                                            Concluído
-                                            {% elif order.status == 'cancelled' %}
-                                            Cancelado
-                                            {% endif %}
-                                        </span>
-                                        {% if order.is_late %}
-                                        <span class="late-indicator">ATRASADO</span>
+                                        {% if order.status == 'pending' %}
+                                        Pendente
+                                        {% elif order.status == 'completed' %}
+                                        Concluído
+                                        {% elif order.status == 'cancelled' %}
+                                        Cancelado
                                         {% endif %}
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="
+                                    </span>
+                                    {% if order.is_late %}
+                                    <span class="late-indicator">ATRASADO</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                <span class="
                                             {% if order.payment_status == 'pending' %}
                                             order-pending
                                             {% elif order.payment_status == 'paid' %}
@@ -692,56 +820,61 @@
                                             {% else %}
                                             order-cancelled
                                             {% endif %}">
-                                        {% if order.payment_status == 'pending' %}
-                                        Pendente
-                                        {% elif order.payment_status == 'paid' %}
-                                        Pago
-                                        {% else %}
-                                        Cancelado
-                                        {% endif %}
-                                    </span>
-                                </td>
-                                <td>R$ {{ order.total_price|floatformat:2 }}</td>
-                                <td>{{ order.created_at|date:"d/m/Y H:i" }}</td>
-                                <td>
-                                    <div class="order-actions">
-                                        <a href="{% url 'dashboard:order_detail' order.pk %}">Ver</a>
-                                        {% if order.is_totally_cancelled %}
-                                        <!-- Pedido totalmente cancelado: apenas visualização -->
-                                        <span class="status-cancelled">Cancelado</span>
-                                        {% elif order.status == 'pending' and order.payment_status == 'cancelled' %}
-                                        <!-- Pedido pendente com pagamento cancelado: só pode cancelar o pedido -->
-                                        <button class="delete-btn" data-order-id="{{ order.id }}">Cancelar Pedido</button>
-                                        {% elif order.status == 'completed' and order.payment_status == 'cancelled' %}
-                                        <!-- Entrega concluída com pagamento cancelado: pode cancelar a entrega -->
-                                        <button class="delete-btn" data-order-id="{{ order.id }}">Cancelar Entrega</button>
-                                        {% elif order.status == 'cancelled' and order.payment_status == 'pending' %}
-                                        <!-- Pedido cancelado com pagamento pendente: pode alterar pagamento -->
-                                        <button class="payment-btn" data-order-id="{{ order.id }}" data-current-status="pending">Marcar Pago</button>
-                                        {% elif order.status == 'cancelled' and order.payment_status == 'paid' %}
-                                        <!-- Pedido cancelado mas já pago: deve devolver o dinheiro -->
-                                        <span style="color: #dc3545; font-weight: bold; font-size: 0.8rem;">💰 Devolver</span>
-                                        {% elif order.status == 'completed' and order.payment_status == 'pending' %}
-                                        <!-- Entrega concluída mas pagamento pendente: pode marcar como pago -->
-                                        <button class="payment-btn" data-order-id="{{ order.id }}" data-current-status="pending">Confirmar Pago</button>
-                                        {% elif order.is_finalized %}
-                                        <!-- Pedido finalizado: apenas visualização -->
-                                        <span class="status-finalized">Finalizado</span>
-                                        {% else %}
-                                        <!-- Lógica normal para outros casos (pending/pending e pending/paid) -->
-                                        {% if order.status == 'pending' and not order.is_finalized %}
-                                        <button class="delete-btn" data-order-id="{{ order.id }}">Cancelar</button>
-                                        {% endif %}
-                                        {% if order.payment_status != 'cancelled' and not order.is_finalized and order.status != 'completed' and order.status != 'cancelled' %}
-                                        <button class="payment-btn" data-order-id="{{ order.id }}"
-                                            data-current-status="{{ order.payment_status }}">
-                                            {% if order.payment_status == 'pending' %}Marcar Pago{% else %}Marcar Pendente{% endif %}
-                                        </button>
-                                        {% endif %}
-                                        {% endif %}
-                                    </div>
-                                </td>
-                            </tr>
+                                    {% if order.payment_status == 'pending' %}
+                                    Pendente
+                                    {% elif order.payment_status == 'paid' %}
+                                    Pago
+                                    {% else %}
+                                    Cancelado
+                                    {% endif %}
+                                </span>
+                            </td>
+                            <td>R$ {{ order.total_price|floatformat:2 }}</td>
+                            <td>{{ order.created_at|date:"d/m/Y H:i" }}</td>
+                            <td>
+                                <div class="order-actions">
+                                    <a href="{% url 'dashboard:order_detail' order.pk %}">Ver</a>
+                                    {% if order.is_totally_cancelled %}
+                                    <!-- Pedido totalmente cancelado: apenas visualização -->
+                                    <span class="status-cancelled">Cancelado</span>
+                                    {% elif order.status == 'pending' and order.payment_status == 'cancelled' %}
+                                    <!-- Pedido pendente com pagamento cancelado: só pode cancelar o pedido -->
+                                    <button class="delete-btn" data-order-id="{{ order.id }}">Cancelar Pedido</button>
+                                    {% elif order.status == 'completed' and order.payment_status == 'cancelled' %}
+                                    <!-- Entrega concluída com pagamento cancelado: pode cancelar a entrega -->
+                                    <button class="delete-btn" data-order-id="{{ order.id }}">Cancelar Entrega</button>
+                                    {% elif order.status == 'cancelled' and order.payment_status == 'pending' %}
+                                    <!-- Pedido cancelado com pagamento pendente: pode alterar pagamento -->
+                                    <button class="payment-btn" data-order-id="{{ order.id }}"
+                                        data-current-status="pending">Marcar Pago</button>
+                                    {% elif order.status == 'cancelled' and order.payment_status == 'paid' %}
+                                    <!-- Pedido cancelado mas já pago: deve devolver o dinheiro -->
+                                    <span style="color: #dc3545; font-weight: bold; font-size: 0.8rem;">💰
+                                        Devolver</span>
+                                    {% elif order.status == 'completed' and order.payment_status == 'pending' %}
+                                    <!-- Entrega concluída mas pagamento pendente: pode marcar como pago -->
+                                    <button class="payment-btn" data-order-id="{{ order.id }}"
+                                        data-current-status="pending">Confirmar Pago</button>
+                                    {% elif order.is_finalized %}
+                                    <!-- Pedido finalizado: apenas visualização -->
+                                    <span class="status-finalized">Finalizado</span>
+                                    {% else %}
+                                    <!-- Lógica normal para outros casos (pending/pending e pending/paid) -->
+                                    {% if order.status == 'pending' and not order.is_finalized %}
+                                    <button class="delete-btn" data-order-id="{{ order.id }}">Cancelar</button>
+                                    {% endif %}
+                                    {% if order.payment_status != 'cancelled' and not order.is_finalized and
+                                    order.status != 'completed' and order.status != 'cancelled' %}
+                                    <button class="payment-btn" data-order-id="{{ order.id }}"
+                                        data-current-status="{{ order.payment_status }}">
+                                        {% if order.payment_status == 'pending' %}Marcar Pago{% else %}Marcar Pendente{%
+                                        endif %}
+                                    </button>
+                                    {% endif %}
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -814,13 +947,16 @@
                         <button class="delete-btn" data-order-id="{{ order.id }}">Cancelar Entrega</button>
                         {% elif order.status == 'cancelled' and order.payment_status == 'pending' %}
                         <!-- Pedido cancelado com pagamento pendente: pode alterar pagamento -->
-                        <button class="payment-btn complete-btn" data-order-id="{{ order.id }}" data-current-status="pending">Marcar Pago</button>
+                        <button class="payment-btn complete-btn" data-order-id="{{ order.id }}"
+                            data-current-status="pending">Marcar Pago</button>
                         {% elif order.status == 'cancelled' and order.payment_status == 'paid' %}
                         <!-- Pedido cancelado mas já pago: deve devolver o dinheiro -->
-                        <span style="color: #dc3545; font-weight: bold; font-size: 0.9rem; padding: 0.5rem;">💰 Devolver</span>
+                        <span style="color: #dc3545; font-weight: bold; font-size: 0.9rem; padding: 0.5rem;">💰
+                            Devolver</span>
                         {% elif order.status == 'completed' and order.payment_status == 'pending' %}
                         <!-- Entrega concluída mas pagamento pendente: pode marcar como pago -->
-                        <button class="payment-btn complete-btn" data-order-id="{{ order.id }}" data-current-status="pending">Confirmar Pago</button>
+                        <button class="payment-btn complete-btn" data-order-id="{{ order.id }}"
+                            data-current-status="pending">Confirmar Pago</button>
                         {% elif order.is_finalized %}
                         <!-- Pedido finalizado: apenas visualização -->
                         <span class="status-finalized">Finalizado</span>
@@ -831,7 +967,8 @@
                             data-action="complete">Concluir</button>
                         <button class="delete-btn" data-order-id="{{ order.id }}">Cancelar</button>
                         {% endif %}
-                        {% if order.payment_status != 'cancelled' and not order.is_finalized and order.status != 'completed' and order.status != 'cancelled' %}
+                        {% if order.payment_status != 'cancelled' and not order.is_finalized and order.status !=
+                        'completed' and order.status != 'cancelled' %}
                         <button class="payment-btn complete-btn" data-order-id="{{ order.id }}"
                             data-current-status="{{ order.payment_status }}">
                             {% if order.payment_status == 'pending' %}Marcar Pago{% else %}Marcar Pendente{% endif %}
@@ -846,6 +983,90 @@
             <p style="text-align: center; padding: 2rem; color: var(--muted-foreground);">Nenhum pedido encontrado.</p>
             {% endif %}
         </section>
+
+        <!-- Pagination -->
+        {% if is_paginated %}
+        <section class="pagination-section">
+            <div class="pagination-wrapper">
+                <nav aria-label="Navegação de páginas">
+                    <ul class="pagination">
+                        <!-- Primeira página -->
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link"
+                                href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if payment_status_filter %}&payment_status={{ payment_status_filter }}{% endif %}"
+                                aria-label="Primeira página">
+                                <span aria-hidden="true">&laquo;&laquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link"
+                                href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if payment_status_filter %}&payment_status={{ payment_status_filter }}{% endif %}"
+                                aria-label="Página anterior">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link" aria-hidden="true">&laquo;&laquo;</span>
+                        </li>
+                        <li class="page-item disabled">
+                            <span class="page-link" aria-hidden="true">&laquo;</span>
+                        </li>
+                        {% endif %}
+
+                        <!-- Páginas numeradas -->
+                        {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %} <li
+                            class="page-item">
+                            <a class="page-link"
+                                href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if payment_status_filter %}&payment_status={{ payment_status_filter }}{% endif %}">{{
+                                num }}</a>
+                            </li>
+                            {% endif %}
+                            {% endfor %}
+
+                            <!-- Última página -->
+                            {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link"
+                                    href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if payment_status_filter %}&payment_status={{ payment_status_filter }}{% endif %}"
+                                    aria-label="Próxima página">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link"
+                                    href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if payment_status_filter %}&payment_status={{ payment_status_filter }}{% endif %}"
+                                    aria-label="Última página">
+                                    <span aria-hidden="true">&raquo;&raquo;</span>
+                                </a>
+                            </li>
+                            {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link" aria-hidden="true">&raquo;</span>
+                            </li>
+                            <li class="page-item disabled">
+                                <span class="page-link" aria-hidden="true">&raquo;&raquo;</span>
+                            </li>
+                            {% endif %}
+                    </ul>
+                </nav>
+
+                <!-- Informações da paginação -->
+                <div class="pagination-info">
+                    <p>
+                        Mostrando {{ page_obj.start_index }} a {{ page_obj.end_index }}
+                        de {{ page_obj.paginator.count }} pedidos
+                    </p>
+                </div>
+            </div>
+        </section>
+        {% endif %}
     </div>
 
     <!-- Modal Confirm Cancel Order -->
@@ -873,6 +1094,11 @@
             </div>
         </div>
     </div>
+
+    <!-- Hidden CSRF form for AJAX requests -->
+    <form id="csrf-form" style="display: none;">
+        {% csrf_token %}
+    </form>
 </main>
 
 <script>
@@ -1029,6 +1255,9 @@
     function filterByStatus() {
         const status = document.getElementById('statusFilter').value;
         const paymentStatus = document.getElementById('paymentStatusFilter').value;
+        const searchInput = document.querySelector('input[name="search"]');
+        const searchValue = searchInput ? searchInput.value : '';
+
         const url = new URL(window.location.href);
 
         if (status) {
@@ -1043,7 +1272,107 @@
             url.searchParams.delete('payment_status');
         }
 
+        if (searchValue) {
+            url.searchParams.set('search', searchValue);
+        }
+
+        // Remove page parameter when changing filters
+        url.searchParams.delete('page');
+
         window.location.href = url;
     }
+
+    // Handle search form submission and real-time search
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchForm = document.querySelector('.orders-filters form');
+        const searchInput = document.querySelector('input[name="search"]');
+
+        if (searchForm) {
+            searchForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const statusFilter = document.getElementById('statusFilter').value;
+                const paymentStatusFilter = document.getElementById('paymentStatusFilter').value;
+
+                const url = new URL(window.location.href);
+                const searchValue = searchInput.value.trim();
+
+                if (searchValue) {
+                    url.searchParams.set('search', searchValue);
+                } else {
+                    url.searchParams.delete('search');
+                }
+
+                if (statusFilter) {
+                    url.searchParams.set('status', statusFilter);
+                }
+
+                if (paymentStatusFilter) {
+                    url.searchParams.set('payment_status', paymentStatusFilter);
+                }
+
+                // Remove page parameter when searching
+                url.searchParams.delete('page');
+
+                window.location.href = url;
+            });
+        }
+
+        // Handle real-time search with debounce
+        if (searchInput) {
+            let searchTimeout;
+
+            searchInput.addEventListener('input', function () {
+                clearTimeout(searchTimeout);
+
+                searchTimeout = setTimeout(() => {
+                    const searchValue = searchInput.value.trim();
+                    const statusFilter = document.getElementById('statusFilter').value;
+                    const paymentStatusFilter = document.getElementById('paymentStatusFilter').value;
+
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const currentSearch = urlParams.get('search') || '';
+
+                    if (searchValue !== currentSearch) {
+                        const url = new URL(window.location.href);
+
+                        if (searchValue === '') {
+                            url.searchParams.delete('search');
+                        } else {
+                            url.searchParams.set('search', searchValue);
+                        }
+
+                        if (statusFilter) {
+                            url.searchParams.set('status', statusFilter);
+                        }
+
+                        if (paymentStatusFilter) {
+                            url.searchParams.set('payment_status', paymentStatusFilter);
+                        }
+
+                        // Remove page parameter when searching
+                        url.searchParams.delete('page');
+
+                        window.location.href = url;
+                    }
+                }, 500);
+            });
+        }
+
+        // Smooth scroll to pagination
+        const paginationLinks = document.querySelectorAll('.pagination .page-link');
+        paginationLinks.forEach(link => {
+            link.addEventListener('click', function (e) {
+                setTimeout(() => {
+                    const ordersSection = document.querySelector('.orders-section');
+                    if (ordersSection) {
+                        ordersSection.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                }, 100);
+            });
+        });
+    });
 </script>
 {% endblock %}

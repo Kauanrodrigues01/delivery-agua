@@ -1,6 +1,7 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
+from django.db import models
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods, require_POST
 
@@ -38,19 +39,39 @@ def dashboard_view(request):
 def product_list(request):
     # Get filter parameter from the request
     status_filter = request.GET.get("status")
+    search_query = request.GET.get('search', '')
 
     # Filter products based on the status
     if status_filter == "active":
-        products = Product.objects.filter(is_active=True).order_by("-created_at")
+        products = Product.objects.filter(is_active=True)
     elif status_filter == "inactive":
-        products = Product.objects.filter(is_active=False).order_by("-created_at")
+        products = Product.objects.filter(is_active=False)
     else:
-        products = Product.objects.all().order_by("-created_at")
+        products = Product.objects.all()
+
+    # Filter by search query
+    if search_query:
+        products = products.filter(name__icontains=search_query)
+
+    # Order by most recent
+    products = products.order_by("-created_at")
+
+    # Paginação
+    from django.core.paginator import Paginator
+    paginator = Paginator(products, 9)  # 9 produtos por página
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
 
     return render(
         request,
         "dashboard/product_list.html",
-        {"products": products, "status_filter": status_filter},
+        {
+            "products": page_obj,
+            "status_filter": status_filter,
+            "search_query": search_query,
+            "page_obj": page_obj,
+            "is_paginated": page_obj.has_other_pages(),
+        },
     )
 
 
@@ -108,6 +129,7 @@ def order_list(request):
     # Get filter parameters from the request
     status_filter = request.GET.get("status")
     payment_status_filter = request.GET.get("payment_status")
+    search_query = request.GET.get('search', '')
 
     # Start with all orders
     orders = Order.objects.all()
@@ -134,16 +156,32 @@ def order_list(request):
     elif payment_status_filter == "cancelled":
         orders = orders.filter(payment_status="cancelled")
 
+    # Filter by search query (customer name or phone)
+    if search_query:
+        orders = orders.filter(
+            models.Q(customer_name__icontains=search_query) |
+            models.Q(phone__icontains=search_query)
+        )
+
     # Order by most recent
     orders = orders.order_by("-created_at")
+
+    # Paginação
+    from django.core.paginator import Paginator
+    paginator = Paginator(orders, 10)  # 10 pedidos por página
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
 
     return render(
         request,
         "dashboard/order_list.html",
         {
-            "orders": orders, 
+            "orders": page_obj,
             "status_filter": status_filter,
-            "payment_status_filter": payment_status_filter
+            "payment_status_filter": payment_status_filter,
+            "search_query": search_query,
+            "page_obj": page_obj,
+            "is_paginated": page_obj.has_other_pages(),
         },
     )
 
