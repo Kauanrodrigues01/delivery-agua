@@ -260,12 +260,12 @@
                             data-action="complete">Concluir</button>
                         <button class="delete-btn" data-order-id="{{ order.id }}">Cancelar</button>
                         {% endif %}
-                        {% if order.payment_status != 'cancelled' and not order.is_finalized and order.status !=
-                        'completed' and order.status != 'cancelled' %}
+                        {% if order.payment_status != 'cancelled' and not order.is_finalized and order.status != 'completed' and order.status != 'cancelled' %}
                         <button class="payment-btn complete-btn" data-order-id="{{ order.id }}"
                             data-current-status="{{ order.payment_status }}">
                             {% if order.payment_status == 'pending' %}Marcar Pago{% else %}Marcar Pendente{% endif %}
                         </button>
+                        {% endif %}
                         {% endif %}
                     </div>
                 </div>
