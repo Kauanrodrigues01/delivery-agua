@@ -57,8 +57,9 @@
                 <div class="metric-icon warning">⏳</div>
                 <div class="metric-title">Pendentes Hoje</div>
             </div>
-            <div class="metric-value {% if metrics.orders_pending_today > 0 %}pending-alert{% endif %}">{{
-                metrics.orders_pending_today }}</div>
+            <div class="metric-value {% if metrics.orders_pending_today > 0 %}pending-alert{% endif %}">
+                {{ metrics.orders_pending_today }}
+            </div>
             <div class="metric-subtitle">Pedidos aguardando processamento</div>
         </div>
 
@@ -68,8 +69,9 @@
                 </div>
                 <div class="metric-title">Atrasados Hoje</div>
             </div>
-            <div class="metric-value {% if metrics.orders_late_today > 0 %}late-alert{% endif %}">{{
-                metrics.orders_late_today }}</div>
+            <div class="metric-value {% if metrics.orders_late_today > 0 %}late-alert{% endif %}">
+                {{ metrics.orders_late_today }}
+            </div>
             <div class="metric-subtitle">Pedidos com mais de 25min</div>
         </div>
     </div>
@@ -200,9 +202,8 @@
 <!-- Chart.js Script -->
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Dados dos gráficos
-        const revenueData7Days = {{ metrics.effective_revenue_chart_7_days| safe
-    }};
+    // Dados dos gráficos
+    const revenueData7Days = {{ metrics.effective_revenue_chart_7_days| safe }};
     const revenueData30Days = {{ metrics.effective_revenue_chart_30_days| safe }};
     const labels7Days = [{% for label in metrics.chart_labels_7_days %}"{{ label }}"{% if not forloop.last %}, {% endif %} {% endfor %}];
     const labels30Days = [{% for label in metrics.chart_labels_30_days %}"{{ label }}"{% if not forloop.last %}, {% endif %} {% endfor %}];
