@@ -158,9 +158,9 @@
                         <button class="delete-btn">Excluir</button>
                         <button class="toggle-btn">
                             {% if product.is_active %}
-                            Desativar
+                                Desativar
                             {% else %}
-                            Ativar
+                                Ativar
                             {% endif %}
                         </button>
                     </div>
@@ -330,6 +330,8 @@
                 const statusText = productCard.querySelector('p');
                 statusText.textContent = statusText.textContent.includes('Ativo') ? 'Inativo' : 'Ativo';
                 statusText.className = statusText.className.includes('product-active') ? 'product-desactive' : 'product-active';
+                const toggleButton = productCard.querySelector('.toggle-btn');
+                toggleButton.textContent = toggleButton.textContent.includes('Desativar') ? 'Ativar' : 'Desativar';
             }
         }).catch(() => alert('Erro ao ativar/desativar o produto.'));
         toggleModal('modalConfirmToggleProduct', false);
