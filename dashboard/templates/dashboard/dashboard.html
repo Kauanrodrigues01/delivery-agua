@@ -3,10 +3,9 @@
 {% load static %}
 
 {% block head %}
-<link rel="stylesheet" href="{% static 'dashboard/styles.css' %}">
+<link rel="stylesheet" href="{% static 'dashboard/dashboard.css' %}">
 <!-- Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 {% endblock %}
 
 {% block content %}
@@ -58,7 +57,8 @@
                 <div class="metric-icon warning">⏳</div>
                 <div class="metric-title">Pendentes Hoje</div>
             </div>
-            <div class="metric-value {% if metrics.orders_pending_today > 0 %}pending-alert{% endif %}">{{ metrics.orders_pending_today }}</div>
+            <div class="metric-value {% if metrics.orders_pending_today > 0 %}pending-alert{% endif %}">{{
+                metrics.orders_pending_today }}</div>
             <div class="metric-subtitle">Pedidos aguardando processamento</div>
         </div>
 
@@ -68,7 +68,8 @@
                 </div>
                 <div class="metric-title">Atrasados Hoje</div>
             </div>
-            <div class="metric-value {% if metrics.orders_late_today > 0 %}late-alert{% endif %}">{{ metrics.orders_late_today }}</div>
+            <div class="metric-value {% if metrics.orders_late_today > 0 %}late-alert{% endif %}">{{
+                metrics.orders_late_today }}</div>
             <div class="metric-subtitle">Pedidos com mais de 25min</div>
         </div>
     </div>
@@ -200,97 +201,98 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         // Dados dos gráficos
-        const revenueData7Days = {{ metrics.effective_revenue_chart_7_days| safe }};
-        const revenueData30Days = {{ metrics.effective_revenue_chart_30_days| safe }};
-        const labels7Days = [{% for label in metrics.chart_labels_7_days %}"{{ label }}"{% if not forloop.last %}, {% endif %} {% endfor %}];
-        const labels30Days = [{% for label in metrics.chart_labels_30_days %}"{{ label }}"{% if not forloop.last %}, {% endif %} {% endfor %}];
+        const revenueData7Days = {{ metrics.effective_revenue_chart_7_days| safe
+    }};
+    const revenueData30Days = {{ metrics.effective_revenue_chart_30_days| safe }};
+    const labels7Days = [{% for label in metrics.chart_labels_7_days %}"{{ label }}"{% if not forloop.last %}, {% endif %} {% endfor %}];
+    const labels30Days = [{% for label in metrics.chart_labels_30_days %}"{{ label }}"{% if not forloop.last %}, {% endif %} {% endfor %}];
 
-        // Configuração comum
-        const commonOptions = {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    titleColor: 'white',
-                    bodyColor: 'white',
-                    cornerRadius: 8,
-                    callbacks: {
-                        label: function (context) {
-                            return 'Receita: R$ ' + context.parsed.y.toLocaleString('pt-BR', {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2
-                            });
-                        }
-                    }
-                }
+    // Configuração comum
+    const commonOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
             },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    grid: {
-                        color: 'rgba(0, 0, 0, 0.1)'
-                    },
-                    ticks: {
-                        callback: function (value) {
-                            return 'R$ ' + value.toLocaleString('pt-BR');
-                        }
-                    }
-                },
-                x: {
-                    grid: {
-                        display: false
+            tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                titleColor: 'white',
+                bodyColor: 'white',
+                cornerRadius: 8,
+                callbacks: {
+                    label: function (context) {
+                        return 'Receita: R$ ' + context.parsed.y.toLocaleString('pt-BR', {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        });
                     }
                 }
             }
-        };
-
-        // Gráfico 7 dias
-        new Chart(document.getElementById('revenueChart7Days'), {
-            type: 'line',
-            data: {
-                labels: labels7Days,
-                datasets: [{
-                    data: revenueData7Days,
-                    borderColor: '#27ae60',
-                    backgroundColor: 'rgba(39, 174, 96, 0.1)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.4,
-                    pointBackgroundColor: '#27ae60',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    pointRadius: 5,
-                    pointHoverRadius: 7
-                }]
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: {
+                    color: 'rgba(0, 0, 0, 0.1)'
+                },
+                ticks: {
+                    callback: function (value) {
+                        return 'R$ ' + value.toLocaleString('pt-BR');
+                    }
+                }
             },
-            options: commonOptions
-        });
+            x: {
+                grid: {
+                    display: false
+                }
+            }
+        }
+    };
 
-        // Gráfico 30 dias
-        new Chart(document.getElementById('revenueChart30Days'), {
-            type: 'line',
-            data: {
-                labels: labels30Days,
-                datasets: [{
-                    data: revenueData30Days,
-                    borderColor: '#3498db',
-                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.4,
-                    pointBackgroundColor: '#3498db',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    pointRadius: 3,
-                    pointHoverRadius: 5
-                }]
-            },
-            options: commonOptions
-        });
+    // Gráfico 7 dias
+    new Chart(document.getElementById('revenueChart7Days'), {
+        type: 'line',
+        data: {
+            labels: labels7Days,
+            datasets: [{
+                data: revenueData7Days,
+                borderColor: '#27ae60',
+                backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#27ae60',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 5,
+                pointHoverRadius: 7
+            }]
+        },
+        options: commonOptions
+    });
+
+    // Gráfico 30 dias
+    new Chart(document.getElementById('revenueChart30Days'), {
+        type: 'line',
+        data: {
+            labels: labels30Days,
+            datasets: [{
+                data: revenueData30Days,
+                borderColor: '#3498db',
+                backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#3498db',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 3,
+                pointHoverRadius: 5
+            }]
+        },
+        options: commonOptions
+    });
     });
 </script>
 {% endblock %}

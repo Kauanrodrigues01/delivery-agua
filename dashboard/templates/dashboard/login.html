@@ -6,97 +6,9 @@
 <!-- Formulários e Botões -->
 <link rel="stylesheet" href="{% static 'global/form-default-style.css' %}">
 <link rel="stylesheet" href="{% static 'global/buttons-default-style.css' %}">
-
+<link rel="stylesheet" href="{% static 'dashboard/login.css' %}">
 <style>
-    .login-container {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 70vh;
-        padding: 2rem 0;
-    }
-
-    .login-header {
-        text-align: center;
-        margin-bottom: 2rem;
-    }
-
-    .login-header h1 {
-        color: var(--primary-dark);
-        font-size: 2.5rem;
-        font-weight: 700;
-        margin-bottom: 0.5rem;
-    }
-
-    .login-header p {
-        color: var(--muted-foreground);
-        font-size: 1.1rem;
-    }
-
-    .login-form {
-        max-width: 400px;
-        width: 100%;
-    }
-
-    .welcome-section {
-        background: var(--gradient-primary);
-        color: var(--primary-foreground);
-        padding: 1.5rem;
-        border-radius: var(--radius);
-        margin-bottom: 2rem;
-        text-align: center;
-        box-shadow: var(--shadow-card);
-    }
-
-    .welcome-section h2 {
-        font-size: 1.5rem;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-    }
-
-    .welcome-section p {
-        opacity: 0.9;
-        font-size: 1rem;
-    }
-
-    .login-btn {
-        width: 100%;
-        margin-top: 0.5rem;
-    }
-
-    .error-message {
-        background: var(--destructive);
-        color: var(--destructive-foreground);
-        padding: 0.75rem 1rem;
-        border-radius: var(--radius);
-        margin-bottom: 1rem;
-        text-align: center;
-        font-weight: 600;
-        box-shadow: var(--shadow-card);
-    }
-
-    .form-footer {
-        text-align: center;
-        margin-top: 2rem;
-        color: var(--muted-foreground);
-        font-size: 0.9rem;
-    }
-
-    @media (max-width: 768px) {
-        .login-container {
-            min-height: 60vh;
-            padding: 1rem 0;
-        }
-
-        .login-header h1 {
-            font-size: 2rem;
-        }
-
-        .welcome-section {
-            margin-bottom: 1.5rem;
-            padding: 1rem;
-        }
-    }
+    
 </style>
 {% endblock %}
 
