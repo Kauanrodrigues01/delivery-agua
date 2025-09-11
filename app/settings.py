@@ -188,6 +188,11 @@ CALLMEBOT_PHONE_NUMBER = config("CALLMEBOT_PHONE_NUMBER", default=None)
 LOGIN_URL = "/dashboard/login/"
 LOGIN_REDIRECT_URL = "/dashboard/"
 
+# Mercado Pago settings
+MP_ACCESS_TOKEN = config("MP_ACCESS_TOKEN", default=None)
+MP_BASE_API_URL = config("MP_BASE_API_URL", default="https://api.mercadopago.com")
+NOTIFICATION_URL = config("NOTIFICATION_URL", default=None)
+
 # WhiteNoise configurações apenas para produção
 if not DEBUG:
     # Essa configuração tá aqu só para verificar se é o whitenoise tá funcionando, olhando o Header, mas não vai ser aplicado por causa do CompressedStaticFilesStorage (que não suporta cache manifest)

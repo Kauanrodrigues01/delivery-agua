@@ -123,6 +123,10 @@ class Order(models.Model):
     payment_status = models.CharField(
         max_length=20, choices=PAYMENT_STATUS_CHOICES, default="pending"
     )
+    payment_id = models.CharField(
+        max_length=255, null=True, blank=True, 
+        help_text="ID do pagamento no MercadoPago"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
 

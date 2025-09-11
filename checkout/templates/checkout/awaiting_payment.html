@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'checkout/awaiting_payment.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="awaiting-payment-container">
+    <div class="payment-card">
+        <!-- Header -->
+        <div class="payment-header">
+            <div class="payment-icon">
+                <i data-lucide="clock"></i>
+            </div>
+            <h1>Aguardando Pagamento PIX</h1>
+            <p class="payment-subtitle">Pedido #{{ order.id }}</p>
+        </div>
+
+        <!-- Informações do Pedido -->
+        <div class="order-info">
+            <h2>Informações do Pedido</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Cliente:</span>
+                    <span class="info-value">{{ order.customer_name }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Telefone:</span>
+                    <span class="info-value">{{ order.phone }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Endereço:</span>
+                    <span class="info-value">{{ order.address }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Total:</span>
+                    <span class="info-value total-price">R$ {{ order.total_price|floatformat:2 }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Método de Pagamento:</span>
+                    <span class="info-value">PIX</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Status do Pagamento:</span>
+                    <span class="info-value payment-status" id="payment-status">
+                        {% if order.payment_status == 'pending' %}
+                        <span class="status-pending">Pendente</span>
+                        {% elif order.payment_status == 'paid' %}
+                        <span class="status-paid">Pago</span>
+                        {% else %}
+                        <span class="status-cancelled">Cancelado</span>
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instruções de Pagamento -->
+        <div class="payment-instructions">
+            <h3>Instruções para Pagamento</h3>
+            <ol>
+                <li>Clique no botão "Pagar com PIX" abaixo</li>
+                <li>Escaneie o QR Code ou copie o código PIX</li>
+                <li>Confirme o pagamento no seu banco</li>
+                <li>Clique em "Verificar Pagamento" para atualizar o status</li>
+            </ol>
+        </div>
+
+        <!-- Botões de Ação -->
+        <div class="action-buttons">
+            <!-- Botão para ir ao MercadoPago -->
+            {% if ticket_url %}
+            <a href="{{ ticket_url }}" target="_blank" class="btn btn-primary">
+                <i data-lucide="credit-card"></i>
+                Pagar com PIX
+            </a>
+            {% else %}
+            <button class="btn btn-primary" disabled>
+                <i data-lucide="alert-circle"></i>
+                Link de pagamento indisponível
+            </button>
+            {% endif %}
+
+            <!-- Botão para verificar pagamento -->
+            <button id="check-payment-btn" class="btn btn-secondary">
+                <i data-lucide="refresh-cw"></i>
+                Verificar Pagamento
+            </button>
+
+            <!-- Botão para voltar aos produtos -->
+            <a href="{% url 'product_list' %}" class="btn btn-outline">
+                <i data-lucide="arrow-left"></i>
+                Voltar aos Produtos
+            </a>
+        </div>
+
+        <!-- Status de Verificação -->
+        <div id="payment-check-status" class="payment-check-status" style="display: none;">
+            <div class="status-message" id="status-message"></div>
+        </div>
+
+        <!-- Sucesso do Pagamento -->
+        <div id="payment-success" class="payment-success" style="display: none;">
+            <div class="success-icon">
+                <i data-lucide="check-circle"></i>
+            </div>
+            <h3>Pagamento Confirmado!</h3>
+            <p>Seu pedido foi aprovado e será processado em breve.</p>
+            <a href="{% url 'product_list' %}" class="btn btn-success">
+                <i data-lucide="home"></i>
+                Fazer Novo Pedido
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const checkPaymentBtn = document.getElementById('check-payment-btn');
+        const statusDiv = document.getElementById('payment-check-status');
+        const statusMessage = document.getElementById('status-message');
+        const paymentStatusSpan = document.getElementById('payment-status');
+        const paymentSuccessDiv = document.getElementById('payment-success');
+        const actionButtons = document.querySelector('.action-buttons');
+
+        // Função para obter CSRF token
+        function getCSRFToken() {
+            const csrfForm = document.getElementById('csrf-form');
+            const csrfInput = csrfForm.querySelector('[name=csrfmiddlewaretoken]');
+            return csrfInput ? csrfInput.value : '';
+        }
+
+        // Função para verificar status do pagamento
+        function checkPaymentStatus() {
+            checkPaymentBtn.disabled = true;
+            checkPaymentBtn.innerHTML = '<i data-lucide="loader"></i> Verificando...';
+
+            statusDiv.style.display = 'block';
+            statusMessage.innerHTML = '<i data-lucide="loader"></i> Verificando status do pagamento...';
+            statusMessage.className = 'status-message status-loading';
+
+            // Recriar ícones do Lucide
+            if (window.lucide) {
+                window.lucide.createIcons();
+            }
+
+            fetch(`/checkout/api/check-payment/{{ order.id }}/`, {
+                method: 'GET',
+                headers: {
+                    'X-CSRFToken': getCSRFToken(),
+                    'Content-Type': 'application/json',
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        if (data.order_paid) {
+                            // Pagamento aprovado
+                            paymentStatusSpan.innerHTML = '<span class="status-paid">Pago</span>';
+                            statusMessage.innerHTML = '<i data-lucide="check-circle"></i> Pagamento aprovado com sucesso!';
+                            statusMessage.className = 'status-message status-success';
+
+                            // Mostrar seção de sucesso e ocultar botões
+                            setTimeout(() => {
+                                paymentSuccessDiv.style.display = 'block';
+                                actionButtons.style.display = 'none';
+                            }, 1000);
+                        } else {
+                            // Ainda pendente
+                            let message = 'Pagamento ainda pendente.';
+                            if (data.payment_status === 'pending') {
+                                message += ' Aguardando confirmação do banco.';
+                            } else if (data.payment_status === 'in_process') {
+                                message += ' Pagamento em processamento.';
+                            }
+
+                            statusMessage.innerHTML = `<i data-lucide="clock"></i> ${message}`;
+                            statusMessage.className = 'status-message status-pending';
+                        }
+                    } else {
+                        // Erro
+                        statusMessage.innerHTML = `<i data-lucide="alert-circle"></i> ${data.message || 'Erro ao verificar pagamento.'}`;
+                        statusMessage.className = 'status-message status-error';
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    statusMessage.innerHTML = '<i data-lucide="alert-circle"></i> Erro de conexão. Tente novamente.';
+                    statusMessage.className = 'status-message status-error';
+                })
+                .finally(() => {
+                    checkPaymentBtn.disabled = false;
+                    checkPaymentBtn.innerHTML = '<i data-lucide="refresh-cw"></i> Verificar Pagamento';
+
+                    // Recriar ícones do Lucide
+                    if (window.lucide) {
+                        window.lucide.createIcons();
+                    }
+                });
+        }
+
+        // Event listener para o botão de verificar pagamento
+        checkPaymentBtn.addEventListener('click', checkPaymentStatus);
+
+        // Verificação automática a cada 60 segundos se o pagamento ainda estiver pendente
+        {% if order.payment_status == 'pending' %}
+        setInterval(() => {
+            if (document.getElementById('payment-success').style.display === 'none') {
+                checkPaymentStatus();
+            }
+        }, 60000);
+        {% endif %}
+
+        // Recriar ícones do Lucide quando a página carregar
+        if (window.lucide) {
+            window.lucide.createIcons();
+        }
+    });
+</script>
+{% endblock %}

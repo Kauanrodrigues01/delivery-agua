@@ -46,7 +46,7 @@
                 <span class="cart-total-label">Total:</span>
                 <span class="cart-total-value">R$ {{ cart_total|floatformat:2 }}</span>
             </div>
-            <a href="{% url 'checkout' %}" class="btn btn-success checkout-button">Finalizar Compra</a>
+            <a href="{% url 'checkout:checkout' %}" class="btn btn-success checkout-button">Finalizar Compra</a>
             {% else %}
             <div class="cart-empty">Seu carrinho está vazio.</div>
             {% endif %}
