@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime, timedelta
 from typing import Dict
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+from urllib.parse import urlparse
 
 import requests
 from django.conf import settings
@@ -340,6 +341,42 @@ class MercadoPagoService:
                 f"Erro inesperado ao buscar informações do pagamento: {str(e)}"
             )
 
+    def create_preference_with_card(self, items: list[dict]) -> dict:
+        """
+        Cria uma preferência de pagamento com cartão de crédito ou débito.
+        Valida se cada item contém as chaves obrigatórias antes de enviar.
+        """
+        if not items or not isinstance(items, list):
+            raise ValueError("A lista de itens não pode estar vazia e deve ser uma lista.")
+
+        required_keys = {"id", "title", "quantity", "currency_id", "unit_price"}
+
+        for index, item in enumerate(items):
+            if not isinstance(item, dict):
+                raise ValueError(f"O item na posição {index} não é um dicionário.")
+            missing_keys = required_keys - item.keys()
+            if missing_keys:
+                raise ValueError(f"O item na posição {index} está faltando as chaves: {', '.join(missing_keys)}")
+
+        BASE_URL_APPLICATION = self._get_base_url(self._notification_url)
+        
+        try:
+            payload = {
+                "items": items,
+                "back_urls": {
+                    "success": f"{BASE_URL_APPLICATION}/success",
+                    "failure": f"{BASE_URL_APPLICATION}/failure",
+                },
+                "auto_return": "all",
+                "notification_url": self._notification_url,
+            }
+            return self._post("/checkout/preferences", payload)
+        except Exception as e:
+            if isinstance(e, (ValueError, RuntimeError)):
+                raise
+            raise RuntimeError(f"Erro inesperado ao criar preferência: {str(e)}")
+
+
     # --- Métodos Internos Auxiliares ---
 
     def _handle_api_error(self, response):
@@ -446,6 +483,21 @@ class MercadoPagoService:
             raise
         except Exception as e:
             raise RuntimeError(f"Erro inesperado ao criar pagamento: {str(e)}")
+    
+    def _get_base_url(self, url: str) -> str:
+        """
+        Retorna apenas a URL base (protocolo + domínio).
+        Exemplo:
+        https://meu.site.com/webhooks/notify -> https://meu.site.com
+        """
+        if not url or not isinstance(url, str):
+            raise ValueError("A URL precisa ser uma string válida.")
+
+        parsed = urlparse(url.strip())
+        if not parsed.scheme or not parsed.netloc:
+            raise ValueError("A URL fornecida não é válida.")
+
+        return f"{parsed.scheme}://{parsed.netloc}"
 
 
 mp_service = MercadoPagoService()
@@ -503,7 +555,7 @@ def run_test_pay_with_card():
             "card_number": "5031433215406351",
             "expiration_month": "11",
             "expiration_year": "2030",
-            "security_code": "143",
+            "security_code": "123",
             "cardholder": {
                 # 'name': 'Test User', # Se usar este vai ser aprovado, com as credenciais de teste do Mercado Pago
                 "name": "Other User",  # Se usar este vai ser reprovado, com as credenciais de teste do Mercado Pago
@@ -542,3 +594,23 @@ def init():
     run_test_pay_with_card()
     print()
     print("---" * 10)
+
+def test_preference_with_card():
+    """
+    Função de teste para criar preferência de pagamento com cartão.
+    """
+    try:
+        items = [
+            {
+                "id": "1",
+                "title": "Produto de Teste",
+                "quantity": 1,
+                "currency_id": "BRL",
+                "unit_price": 10,
+            }
+        ]
+        response = mp_service.create_preference_with_card(items)
+        print("--- Resposta PREFERÊNCIA ---")
+        print(response)
+    except Exception as e:
+        print(f"Erro ao criar preferência de pagamento: {e}")

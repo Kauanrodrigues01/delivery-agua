@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "checkout",
     "core",
     "dashboard",
+    "services",
 ]
 
 # Media files (uploads) para Django 5.1

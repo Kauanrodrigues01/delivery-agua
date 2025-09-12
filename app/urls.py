@@ -33,4 +33,5 @@ urlpatterns = [
     path("checkout/", include("checkout.urls")),
     path("dashboard/", include("dashboard.urls")),
     path("health/", health_check, name="health_check"),
+    path("services/", include("services.urls")),
 ]

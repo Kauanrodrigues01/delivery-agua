@@ -78,6 +78,12 @@ class CheckoutView(TemplateView):
                         "Erro ao processar pagamento PIX. Tente novamente."
                     )
                     return render(request, "checkout/error.html", context)
+            
+            if payment_method == "cartao":
+                ...
+            
+            if payment_method == "dinheiro":
+                ...
 
             # Para outros métodos de pagamento (dinheiro, etc.)
             # Envia notificações WhatsApp
