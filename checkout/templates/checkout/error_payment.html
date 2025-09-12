@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}Erro no Pagamento{% endblock %}
+
+{% load static %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'global/styles.css' %}">
+<link rel="stylesheet" href="{% static 'checkout/styles.css' %}">
+<link rel="stylesheet" href="{% static 'global/buttons-default-style.css' %}">
+<link rel="stylesheet" href="{% static 'checkout/error_payment.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="main-content">
+    <div class="container">
+        <div class="error-container">
+            <div class="error-icon">
+                ✗
+            </div>
+            
+            <h1 class="error-title">Erro no Pagamento</h1>
+            
+            <p class="error-message">
+                {{ error_message }}
+            </p>
+            
+            {% if order %}
+            <div class="error-details">
+                <h3 style="margin-bottom: 15px; color: #dc3545;">Detalhes do Pedido com Problema</h3>
+                <p><strong>Pedido #:</strong> {{ order.id }}</p>
+                <p><strong>Cliente:</strong> {{ order.customer_name }}</p>
+                <p><strong>Total:</strong> R$ {{ order.total_price|floatformat:2 }}</p>
+                <p><strong>Forma de Pagamento:</strong> 
+                    {% if order.payment_method == "pix" %}PIX
+                    {% elif order.payment_method == "cartao" %}Cartão
+                    {% elif order.payment_method == "dinheiro" %}Dinheiro
+                    {% endif %}
+                </p>
+            </div>
+            {% endif %}
+            
+            <div class="support-info">
+                <div class="support-title">Precisa de Ajuda?</div>
+                <div class="support-text">
+                    Se o problema persistir, entre em contato conosco pelo WhatsApp ou telefone. 
+                    Nossa equipe está pronta para ajudar você a finalizar seu pedido.
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <a href="{% url 'checkout:checkout' %}" class="btn-danger">
+                    Tentar Novamente
+                </a>
+                <a href="{% url 'product_list' %}" class="btn-secondary">
+                    Voltar às Compras
+                </a>
+                {% if order %}
+                <a href="{% url 'checkout:awaiting_payment' order_id=order.id %}" class="btn-primary">
+                    Ver Status do Pedido
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

@@ -193,6 +193,7 @@ LOGIN_REDIRECT_URL = "/dashboard/"
 MP_ACCESS_TOKEN = config("MP_ACCESS_TOKEN", default=None)
 MP_BASE_API_URL = config("MP_BASE_API_URL", default="https://api.mercadopago.com")
 NOTIFICATION_URL = config("NOTIFICATION_URL", default=None)
+BASE_APPLICATION_URL = config("BASE_APPLICATION_URL", default="http://localhost:8000")
 
 # WhiteNoise configurações apenas para produção
 if not DEBUG:

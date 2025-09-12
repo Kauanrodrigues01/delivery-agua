@@ -1,6 +1,7 @@
 import json
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+from services.notifications import send_payment_update_notification_with_callmebot
 
 from services.mercadopago import MercadoPagoService
 from checkout.models import Order
@@ -21,20 +22,48 @@ def update_order_status(payment_id, status, status_detail, date_approved=None, e
         dict: Resultado da operação com sucesso/erro e mensagem
     """
     try:
-        # Buscar o pedido pelo payment_id
+        order = None
+        
+        # Primeiro, tentar encontrar o pedido pelo payment_id (PIX)
         order = Order.objects.filter(payment_id=payment_id).first()
+        print(f"DEBUG - Busca por payment_id {payment_id}: {order}")
+        
+        # Se não encontrou e tem external_reference, buscar pelo ID do pedido (Cartão)
+        if not order and external_reference:
+            try:
+                print(f"DEBUG - Tentando buscar por external_reference: {external_reference}")
+                order = Order.objects.filter(id=int(external_reference)).first()
+                print(f"DEBUG - Pedido encontrado por external_reference: {order}")
+                # Para cartão, atualizar o payment_id com o ID real do pagamento
+                if order and order.payment_method == 'cartao':
+                    order.payment_id = payment_id
+                    order.save()
+                    print(f"DEBUG - Payment_id atualizado para: {payment_id}")
+            except (ValueError, TypeError):
+                # external_reference não é um número válido
+                print(f"DEBUG - External_reference inválido: {external_reference}")
+                pass
         
         if not order:
             return {
                 'success': False,
-                'message': f'Pedido não encontrado para payment_id: {payment_id}'
+                'message': f'Pedido não encontrado para payment_id: {payment_id} ou external_reference: {external_reference}'
             }
         
         # Mapear status do MercadoPago para status do pedido
         if status == 'approved' and status_detail == 'accredited':
             order.payment_status = 'paid'
-            order.status = 'completed'
             order.save()
+            
+            # Enviar notificações WhatsApp para pagamentos aprovados
+            try:
+                print(f"DEBUG - Enviando notificação para pedido: {order.id}")
+                print(f"DEBUG - Order antes da notificação: ID={order.id}, Nome={order.customer_name}, Phone={order.phone}")
+                send_payment_update_notification_with_callmebot(order)
+            except Exception as e:
+                print(f"Erro ao enviar notificação WhatsApp: {e}")
+                import traceback
+                traceback.print_exc()
             
             return {
                 'success': True,
@@ -47,6 +76,12 @@ def update_order_status(payment_id, status, status_detail, date_approved=None, e
             order.payment_status = 'cancelled'
             order.status = 'cancelled'
             order.save()
+            
+            # Enviar notificações WhatsApp para pagamentos cancelados
+            try:
+                send_payment_update_notification_with_callmebot(order)
+            except Exception as e:
+                print(f"Erro ao enviar notificação WhatsApp: {e}")
             
             return {
                 'success': True,
@@ -85,7 +120,7 @@ def update_order_status(payment_id, status, status_detail, date_approved=None, e
 def webhook_mercadopago(request):
     """
     Webhook do MercadoPago para processar atualizações de pagamento.
-    Este webhook apenas analisa o status e delega as ações para funções específicas.
+    Suporta tanto o formato antigo (action/data) quanto o novo (resource/topic).
     """
     if request.method != 'POST':
         return HttpResponse(status=405)  # Method Not Allowed
@@ -93,20 +128,30 @@ def webhook_mercadopago(request):
     try:
         # Parse do JSON recebido
         data = json.loads(request.body.decode('utf-8'))
+        print(f"Webhook MercadoPago recebido: {data}")
     except json.JSONDecodeError:
         return HttpResponse("Invalid JSON", status=400)
     
-    # Extrair informações básicas
-    action = data.get('action')
-    if not action:
-        return HttpResponse("No action specified", status=400)
+    # Verificar formato do webhook
+    payment_id = None
     
-    # Processar apenas atualizações de pagamento
-    if action != 'payment.updated':
-        return HttpResponse("Action not supported", status=200)
+    # Novo formato: {"resource":"125381511429","topic":"payment"}
+    if 'topic' in data and 'resource' in data:
+        topic = data.get('topic')
+        if topic != 'payment':
+            return HttpResponse("Topic not supported", status=200)
+        payment_id = data.get('resource')
     
-    # Extrair ID do pagamento
-    payment_id = data.get('data', {}).get('id')
+    # Formato antigo: {"action":"payment.updated","data":{"id":"123"}}
+    elif 'action' in data and 'data' in data:
+        action = data.get('action')
+        if action != 'payment.updated':
+            return HttpResponse("Action not supported", status=200)
+        payment_id = data.get('data', {}).get('id')
+    
+    else:
+        return HttpResponse("Invalid webhook format", status=400)
+    
     if not payment_id:
         return HttpResponse("No payment ID", status=400)
 
@@ -125,7 +170,7 @@ def webhook_mercadopago(request):
         external_reference = payment_data.get('external_reference')
         
         # Log da operação (para debug)
-        print(f"Webhook MercadoPago - Payment ID: {payment_id}, Status: {status}/{status_detail}")
+        print(f"Webhook MercadoPago - Payment ID: {payment_id}, Status: {status}/{status_detail}, External Ref: {external_reference}")
         
         # Atualizar status do pedido
         update_result = update_order_status(
@@ -146,45 +191,3 @@ def webhook_mercadopago(request):
     except Exception as e:
         print(f"Erro no webhook MercadoPago: {str(e)}")
         return HttpResponse(f"Internal error: {str(e)}", status=500)
-
-
-@csrf_exempt
-def test_order_status_update(request):
-    """
-    Endpoint para testar manualmente a atualização de status de pedidos.
-    Útil para desenvolvimento e debug.
-    
-    POST /services/test-order-status/
-    {
-        "payment_id": "123456789",
-        "status": "approved",
-        "status_detail": "accredited"
-    }
-    """
-    if request.method != 'POST':
-        return HttpResponse("Method not allowed", status=405)
-    
-    try:
-        data = json.loads(request.body.decode('utf-8'))
-        
-        payment_id = data.get('payment_id')
-        status = data.get('status')
-        status_detail = data.get('status_detail')
-        
-        if not all([payment_id, status, status_detail]):
-            return HttpResponse("Missing required fields", status=400)
-        
-        result = update_order_status(
-            payment_id=payment_id,
-            status=status,
-            status_detail=status_detail
-        )
-        
-        return HttpResponse(json.dumps(result, indent=2), 
-                          content_type='application/json', 
-                          status=200 if result['success'] else 400)
-        
-    except json.JSONDecodeError:
-        return HttpResponse("Invalid JSON", status=400)
-    except Exception as e:
-        return HttpResponse(f"Error: {str(e)}", status=500)

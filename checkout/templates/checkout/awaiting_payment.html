@@ -13,7 +13,15 @@
             <div class="payment-icon">
                 <i data-lucide="clock"></i>
             </div>
-            <h1>Aguardando Pagamento PIX</h1>
+            <h1>
+                {% if order.payment_method == 'pix' %}
+                    Aguardando Pagamento PIX
+                {% elif order.payment_method == 'cartao' %}
+                    Pagamento com Cartão
+                {% else %}
+                    Aguardando Pagamento
+                {% endif %}
+            </h1>
             <p class="payment-subtitle">Pedido #{{ order.id }}</p>
         </div>
 
@@ -39,7 +47,13 @@
                 </div>
                 <div class="info-item">
                     <span class="info-label">Método de Pagamento:</span>
-                    <span class="info-value">PIX</span>
+                    <span class="info-value">
+                        {% if order.payment_method == 'pix' %}PIX
+                        {% elif order.payment_method == 'cartao' %}Cartão
+                        {% elif order.payment_method == 'dinheiro' %}Dinheiro
+                        {% else %}{{ order.payment_method|title }}
+                        {% endif %}
+                    </span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Status do Pagamento:</span>
@@ -59,12 +73,22 @@
         <!-- Instruções de Pagamento -->
         <div class="payment-instructions">
             <h3>Instruções para Pagamento</h3>
+            {% if order.payment_method == 'pix' %}
             <ol>
                 <li>Clique no botão "Pagar com PIX" abaixo</li>
                 <li>Escaneie o QR Code ou copie o código PIX</li>
                 <li>Confirme o pagamento no seu banco</li>
                 <li>Clique em "Verificar Pagamento" para atualizar o status</li>
             </ol>
+            {% elif order.payment_method == 'cartao' %}
+            <ol>
+                <li>Clique no botão "Pagar com Cartão" abaixo</li>
+                <li>Você será redirecionado para o MercadoPago</li>
+                <li>Preencha os dados do seu cartão</li>
+                <li>Confirme o pagamento</li>
+                <li>Retorne para ver o status do pedido</li>
+            </ol>
+            {% endif %}
         </div>
 
         <!-- Botões de Ação -->
@@ -73,7 +97,13 @@
             {% if ticket_url %}
             <a href="{{ ticket_url }}" target="_blank" class="btn btn-primary">
                 <i data-lucide="credit-card"></i>
-                Pagar com PIX
+                {% if order.payment_method == 'pix' %}
+                    Pagar com PIX
+                {% elif order.payment_method == 'cartao' %}
+                    Pagar com Cartão
+                {% else %}
+                    Realizar Pagamento
+                {% endif %}
             </a>
             {% else %}
             <button class="btn btn-primary" disabled>
@@ -82,11 +112,13 @@
             </button>
             {% endif %}
 
-            <!-- Botão para verificar pagamento -->
+            <!-- Botão para verificar pagamento (só para PIX) -->
+            {% if order.payment_method == 'pix' %}
             <button id="check-payment-btn" class="btn btn-secondary">
                 <i data-lucide="refresh-cw"></i>
                 Verificar Pagamento
             </button>
+            {% endif %}
 
             <!-- Botão para voltar aos produtos -->
             <a href="{% url 'product_list' %}" class="btn btn-outline">
@@ -200,11 +232,13 @@
                 });
         }
 
-        // Event listener para o botão de verificar pagamento
-        checkPaymentBtn.addEventListener('click', checkPaymentStatus);
+        // Event listener para o botão de verificar pagamento (só se existir)
+        if (checkPaymentBtn) {
+            checkPaymentBtn.addEventListener('click', checkPaymentStatus);
+        }
 
-        // Verificação automática a cada 60 segundos se o pagamento ainda estiver pendente
-        {% if order.payment_status == 'pending' %}
+        // Verificação automática a cada 60 segundos se o pagamento for PIX e ainda estiver pendente
+        {% if order.payment_method == 'pix' and order.payment_status == 'pending' %}
         setInterval(() => {
             if (document.getElementById('payment-success').style.display === 'none') {
                 checkPaymentStatus();

@@ -333,7 +333,9 @@ class MercadoPagoService:
             raise ValueError("ID da transação não pode estar vazio.")
 
         try:
-            return self._get(f"/v1/payments/{transaction_id.strip()}")
+            data = self._get(f"/v1/payments/{transaction_id.strip()}")
+            print(f"Dados do pagamento: {data}")
+            return data
         except Exception as e:
             if isinstance(e, (ValueError, RuntimeError)):
                 raise
@@ -341,7 +343,7 @@ class MercadoPagoService:
                 f"Erro inesperado ao buscar informações do pagamento: {str(e)}"
             )
 
-    def create_preference_with_card(self, items: list[dict]) -> dict:
+    def create_preference_with_card(self, items: list[dict], order_id: str = None) -> dict:
         """
         Cria uma preferência de pagamento com cartão de crédito ou débito.
         Valida se cada item contém as chaves obrigatórias antes de enviar.
@@ -358,18 +360,25 @@ class MercadoPagoService:
             if missing_keys:
                 raise ValueError(f"O item na posição {index} está faltando as chaves: {', '.join(missing_keys)}")
 
-        BASE_URL_APPLICATION = self._get_base_url(self._notification_url)
+        # Usar a URL base da aplicação ao invés da URL de notificação
+        base_url = settings.BASE_APPLICATION_URL.rstrip('/')
         
         try:
             payload = {
                 "items": items,
                 "back_urls": {
-                    "success": f"{BASE_URL_APPLICATION}/success",
-                    "failure": f"{BASE_URL_APPLICATION}/failure",
+                    "success": f"{base_url}/checkout/pagamento-realizado/{order_id or '1'}/",
+                    "failure": f"{base_url}/checkout/erro-pagamento/{order_id or '1'}/",
+                    "pending": f"{base_url}/checkout/aguardando-pagamento/{order_id or '1'}/",
                 },
-                "auto_return": "all",
+                "auto_return": "approved",
                 "notification_url": self._notification_url,
             }
+            
+            # Adiciona external_reference se order_id for fornecido
+            if order_id:
+                payload["external_reference"] = str(order_id)
+                
             return self._post("/checkout/preferences", payload)
         except Exception as e:
             if isinstance(e, (ValueError, RuntimeError)):
@@ -386,17 +395,26 @@ class MercadoPagoService:
         status_code = response.status_code
         try:
             error_data = response.json()
+            
             status = error_data.get("status", "unknown")
             status_detail = error_data.get("status_detail", "unknown")
+            message = error_data.get("message", "")
+            cause = error_data.get("cause", [])
 
             status_map_message = self.STATUS_MAP.get(status, "Erro desconhecido.")
             status_detail_map_message = self.STATUS_DETAIL_MAP.get(
                 status_detail, "Detalhe desconhecido."
             )
 
-            return f"Erro na API do Mercado Pago ({status_code}): {status_map_message} - {status_detail_map_message}"
+            error_msg = f"Erro na API do Mercado Pago ({status_code}): {status_map_message} - {status_detail_map_message}"
+            if message:
+                error_msg += f" | Mensagem: {message}"
+            if cause:
+                error_msg += f" | Causa: {cause}"
+            
+            return error_msg
 
-        except Exception:
+        except Exception as e:
             return f"Erro na API do Mercado Pago ({status_code}): {response.text}"
 
     def _post(self, path: str, payload: dict, use_idempotency_key: bool = True):

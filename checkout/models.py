@@ -113,6 +113,7 @@ class Order(models.Model):
     ]
     customer_name = models.CharField(max_length=100)
     phone = models.CharField(max_length=20)
+    cpf = models.CharField(max_length=14, blank=True, null=True, help_text="CPF do cliente")
     address = models.TextField()
     payment_method = models.CharField(
         max_length=20, choices=PAYMENT_CHOICES, default="pix"
@@ -128,6 +129,11 @@ class Order(models.Model):
         null=True,
         blank=True,
         help_text="ID do pagamento no MercadoPago",
+    )
+    payment_url = models.URLField(
+        null=True,
+        blank=True,
+        help_text="URL do pagamento no MercadoPago (para cartão)",
     )
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")

@@ -8,6 +8,7 @@ from services.notifications import (
     send_order_notifications_with_callmebot,
 )
 
+from services.mercadopago import MercadoPagoService
 from .models import Order, OrderItem
 
 
@@ -29,6 +30,7 @@ class CheckoutView(TemplateView):
         total = cart.total_price  # Usando a propriedade do modelo
         name = request.POST.get("name")
         phone = request.POST.get("phone")
+        cpf = request.POST.get("cpf", "").strip()
         address = request.POST.get("address")
         payment_method = request.POST.get("payment_method")
         cash_value = request.POST.get("cash_value")
@@ -48,6 +50,7 @@ class CheckoutView(TemplateView):
             order = Order.objects.create(
                 customer_name=name,
                 phone=phone,
+                cpf=cpf if cpf else None,
                 address=address,
                 payment_method=payment_method,
                 cash_value=cash_value if payment_method == "dinheiro" else None,
@@ -59,6 +62,13 @@ class CheckoutView(TemplateView):
                     product=item.product,
                     quantity=item.quantity,
                 )
+
+            # Envia notificação de novo pedido para todos os métodos de pagamento
+            try:
+                send_order_notifications_with_callmebot(order)
+            except Exception as e:
+                print(f"Erro ao enviar notificação de novo pedido: {e}")
+                # Não interrompe o fluxo se a notificação falhar
 
             # Se o pagamento for PIX, cria o pagamento e redireciona
             if payment_method == "pix":
@@ -80,24 +90,47 @@ class CheckoutView(TemplateView):
                     return render(request, "checkout/error.html", context)
             
             if payment_method == "cartao":
-                ...
+                try:
+                    preference_data = create_payment_charge(order)
+                    # Salva o ID da preferência e a URL de pagamento no pedido
+                    order.payment_id = preference_data.get("id")
+                    order.payment_url = preference_data.get("init_point")
+                    order.save()
+
+                    # Limpa o carrinho e redireciona para página de aguardar pagamento
+                    cart.items.all().delete()
+                    return redirect("checkout:awaiting_payment", order_id=order.id)
+                except Exception as e:
+                    order.delete()
+                    print(f"Erro ao criar pagamento com cartão: {e}")
+                    context["error_message"] = (
+                        "Erro ao processar pagamento com cartão. Tente novamente."
+                    )
+                    return render(request, "checkout/error.html", context)
             
             if payment_method == "dinheiro":
-                ...
+                try:
+                    # Para pagamento em dinheiro, marcar como pago e finalizar pedido
+                    order.payment_status = "paid"
+                    order.status = "completed"
+                    order.save()
+                    
+                    # Limpa o carrinho
+                    cart.items.all().delete()
+                    return redirect("checkout:success_payment", order_id=order.id)
+                except Exception as e:
+                    order.delete()
+                    print(f"Erro ao processar pagamento em dinheiro: {e}")
+                    context["error_message"] = (
+                        "Erro ao finalizar pedido. Tente novamente."
+                    )
+                    return render(request, "checkout/error.html", context)
 
-            # Para outros métodos de pagamento (dinheiro, etc.)
-            # Envia notificações WhatsApp
-            try:
-                send_order_notifications_with_callmebot(order)
-                # Limpa o carrinho apenas se a notificação for enviada com sucesso
-                cart.items.all().delete()
-                context = self.get_context_data()
-                return render(request, "checkout/success.html", context)
-            except Exception as e:
-                # Se falhar, apaga a order criada
-                order.delete()
-                print(f"Erro ao enviar notificação: {e}")
-                return render(request, "checkout/error.html", context)
+            # Fallback para outros métodos de pagamento
+            cart.items.all().delete()
+            context = self.get_context_data()
+            return render(request, "checkout/success.html", context)
+            
         except Exception as e:
             print(f"Error processing order: {e}")
             return render(request, "checkout/error.html", context)
@@ -107,24 +140,39 @@ def create_payment_charge(order: Order) -> dict:
     """
     Função para criar uma cobrança de pagamento via MercadoPago.
     """
-    from services.mercadopago import MercadoPagoService
 
     mp_service = MercadoPagoService()
 
     if order.payment_method == "pix":
         payment_data = mp_service.pay_with_pix(
             amount=float(order.total_price),
-            payer_email="cliente@exemplo.com",  # Você pode adicionar campo de email no Order
-            payer_cpf="00000000000",  # Você pode adicionar campo de CPF no Order
+            payer_email="cliente@exemplo.com",  # Email padrão para PIX
+            payer_cpf=order.cpf if order.cpf else "00000000000",
             description=f"Pedido #{order.id} - {order.customer_name}",
         )
         return payment_data
+    
+    elif order.payment_method == "cartao":
+        # Criar lista de itens para a preferência
+        items = []
+        for item in order.items.all():
+            items.append({
+                "id": str(item.product.id),
+                "title": item.product.name,
+                "quantity": item.quantity,
+                "currency_id": "BRL",
+                "unit_price": float(item.product.price)
+            })
+        
+        # Usar o método adequado do serviço MercadoPago
+        preference_data = mp_service.create_preference_with_card(items, order_id=str(order.id))
+        return preference_data
 
     return {}
 
 
 class AwaitingPaymentView(TemplateView):
-    """View para página de aguardando pagamento PIX"""
+    """View para página de aguardando pagamento (PIX e Cartão)"""
 
     template_name = "checkout/awaiting_payment.html"
 
@@ -135,31 +183,25 @@ class AwaitingPaymentView(TemplateView):
 
         # Busca informações do pagamento se existir
         payment_info = None
+        ticket_url = None
+        
         if order.payment_id:
             try:
-                payment_info = get_payment_info(order.payment_id)
+                if order.payment_method == "pix":
+                    # Para PIX, busca informações do pagamento para pegar QR code e ticket
+                    payment_info = get_payment_info(order.payment_id)
+                    ticket_url = payment_info.get("point_of_interaction", {}).get("transaction_data", {}).get("ticket_url")
+                elif order.payment_method == "cartao":
+                    # Para cartão, usa a URL armazenada no pedido
+                    ticket_url = order.payment_url
             except Exception as e:
                 print(f"Erro ao buscar informações do pagamento: {e}")
-
-        print(order)
-        print(payment_info)
-        print(
-            payment_info.get("point_of_interaction", {})
-            .get("transaction_data", {})
-            .get("ticket_url")
-            if payment_info
-            else None
-        )
 
         context.update(
             {
                 "order": order,
                 "payment_info": payment_info,
-                "ticket_url": payment_info.get("point_of_interaction", {})
-                .get("transaction_data", {})
-                .get("ticket_url")
-                if payment_info
-                else None,
+                "ticket_url": ticket_url,
             }
         )
         return context
@@ -169,8 +211,6 @@ def get_payment_info(payment_id: str) -> dict:
     """
     Função para buscar informações de um pagamento
     """
-    from services.mercadopago import MercadoPagoService
-
     mp_service = MercadoPagoService()
     return mp_service.get_payment_info(payment_id)
 
@@ -178,7 +218,7 @@ def get_payment_info(payment_id: str) -> dict:
 @csrf_exempt
 def check_payment_status(request, order_id):
     """
-    API endpoint para verificar status do pagamento via AJAX
+    API endpoint para verificar status do pagamento via AJAX (apenas PIX)
     """
     if request.method == "GET":
         try:
@@ -189,18 +229,18 @@ def check_payment_status(request, order_id):
                     {"status": "error", "message": "Pagamento não encontrado"}
                 )
 
-            payment_info = get_payment_info(order.payment_id)
+            # Verificação apenas para PIX
+            if order.payment_method != "pix":
+                return JsonResponse(
+                    {"status": "error", "message": "Verificação de status disponível apenas para PIX"}
+                )
 
+            payment_info = get_payment_info(order.payment_id)
+            
             # Atualiza status do pedido se necessário
             if payment_info.get("status") == "approved":
                 order.payment_status = "paid"
                 order.save()
-
-                # Envia notificações apenas quando o pagamento for aprovado
-                try:
-                    send_order_notifications_with_callmebot(order)
-                except Exception as e:
-                    print(f"Erro ao enviar notificação: {e}")
 
             return JsonResponse(
                 {
@@ -222,3 +262,44 @@ def check_payment_status(request, order_id):
             return JsonResponse({"status": "error", "message": str(e)})
 
     return JsonResponse({"status": "error", "message": "Método não permitido"})
+
+
+class SuccessPaymentView(TemplateView):
+    """View para página de pagamento bem-sucedido"""
+    
+    template_name = "checkout/success_payment.html"
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        order_id = kwargs.get("order_id")
+        order = get_object_or_404(Order, id=order_id)
+        
+        context.update({
+            "order": order,
+            "success_message": "Pagamento realizado com sucesso!"
+        })
+        return context
+
+
+class ErrorPaymentView(TemplateView):
+    """View para página de erro no pagamento"""
+    
+    template_name = "checkout/error_payment.html"
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        order_id = kwargs.get("order_id")
+        
+        # Se o order_id for fornecido, busca o pedido
+        if order_id:
+            try:
+                order = get_object_or_404(Order, id=order_id)
+                context["order"] = order
+            except:
+                pass
+        
+        # Pega a mensagem de erro da URL se existir
+        error_message = self.request.GET.get("message", "Ocorreu um erro no processamento do pagamento.")
+        context["error_message"] = error_message
+        
+        return context

@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block title %}Pagamento Realizado{% endblock %}
+
+{% load static %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'global/styles.css' %}">
+<link rel="stylesheet" href="{% static 'checkout/styles.css' %}">
+<link rel="stylesheet" href="{% static 'global/buttons-default-style.css' %}">
+<link rel="stylesheet" href="{% static 'checkout/success_payment.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="main-content">
+    <div class="container">
+        <div class="success-container">
+            <div class="success-icon">
+                ✓
+            </div>
+            
+            <h1 class="success-title">{{ success_message }}</h1>
+            
+            <p class="success-message">
+                Seu pedido foi processado com sucesso! 
+                {% if order.payment_method == "dinheiro" %}
+                    Aguarde a entrega e tenha o dinheiro em mãos.
+                {% elif order.payment_method == "cartao" %}
+                    O pagamento foi aprovado e seu pedido será processado.
+                {% elif order.payment_method == "pix" %}
+                    O pagamento PIX foi confirmado.
+                {% endif %}
+            </p>
+            
+            <div class="order-details">
+                <h3 style="margin-bottom: 20px; color: #333;">Detalhes do Pedido</h3>
+                
+                <div class="detail-row">
+                    <span class="detail-label">Pedido #:</span>
+                    <span class="detail-value">{{ order.id }}</span>
+                </div>
+                
+                <div class="detail-row">
+                    <span class="detail-label">Cliente:</span>
+                    <span class="detail-value">{{ order.customer_name }}</span>
+                </div>
+                
+                <div class="detail-row">
+                    <span class="detail-label">Telefone:</span>
+                    <span class="detail-value">{{ order.phone }}</span>
+                </div>
+                
+                <div class="detail-row">
+                    <span class="detail-label">Endereço:</span>
+                    <span class="detail-value">{{ order.address }}</span>
+                </div>
+                
+                <div class="detail-row">
+                    <span class="detail-label">Forma de Pagamento:</span>
+                    <span class="detail-value">
+                        {% if order.payment_method == "pix" %}PIX
+                        {% elif order.payment_method == "cartao" %}Cartão
+                        {% elif order.payment_method == "dinheiro" %}Dinheiro
+                        {% endif %}
+                    </span>
+                </div>
+                
+                {% if order.payment_method == "dinheiro" and order.change_amount > 0 %}
+                <div class="detail-row">
+                    <span class="detail-label">Valor Pago:</span>
+                    <span class="detail-value">R$ {{ order.cash_value|floatformat:2 }}</span>
+                </div>
+                
+                <div class="detail-row">
+                    <span class="detail-label">Troco:</span>
+                    <span class="detail-value">R$ {{ order.change_amount|floatformat:2 }}</span>
+                </div>
+                {% endif %}
+                
+                <div class="detail-row">
+                    <span class="detail-label">Total:</span>
+                    <span class="detail-value">R$ {{ order.total_price|floatformat:2 }}</span>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <a href="{% url 'product_list' %}" class="btn-primary">
+                    Continuar Comprando
+                </a>
+                <a href="{% url 'checkout:checkout' %}" class="btn-secondary">
+                    Fazer Novo Pedido
+                </a>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

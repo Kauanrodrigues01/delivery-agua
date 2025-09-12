@@ -105,3 +105,80 @@ def send_order_notifications_with_callmebot(order):
         f"━━━━━━━━━━━━━━━━━━━━━━━━━━"
     )
     callmebot.send_text_message(message)
+
+
+def send_payment_update_notification_with_callmebot(order, previous_status=None):
+    """
+    Envia notificação específica para atualizações de pagamento via webhook.
+    """
+    callmebot = CallMeBot()
+
+    # Debug - verificar dados do pedido
+    print(f"DEBUG - Order ID: {getattr(order, 'id', None)}")
+    print(f"DEBUG - Order customer_name: {getattr(order, 'customer_name', None)}")
+    print(f"DEBUG - Order phone: {getattr(order, 'phone', None)}")
+    print(f"DEBUG - Order total_price: {getattr(order, 'total_price', None)}")
+    print(f"DEBUG - Order payment_status: {getattr(order, 'payment_status', None)}")
+    print(f"DEBUG - Order payment_method: {getattr(order, 'payment_method', None)}")
+
+    # Emojis para diferentes status
+    status_emoji = {"paid": "✅", "cancelled": "❌", "pending": "⏳"}.get(
+        order.payment_status, "⏳"
+    )
+    
+    payment_method_emoji = {"pix": "💳", "dinheiro": "💰", "cartao": "💳"}.get(
+        order.payment_method, "💳"
+    )
+
+    # Determinar o tipo de atualização
+    if order.payment_status == "paid":
+        update_type = "💰 *PAGAMENTO APROVADO!*"
+        status_text = "✅ Pago"
+    elif order.payment_status == "cancelled":
+        update_type = "❌ *PAGAMENTO CANCELADO*"
+        status_text = "❌ Cancelado"
+    else:
+        update_type = "⏳ *ATUALIZAÇÃO DE PAGAMENTO*"
+        status_text = f"{status_emoji} {order.get_payment_status_display()}"
+
+    # Mensagem para o admin
+    order_id = getattr(order, 'id', 'N/A') or 'N/A'
+    customer_name = getattr(order, 'customer_name', 'N/A') or 'N/A'
+    phone = getattr(order, 'phone', 'N/A') or 'N/A'
+    total_price = getattr(order, 'total_price', 0) or 0
+    
+    message = (
+        f"{update_type}\n\n"
+        f"*Pedido:* #{order_id}\n"
+        f"*Cliente:* {customer_name}\n"
+        f"*Telefone:* {phone}\n"
+        f"*Total:* R$ {total_price:.2f}\n\n"
+        f"*Pagamento:*\n"
+        f"{payment_method_emoji} {order.get_payment_method_display()}\n"
+        f"{status_text}\n\n"
+    )
+
+    # Adicionar informações específicas baseadas no status
+    if order.payment_status == "paid":
+        message += (
+            f"🎉 *O pedido está pronto para ser processado!*\n"
+            f"📦 Preparar itens para entrega\n"
+            f"📞 Entrar em contato com o cliente\n\n"
+        )
+    elif order.payment_status == "cancelled":
+        message += (
+            f"⚠️ *Ação necessária:*\n"
+            f"• Verificar motivo do cancelamento\n"
+            f"• Não processar o pedido\n"
+            f"• Entrar em contato se necessário\n\n"
+        )
+
+    message += f"━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+    print(f"DEBUG - Mensagem completa: {repr(message)}")
+
+    try:
+        callmebot.send_text_message(message)
+    except Exception as e:
+        print(f"Erro ao enviar notificação de atualização de pagamento: {e}")
+        raise

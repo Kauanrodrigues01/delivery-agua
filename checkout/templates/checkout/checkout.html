@@ -28,6 +28,12 @@
                         pattern="^\([1-9]{2}\)\s9?[0-9]{4}-[0-9]{4}$" maxlength="15" autocomplete="tel">
                 </div>
                 <div class="form-group">
+                    <label for="cpf">CPF</label>
+                    <input type="text" id="cpf" name="cpf" class="form-control" 
+                        placeholder="000.000.000-00" maxlength="14" autocomplete="off">
+                    <small class="form-text text-muted">CPF é opcional, mas recomendado para pagamentos</small>
+                </div>
+                <div class="form-group">
                     <label for="address">Endereço para entrega</label>
                     <input type="text" id="address" name="address" class="form-control" required>
                 </div>
@@ -66,6 +72,7 @@
         const changeAlert = document.getElementById('changeAlert');
         const total = parseFloat('{{ cart_total|floatformat:2 }}'.replace(',', '.'));
         const phoneInput = document.getElementById('phone');
+        const cpfInput = document.getElementById('cpf');
 
         // Máscara dinâmica para telefone
         phoneInput.addEventListener('input', function (e) {
@@ -81,6 +88,50 @@
             }
             phoneInput.value = value;
         });
+
+        // Máscara dinâmica para CPF
+        cpfInput.addEventListener('input', function (e) {
+            let value = cpfInput.value.replace(/\D/g, '');
+            if (value.length > 11) value = value.slice(0, 11);
+            
+            if (value.length > 3) {
+                value = value.slice(0, 3) + '.' + value.slice(3);
+            }
+            if (value.length > 7) {
+                value = value.slice(0, 7) + '.' + value.slice(7);
+            }
+            if (value.length > 11) {
+                value = value.slice(0, 11) + '-' + value.slice(11);
+            }
+            cpfInput.value = value;
+        });
+
+        // Função de validação de CPF
+        function validateCPF(cpf) {
+            cpf = cpf.replace(/\D/g, '');
+            if (cpf.length !== 11) return false;
+            if (/^(\d)\1{10}$/.test(cpf)) return false; // CPFs com todos os dígitos iguais
+            
+            let soma = 0;
+            let resto;
+            
+            for (let i = 1; i <= 9; i++) {
+                soma += parseInt(cpf.substring(i - 1, i)) * (11 - i);
+            }
+            resto = (soma * 10) % 11;
+            if (resto === 10 || resto === 11) resto = 0;
+            if (resto !== parseInt(cpf.substring(9, 10))) return false;
+            
+            soma = 0;
+            for (let i = 1; i <= 10; i++) {
+                soma += parseInt(cpf.substring(i - 1, i)) * (12 - i);
+            }
+            resto = (soma * 10) % 11;
+            if (resto === 10 || resto === 11) resto = 0;
+            if (resto !== parseInt(cpf.substring(10, 11))) return false;
+            
+            return true;
+        }
 
         paymentSelect.addEventListener('change', function () {
             if (this.value === 'dinheiro') {
@@ -113,6 +164,17 @@
                 return;
             }
 
+            // Validação do CPF se fornecido
+            if (cpfInput.value.trim() !== '') {
+                if (!validateCPF(cpfInput.value)) {
+                    e.preventDefault();
+                    changeAlert.textContent = 'CPF inválido. Digite um CPF válido ou deixe em branco.';
+                    changeAlert.style.display = '';
+                    cpfInput.focus();
+                    return;
+                }
+            }
+
             // Regex telefone
             const phoneRaw = phoneInput.value.replace(/\D/g, '');
             if (!/^\d{10,11}$/.test(phoneRaw)) {
@@ -124,6 +186,11 @@
             }
             // Antes de enviar, sobrescreve o valor do input para o formato sem máscara
             phoneInput.value = phoneRaw;
+            
+            // Limpar máscara do CPF antes do envio
+            if (cpfInput.value.trim() !== '') {
+                cpfInput.value = cpfInput.value.replace(/\D/g, '');
+            }
 
             if (paymentSelect.value === 'dinheiro') {
                 const cashValue = parseFloat(cashInput.value.replace(',', '.'));

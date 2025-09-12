@@ -1,5 +1,6 @@
 import requests
 from django.conf import settings
+import urllib.parse
 
 
 class CallMeBot:
@@ -17,4 +18,5 @@ class CallMeBot:
         return response
 
     def format_message_for_callmebot(self, message):
-        return message.replace(" ", "+").replace("\n", "%0A")
+        # Codifica toda a mensagem para URL de forma segura
+        return urllib.parse.quote_plus(message)
