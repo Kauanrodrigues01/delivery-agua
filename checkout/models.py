@@ -147,7 +147,7 @@ class Order(models.Model):
         from decimal import Decimal
 
         if self.payment_method == "dinheiro" and self.cash_value:
-            return max(Decimal("0.00"), self.cash_value - self.total_price)
+            return max(Decimal("0.00"), self.cash_value - float(self.total_price))
         return Decimal("0.00")
 
     @property
