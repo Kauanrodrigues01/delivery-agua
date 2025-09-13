@@ -26,22 +26,17 @@ def update_order_status(payment_id, status, status_detail, date_approved=None, e
         
         # Primeiro, tentar encontrar o pedido pelo payment_id (PIX)
         order = Order.objects.filter(payment_id=payment_id).first()
-        print(f"DEBUG - Busca por payment_id {payment_id}: {order}")
         
         # Se não encontrou e tem external_reference, buscar pelo ID do pedido (Cartão)
         if not order and external_reference:
             try:
-                print(f"DEBUG - Tentando buscar por external_reference: {external_reference}")
                 order = Order.objects.filter(id=int(external_reference)).first()
-                print(f"DEBUG - Pedido encontrado por external_reference: {order}")
                 # Para cartão, atualizar o payment_id com o ID real do pagamento
                 if order and order.payment_method == 'cartao':
                     order.payment_id = payment_id
                     order.save()
-                    print(f"DEBUG - Payment_id atualizado para: {payment_id}")
             except (ValueError, TypeError):
                 # external_reference não é um número válido
-                print(f"DEBUG - External_reference inválido: {external_reference}")
                 pass
         
         if not order:
@@ -57,8 +52,6 @@ def update_order_status(payment_id, status, status_detail, date_approved=None, e
             
             # Enviar notificações WhatsApp para pagamentos aprovados
             try:
-                print(f"DEBUG - Enviando notificação para pedido: {order.id}")
-                print(f"DEBUG - Order antes da notificação: ID={order.id}, Nome={order.customer_name}, Phone={order.phone}")
                 send_payment_update_notification_with_callmebot(order)
             except Exception as e:
                 print(f"Erro ao enviar notificação WhatsApp: {e}")

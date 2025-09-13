@@ -113,14 +113,6 @@ def send_payment_update_notification_with_callmebot(order, previous_status=None)
     """
     callmebot = CallMeBot()
 
-    # Debug - verificar dados do pedido
-    print(f"DEBUG - Order ID: {getattr(order, 'id', None)}")
-    print(f"DEBUG - Order customer_name: {getattr(order, 'customer_name', None)}")
-    print(f"DEBUG - Order phone: {getattr(order, 'phone', None)}")
-    print(f"DEBUG - Order total_price: {getattr(order, 'total_price', None)}")
-    print(f"DEBUG - Order payment_status: {getattr(order, 'payment_status', None)}")
-    print(f"DEBUG - Order payment_method: {getattr(order, 'payment_method', None)}")
-
     # Emojis para diferentes status
     status_emoji = {"paid": "✅", "cancelled": "❌", "pending": "⏳"}.get(
         order.payment_status, "⏳"
@@ -175,7 +167,6 @@ def send_payment_update_notification_with_callmebot(order, previous_status=None)
 
     message += f"━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-    print(f"DEBUG - Mensagem completa: {repr(message)}")
 
     try:
         callmebot.send_text_message(message)
