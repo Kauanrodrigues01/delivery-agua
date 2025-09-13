@@ -92,8 +92,8 @@ class CheckoutView(TemplateView):
             if payment_method == "cartao":
                 try:
                     preference_data = create_payment_charge(order)
-                    # Salva o ID da preferência e a URL de pagamento no pedido
-                    order.payment_id = preference_data.get("id")
+                    # Salva a URL de pagamento no pedido, pagamento por preferência não gera ID de pagamento imediato, só depois do pagamento no webhook
+                    order.payment_id = None
                     order.payment_url = preference_data.get("init_point")
                     order.save()
 
@@ -178,19 +178,7 @@ class AwaitingPaymentView(TemplateView):
 
         # Busca informações do pagamento se existir
         payment_info = None
-        ticket_url = None
-        
-        if order.payment_id:
-            try:
-                if order.payment_method == "pix":
-                    # Para PIX, busca informações do pagamento para pegar QR code e ticket
-                    payment_info = get_payment_info(order.payment_id)
-                    ticket_url = payment_info.get("point_of_interaction", {}).get("transaction_data", {}).get("ticket_url")
-                elif order.payment_method == "cartao":
-                    # Para cartão, usa a URL armazenada no pedido
-                    ticket_url = order.payment_url
-            except Exception as e:
-                print(f"Erro ao buscar informações do pagamento: {e}")
+        ticket_url = order.payment_url
 
         context.update(
             {
@@ -213,29 +201,19 @@ def get_payment_info(payment_id: str) -> dict:
 @csrf_exempt
 def check_payment_status(request, order_id):
     """
-    API endpoint para verificar status do pagamento via AJAX (apenas PIX)
+    API endpoint para verificar status do pagamento via AJAX (PIX e Cartão)
     """
     if request.method == "GET":
         try:
             order = get_object_or_404(Order, id=order_id)
 
             if not order.payment_id:
+                print("DEBUG: pedido sem payment_id")
                 return JsonResponse(
-                    {"status": "error", "message": "Pagamento não encontrado"}
+                    {"status": "error", "message": "Pagamento não encontrado, caso seja cartão, verifique se o pagamento foi efetuado"}
                 )
-
-            # Verificação apenas para PIX
-            if order.payment_method != "pix":
-                return JsonResponse(
-                    {"status": "error", "message": "Verificação de status disponível apenas para PIX"}
-                )
-
-            payment_info = get_payment_info(order.payment_id)
             
-            # Atualiza status do pedido se necessário
-            if payment_info.get("status") == "approved":
-                order.payment_status = "paid"
-                order.save()
+            payment_info = get_payment_info(order.payment_id)
 
             return JsonResponse(
                 {
