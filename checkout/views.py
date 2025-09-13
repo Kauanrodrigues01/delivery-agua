@@ -110,14 +110,9 @@ class CheckoutView(TemplateView):
             
             if payment_method == "dinheiro":
                 try:
-                    # Para pagamento em dinheiro, marcar como pago e finalizar pedido
-                    order.payment_status = "paid"
-                    order.status = "completed"
-                    order.save()
-                    
                     # Limpa o carrinho
                     cart.items.all().delete()
-                    return redirect("checkout:success_payment", order_id=order.id)
+                    return render(request, "checkout/success.html", context)
                 except Exception as e:
                     order.delete()
                     print(f"Erro ao processar pagamento em dinheiro: {e}")
