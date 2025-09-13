@@ -96,6 +96,7 @@ def send_order_notifications_with_callmebot(order):
     # Mensagem para o admin
     message = (
         f"🚨 *NOVO PEDIDO RECEBIDO!*\n\n"
+        f"*Pedido:* #{order.id}\n"
         f"*Cliente:* {order.customer_name}\n"
         f"*Telefone:* {order.phone}\n"
         f"*Endereço:* {order.address}\n\n"
@@ -154,8 +155,6 @@ def send_payment_update_notification_with_callmebot(order, previous_status=None)
     if order.payment_status == "paid":
         message += (
             f"🎉 *O pedido está pronto para ser processado!*\n"
-            f"📦 Preparar itens para entrega\n"
-            f"📞 Entrar em contato com o cliente\n\n"
         )
     elif order.payment_status == "cancelled":
         message += (
