@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: delivery-agua-app
+    container_name: ${CONTAINER_NAME:-delivery-agua-app}
     restart: unless-stopped
     ports:
       - "${HOST_PORT:-8000}:8000"
