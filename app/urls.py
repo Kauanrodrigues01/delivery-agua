@@ -34,4 +34,6 @@ urlpatterns = [
     path("dashboard/", include("dashboard.urls")),
     path("health/", health_check, name="health_check"),
     path("services/", include("services.urls")),
+    
+    path('', include('django_prometheus.urls')),  # monitoramento com django-prometheus
 ]
