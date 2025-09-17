@@ -154,17 +154,17 @@ def send_payment_update_notification_with_callmebot(order, previous_status=None)
     # Adicionar informações específicas baseadas no status
     if order.payment_status == "paid":
         message += (
-            f"🎉 *O pedido está pronto para ser processado!*\n"
+            "🎉 *O pedido está pronto para ser processado!*\n"
         )
     elif order.payment_status == "cancelled":
         message += (
-            f"⚠️ *Ação necessária:*\n"
-            f"• Verificar motivo do cancelamento\n"
-            f"• Não processar o pedido\n"
-            f"• Entrar em contato se necessário\n\n"
+            "⚠️ *Ação necessária:*\n"
+            "• Verificar motivo do cancelamento\n"
+            "• Não processar o pedido\n"
+            "• Entrar em contato se necessário\n\n"
         )
 
-    message += f"━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    message += "━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 
     try:

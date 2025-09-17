@@ -4,11 +4,11 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView
 
 from cart.views import get_cart
+from services.mercadopago import MercadoPagoService
 from services.notifications import (
     send_order_notifications_with_callmebot,
 )
 
-from services.mercadopago import MercadoPagoService
 from .models import Order, OrderItem
 
 

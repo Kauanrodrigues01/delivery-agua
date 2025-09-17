@@ -1,6 +1,12 @@
 from django.urls import path
 
-from .views import AwaitingPaymentView, CheckoutView, SuccessPaymentView, ErrorPaymentView, check_payment_status
+from .views import (
+    AwaitingPaymentView,
+    CheckoutView,
+    ErrorPaymentView,
+    SuccessPaymentView,
+    check_payment_status,
+)
 
 app_name = "checkout"
 

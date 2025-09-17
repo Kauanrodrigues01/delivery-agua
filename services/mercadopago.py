@@ -1,8 +1,8 @@
 import uuid
 from datetime import datetime, timedelta
 from typing import Dict
-from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from urllib.parse import urlparse
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import requests
 from django.conf import settings
@@ -414,7 +414,7 @@ class MercadoPagoService:
             
             return error_msg
 
-        except Exception as e:
+        except Exception:
             return f"Erro na API do Mercado Pago ({status_code}): {response.text}"
 
     def _post(self, path: str, payload: dict, use_idempotency_key: bool = True):

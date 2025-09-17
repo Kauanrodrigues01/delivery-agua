@@ -1,10 +1,11 @@
 import json
+
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from services.notifications import send_payment_update_notification_with_callmebot
 
-from services.mercadopago import MercadoPagoService
 from checkout.models import Order
+from services.mercadopago import MercadoPagoService
+from services.notifications import send_payment_update_notification_with_callmebot
 
 
 def update_order_status(payment_id, status, status_detail, date_approved=None, external_reference=None):
