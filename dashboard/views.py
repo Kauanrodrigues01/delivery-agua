@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods, require_POST
 
 from checkout.models import Order, OrderItem
-from products.models import Product
+from products.models import Category, Product
 
 from .utils.metrics import calculate_metrics
 
@@ -36,8 +36,9 @@ def dashboard_view(request):
 # Product CRUD views
 @login_required
 def product_list(request):
-    # Get filter parameter from the request
+    # Get filter parameters from the request
     status_filter = request.GET.get("status")
+    category_filter = request.GET.get("category")
     search_query = request.GET.get("search", "")
 
     # Filter products based on the status
@@ -48,12 +49,19 @@ def product_list(request):
     else:
         products = Product.objects.all()
 
+    # Filter by category
+    if category_filter:
+        products = products.filter(category_id=category_filter)
+
     # Filter by search query
     if search_query:
         products = products.filter(name__icontains=search_query)
 
     # Order by most recent
     products = products.order_by("-created_at")
+
+    # Get all categories for filter dropdown
+    categories = Category.objects.all().order_by("name")
 
     # Paginação
     from django.core.paginator import Paginator
@@ -67,7 +75,9 @@ def product_list(request):
         "dashboard/product_list.html",
         {
             "products": page_obj,
+            "categories": categories,
             "status_filter": status_filter,
+            "category_filter": category_filter,
             "search_query": search_query,
             "page_obj": page_obj,
             "is_paginated": page_obj.has_other_pages(),
@@ -81,9 +91,13 @@ def product_create(request):
     name = request.POST.get("name")
     price = request.POST.get("price")
     image = request.FILES.get("image")
+    category_id = request.POST.get("category")
     is_active = request.POST.get("is_active") == "true"
 
-    Product.objects.create(name=name, price=price, image=image, is_active=is_active)
+    category = get_object_or_404(Category, pk=category_id)
+    Product.objects.create(
+        name=name, price=price, image=image, category=category, is_active=is_active
+    )
 
     return redirect("dashboard:product_list")
 
@@ -95,6 +109,11 @@ def product_edit(request, pk):
     product.name = request.POST["name"]
     product.price = request.POST["price"]
     product.image = request.FILES.get("image", product.image)
+
+    category_id = request.POST.get("category")
+    if category_id:
+        product.category = get_object_or_404(Category, pk=category_id)
+
     product.save()
     return redirect("dashboard:product_list")
 
@@ -373,3 +392,71 @@ def order_cancel_payment(request, pk):
         order.payment_status = "cancelled"
         order.save()
     return redirect("dashboard:order_detail", pk=order.pk)
+
+
+# Category CRUD views
+@login_required
+def category_list(request):
+    # Get filter parameters from the request
+    search_query = request.GET.get("search", "")
+
+    # Get all categories
+    categories = Category.objects.all()
+
+    # Filter by search query
+    if search_query:
+        categories = categories.filter(name__icontains=search_query)
+
+    # Order by name
+    categories = categories.order_by("name")
+
+    # Paginação
+    from django.core.paginator import Paginator
+
+    paginator = Paginator(categories, 10)  # 10 categorias por página
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    return render(
+        request,
+        "dashboard/category_list.html",
+        {
+            "categories": page_obj,
+            "search_query": search_query,
+            "page_obj": page_obj,
+            "is_paginated": page_obj.has_other_pages(),
+        },
+    )
+
+
+@login_required
+@require_POST
+def category_create(request):
+    name = request.POST.get("name")
+    description = request.POST.get("description", "")
+
+    Category.objects.create(name=name, description=description)
+
+    return redirect("dashboard:category_list")
+
+
+@login_required
+@require_POST
+def category_edit(request, pk):
+    category = Category.objects.get(pk=pk)
+    category.name = request.POST["name"]
+    category.description = request.POST.get("description", "")
+    category.save()
+    return redirect("dashboard:category_list")
+
+
+@login_required
+@require_http_methods(["DELETE"])
+def category_delete(request, pk):
+    category = Category.objects.get(pk=pk)
+    # Verificar se existem produtos usando esta categoria
+    if category.products.exists():
+        # Retornar erro - não pode deletar categoria com produtos
+        return redirect("dashboard:category_list")
+    category.delete()
+    return redirect("dashboard:category_list")

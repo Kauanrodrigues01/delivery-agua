@@ -5,7 +5,7 @@ from django.views.generic import DetailView, ListView
 from cart.models import CartItem
 from cart.views import get_cart
 
-from .models import Product
+from .models import Category, Product
 
 
 def add_to_cart(request):
@@ -33,12 +33,21 @@ class ProductListView(ListView):
     paginate_by = 9
 
     def get_queryset(self):
-        queryset = Product.objects.filter(is_active=True).order_by("-created_at")
+        queryset = (
+            Product.objects.filter(is_active=True)
+            .select_related("category")
+            .order_by("-created_at")
+        )
 
         # Filtro de busca por nome
         search_query = self.request.GET.get("search", "")
         if search_query:
             queryset = queryset.filter(name__icontains=search_query)
+
+        # Filtro por categoria
+        category_filter = self.request.GET.get("category", "")
+        if category_filter:
+            queryset = queryset.filter(category_id=category_filter)
 
         return queryset
 
@@ -47,6 +56,8 @@ class ProductListView(ListView):
         cart = get_cart(self.request)
         context["cart_count"] = cart.total_quantity if cart else 0
         context["search_query"] = self.request.GET.get("search", "")
+        context["category_filter"] = self.request.GET.get("category", "")
+        context["categories"] = Category.objects.all().order_by("name")
         return context
 
     def get(self, request, *args, **kwargs):

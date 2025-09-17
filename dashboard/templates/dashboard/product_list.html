@@ -39,13 +39,25 @@
                 {% if status_filter %}
                 <input type="hidden" name="status" value="{{ status_filter }}">
                 {% endif %}
+                {% if category_filter %}
+                <input type="hidden" name="category" value="{{ category_filter }}">
+                {% endif %}
             </form>
-            <select id="statusFilter" class="form-control" onchange="filterByStatus()">
-                <option value="">Todos</option>
-                <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Ativos</option>
-                <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inativos
-                </option>
-            </select>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;">
+                <select id="statusFilter" class="form-control">
+                    <option value="">Todos os Status</option>
+                    <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Ativos</option>
+                    <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inativos</option>
+                </select>
+                <select id="categoryFilter" class="form-control">
+                    <option value="">Todas as Categorias</option>
+                    {% for category in categories %}
+                    <option value="{{ category.id }}" {% if category_filter == category.id|stringformat:"s" %}selected{% endif %}>
+                        {{ category.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
         </section>
 
         <button class="add-btn add-space-bottom" id="addProductButton">Adicionar Produto</button>
@@ -64,6 +76,7 @@
                 </div>
                 <div class="product-info">
                     <h3 class="product-name">{{ product.name }}</h3>
+                    <p class="product-category"><strong>Categoria:</strong> {{ product.category.name }}</p>
                     <p class="{% if product.is_active %}product-active{% else %}product-desactive{% endif %}">
                         {% if product.is_active %}Ativo{% else %}Desativado{% endif %}
                     </p>
@@ -87,7 +100,7 @@
         </section>
 
         <!-- Pagination -->
-        {% include 'components/pagination.html' with page_obj=page_obj search_query=search_query status_filter=status_filter %}
+        {% include 'components/pagination.html' with page_obj=page_obj search_query=search_query status_filter=status_filter category_filter=category_filter %}
     </div>
 
     <div class="modal" id="modalAddProduct">
@@ -99,6 +112,15 @@
                 <div class="form-group">
                     <label for="productName">Nome do Produto</label>
                     <input type="text" id="productName" name="name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="productCategory">Categoria</label>
+                    <select name="category" id="productCategory" class="form-control" required>
+                        <option value="">Selecione uma categoria</option>
+                        {% for category in categories %}
+                        <option value="{{ category.id }}">{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="productPrice">Preço do Produto</label>
@@ -133,6 +155,15 @@
                 <div class="form-group">
                     <label for="editProductName">Nome do Produto</label>
                     <input type="text" id="editProductName" name="name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="editProductCategory">Categoria</label>
+                    <select name="category" id="editProductCategory" class="form-control" required>
+                        <option value="">Selecione uma categoria</option>
+                        {% for category in categories %}
+                        <option value="{{ category.id }}">{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="editProductPrice">Preço</label>
@@ -204,9 +235,22 @@
     // Modal Edit Product
     addEventToButtons('.edit-btn', (event) => {
         const productCard = event.target.closest('.product-card');
+        const productCategoryText = productCard.querySelector('.product-category').innerText;
+        const categoryName = productCategoryText.replace('Categoria: ', '');
+
         document.getElementById('editProductId').value = productCard.dataset.id;
         document.getElementById('editProductName').value = productCard.querySelector('.product-name').innerText;
         document.getElementById('editProductPrice').value = parseFloat(productCard.querySelector('.product-price').innerText.replace("R$", "").trim());
+
+        // Set category in dropdown
+        const categorySelect = document.getElementById('editProductCategory');
+        for (let option of categorySelect.options) {
+            if (option.text === categoryName) {
+                option.selected = true;
+                break;
+            }
+        }
+
         document.getElementById('editProductForm').action = "{% url 'dashboard:product_edit' 0 %}".replace('0', productCard.dataset.id);
         toggleModal('modalEditProduct');
     });
@@ -266,9 +310,13 @@
         });
     });
 
-    // Filtrar produtos por status
-    document.getElementById('statusFilter').addEventListener('change', () => {
+    // Filtrar produtos por status e categoria
+    document.getElementById('statusFilter').addEventListener('change', updateFilters);
+    document.getElementById('categoryFilter').addEventListener('change', updateFilters);
+
+    function updateFilters() {
         const status = document.getElementById('statusFilter').value;
+        const category = document.getElementById('categoryFilter').value;
         const searchInput = document.getElementById('searchInput');
         const searchValue = searchInput ? searchInput.value : '';
 
@@ -280,6 +328,12 @@
             url.searchParams.delete('status');
         }
 
+        if (category) {
+            url.searchParams.set('category', category);
+        } else {
+            url.searchParams.delete('category');
+        }
+
         if (searchValue) {
             url.searchParams.set('search', searchValue);
         }
@@ -288,7 +342,7 @@
         url.searchParams.delete('page');
 
         window.location.href = url;
-    });
+    }
 
     // Handle search form submission
     document.addEventListener('DOMContentLoaded', function () {
@@ -299,6 +353,7 @@
             searchForm.addEventListener('submit', function (e) {
                 e.preventDefault();
                 const statusFilter = document.getElementById('statusFilter').value;
+                const categoryFilter = document.getElementById('categoryFilter').value;
 
                 const url = new URL(window.location.href);
                 const searchValue = searchInput.value.trim();
@@ -311,6 +366,10 @@
 
                 if (statusFilter) {
                     url.searchParams.set('status', statusFilter);
+                }
+
+                if (categoryFilter) {
+                    url.searchParams.set('category', categoryFilter);
                 }
 
                 // Remove page parameter when searching

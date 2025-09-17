@@ -26,8 +26,20 @@
 /* Products Filters */
 .products-filters {
     display: flex;
+    flex-direction: column;
     justify-content: center;
+    align-items: center;
     margin-bottom: 2.5rem;
+    gap: 1rem;
+}
+
+.products-filters form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    max-width: 420px;
 }
 
 .products-filters input[type="text"] {
@@ -49,6 +61,26 @@
     border-color: var(--primary);
     box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.15);
     background: var(--muted);
+}
+
+.products-filters select.form-control {
+    width: 100%;
+    max-width: 420px;
+    padding: 0.75rem 1rem;
+    border: 1.5px solid var(--primary);
+    border-radius: var(--radius);
+    background: var(--background);
+    color: var(--foreground);
+    font-size: 1.05rem;
+    transition: border 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+}
+
+.products-filters select.form-control:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.15);
+    background: var(--muted);
+    outline: none;
 }
 
 /* Opcional: adicionar um ícone de busca dentro do input usando ::before em um wrapper, se desejar */
@@ -107,6 +139,12 @@
     font-weight: 600;
     color: var(--card-foreground);
     margin-bottom: 0.5rem;
+}
+
+.product-category {
+    color: var(--muted-foreground);
+    font-size: 0.9rem;
+    margin: 0.25rem 0;
 }
 
 .product-price {

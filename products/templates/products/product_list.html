@@ -3,6 +3,7 @@
 {% block title %}Produtos{% endblock %}
 {% block head %}
 <link rel="stylesheet" href="{% static 'products/styles.css' %}">
+<link rel="stylesheet" href="{% static 'global/form-default-style.css' %}">
 <link rel="stylesheet" href="{% static 'global/buttons-default-style.css' %}">
 <link rel="stylesheet" href="{% static 'components/pagination/pagination.css' %}">
 {% endblock %}
@@ -23,6 +24,23 @@
             <form method="GET" action="">
                 <input type="text" name="search" placeholder="Buscar produtos..." id="searchInput" class="form-control"
                     value="{{ search_query }}">
+                {% if category_filter %}
+                <input type="hidden" name="category" value="{{ category_filter }}">
+                {% endif %}
+            </form>
+            <form method="GET" action="">
+                {% if search_query %}
+                <input type="hidden" name="search" value="{{ search_query }}">
+                {% endif %}
+                <select id="categoryFilter" name="category" class="form-control" onchange="this.form.submit()">
+                    <option value="">Todas as Categorias</option>
+                    {% for category in categories %}
+                    <option value="{{ category.id }}" {% if category_filter==category.id|stringformat:"s" %}selected{%
+                        endif %}>
+                        {{ category.name }}
+                    </option>
+                    {% endfor %}
+                </select>
             </form>
         </section>
 
@@ -40,6 +58,7 @@
                 </div>
                 <div class="product-info">
                     <h3 class="product-name">{{ product.name }}</h3>
+                    <p class="product-category">{{ product.category.name }}</p>
                     <p class="product-price">R$&nbsp;{{ product.price|floatformat:2 }}</p>
                     <button type="button" class="add-btn btn btn-primary btn-sm mt-2"
                         data-product-id="{{ product.pk }}">
@@ -53,7 +72,8 @@
         </section>
 
         <!-- Pagination -->
-        {% include 'components/pagination.html' with page_obj=page_obj search_query=search_query %}
+        {% include 'components/pagination.html' with page_obj=page_obj search_query=search_query
+        category_filter=category_filter %}
 
         <!-- Contact Section -->
         <section class="contact-section">

@@ -1,0 +1,238 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block head %}
+<!-- Reusando estilos do produto para manter consistência -->
+<link rel="stylesheet" href="{% static 'products/styles.css' %}">
+
+<!-- Formulários -->
+<link rel="stylesheet" href="{% static 'global/form-default-style.css' %}">
+<link rel="stylesheet" href="{% static 'global/buttons-default-style.css' %}">
+
+<link rel="stylesheet" href="{% static 'dashboard/product_list.css' %}">
+<link rel="stylesheet" href="{% static 'components/pagination/pagination.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="main-content">
+  <div class="container">
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <h2>Gerenciamento de Categorias</h2>
+      <p>
+        Aqui você pode gerenciar as categorias dos produtos da sua loja.
+
+        <br>
+        Avisos:
+        <br>
+        <span class="warning">Não é possível excluir categorias que possuem produtos</span>
+      </p>
+    </section>
+
+    <section class="products-filters">
+      <p>Use o campo abaixo para buscar categorias específicas:</p>
+      <form method="GET" action="">
+        <input type="text" name="search" placeholder="Buscar categorias..." id="searchInput" class="form-control"
+          value="{{ search_query }}">
+      </form>
+    </section>
+
+    <button class="add-btn add-space-bottom" id="addCategoryButton">Adicionar Categoria</button>
+
+    <!-- Categories Grid -->
+    <section class="products-grid" id="categoriesGrid">
+      {% for category in categories %}
+      <div class="product-card" data-id="{{ category.id }}">
+        <div class="product-info">
+          <h3 class="product-name">{{ category.name }}</h3>
+          <p class="product-category"><strong>Descrição:</strong> {{ category.description|default:"Sem descrição" }}</p>
+          <p class="product-price">{{ category.products.count }} produto{{ category.products.count|pluralize }}</p>
+          <div class="product-actions">
+            <button class="edit-btn">Editar</button>
+            {% if not category.products.exists %}
+            <button class="delete-btn">Excluir</button>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <p>Nenhuma categoria encontrada.</p>
+      {% endfor %}
+    </section>
+
+    <!-- Pagination -->
+    {% include 'components/pagination.html' with page_obj=page_obj search_query=search_query %}
+  </div>
+
+  <!-- Modal Add Category -->
+  <div class="modal" id="modalAddCategory">
+    <div class="modal-content form-section">
+      <h3 class="form-title">Adicionar Categoria</h3>
+      <form id="addCategoryForm" action="{% url 'dashboard:category_create' %}" method="post">
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="categoryName">Nome da Categoria</label>
+          <input type="text" id="categoryName" name="name" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label for="categoryDescription">Descrição</label>
+          <textarea id="categoryDescription" name="description" class="form-control" rows="3"
+            placeholder="Descrição opcional da categoria"></textarea>
+        </div>
+        <div class="form-group">
+          <button type="submit" class="add-btn w-100">Adicionar Categoria</button>
+          <button type="button" class="cancel-btn w-100" id="closeModalButtonAdd">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Edit Category -->
+  <div class="modal" id="modalEditCategory">
+    <div class="modal-content form-section">
+      <h3 class="form-title">Editar Categoria</h3>
+      <form id="editCategoryForm" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="id" id="editCategoryId">
+        <div class="form-group">
+          <label for="editCategoryName">Nome da Categoria</label>
+          <input type="text" id="editCategoryName" name="name" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label for="editCategoryDescription">Descrição</label>
+          <textarea id="editCategoryDescription" name="description" class="form-control" rows="3"
+            placeholder="Descrição opcional da categoria"></textarea>
+        </div>
+        <div class="form-group">
+          <button type="submit" class="add-btn w-100">Salvar Alterações</button>
+          <button type="button" class="cancel-btn w-100" id="closeModalButtonEdit">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Confirm Delete Category -->
+  <div class="modal" id="modalConfirmDeleteCategory">
+    <div class="modal-content form-section">
+      <h3 class="form-title">Confirmar Exclusão</h3>
+      <p>Tem certeza que deseja excluir esta categoria? Esta ação não pode ser desfeita.</p>
+      <input type="hidden" id="confirmDeleteCategoryId">
+      <div class="form-group">
+        <button type="button" class="add-btn w-100" id="confirmDeleteButton">Confirmar Exclusão</button>
+        <button type="button" class="cancel-btn w-100" id="closeModalButtonDelete">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+  // Função genérica para abrir e fechar modais
+  function toggleModal(modalId, show = true) {
+    const modal = document.getElementById(modalId);
+    if (show) {
+      modal.classList.add('show');
+    } else {
+      modal.classList.remove('show');
+    }
+  }
+
+  // Função genérica para adicionar eventos a botões
+  function addEventToButtons(buttonSelector, eventHandler) {
+    const buttons = document.querySelectorAll(buttonSelector);
+    buttons.forEach((button) => {
+      button.addEventListener('click', eventHandler);
+    });
+  }
+
+  // Modal Add Category
+  addEventToButtons('#addCategoryButton', () => toggleModal('modalAddCategory'));
+  addEventToButtons('#closeModalButtonAdd', () => toggleModal('modalAddCategory', false));
+
+  // Modal Edit Category
+  addEventToButtons('.edit-btn', (event) => {
+    const categoryCard = event.target.closest('.product-card');
+    const descriptionText = categoryCard.querySelector('.product-category').innerText;
+    const description = descriptionText.replace('Descrição: ', '').replace('Sem descrição', '');
+
+    document.getElementById('editCategoryId').value = categoryCard.dataset.id;
+    document.getElementById('editCategoryName').value = categoryCard.querySelector('.product-name').innerText;
+    document.getElementById('editCategoryDescription').value = description === 'Sem descrição' ? '' : description;
+
+    document.getElementById('editCategoryForm').action = "{% url 'dashboard:category_edit' 0 %}".replace('0', categoryCard.dataset.id);
+    toggleModal('modalEditCategory');
+  });
+  addEventToButtons('#closeModalButtonEdit', () => toggleModal('modalEditCategory', false));
+
+  // Modal Confirm Delete Category
+  addEventToButtons('.delete-btn', (event) => {
+    const categoryCard = event.target.closest('.product-card');
+    document.getElementById('confirmDeleteCategoryId').value = categoryCard.dataset.id;
+    toggleModal('modalConfirmDeleteCategory');
+  });
+  addEventToButtons('#confirmDeleteButton', () => {
+    const categoryId = document.getElementById('confirmDeleteCategoryId').value;
+    fetch("{% url 'dashboard:category_delete' 0 %}".replace('0', categoryId), {
+      method: 'DELETE',
+      headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+    }).then(response => {
+      if (response.ok) {
+        document.querySelector(`.product-card[data-id="${categoryId}"]`).remove();
+      } else {
+        alert('Erro: Não é possível excluir categoria que possui produtos.');
+      }
+    }).catch(() => alert('Erro ao excluir a categoria.'));
+    toggleModal('modalConfirmDeleteCategory', false);
+  });
+  addEventToButtons('#closeModalButtonDelete', () => toggleModal('modalConfirmDeleteCategory', false));
+
+  // Fechar modal clicando fora
+  window.addEventListener('click', (event) => {
+    ['modalAddCategory', 'modalEditCategory', 'modalConfirmDeleteCategory'].forEach(modalId => {
+      if (event.target === document.getElementById(modalId)) {
+        toggleModal(modalId, false);
+      }
+    });
+  });
+
+  // Handle search form submission
+  document.addEventListener('DOMContentLoaded', function () {
+    const searchForm = document.querySelector('.products-filters form');
+    const searchInput = document.getElementById('searchInput');
+
+    if (searchForm) {
+      searchForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const url = new URL(window.location.href);
+        const searchValue = searchInput.value.trim();
+
+        if (searchValue) {
+          url.searchParams.set('search', searchValue);
+        } else {
+          url.searchParams.delete('search');
+        }
+
+        // Remove page parameter when searching
+        url.searchParams.delete('page');
+
+        window.location.href = url;
+      });
+
+      // Auto submit on search input changes (opcional)
+      searchInput.addEventListener('input', function () {
+        clearTimeout(this.searchTimeout);
+        this.searchTimeout = setTimeout(() => {
+          searchForm.dispatchEvent(new Event('submit'));
+        }, 500);
+      });
+    }
+  });
+</script>
+
+<script src="{% static 'global/pagination/pagination.js' %}"></script>
+<script>
+  // Initialize pagination smooth scroll for categories section
+  initializePaginationScroll('.products-grid');
+</script>
+{% endblock %}

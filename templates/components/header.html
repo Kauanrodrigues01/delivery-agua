@@ -18,22 +18,31 @@
         <nav>
             <ul>
                 {% if request.user.is_authenticated %}
-                <li><a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard:dashboard' %}">Dashboard</a></li>
+                <li><a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
+                        href="{% url 'dashboard:dashboard' %}">Dashboard</a></li>
                 <li>
-                    <a class="nav-link {% if request.resolver_match.url_name == 'product_list' %}active{% endif %}" href="{% url 'dashboard:product_list' %}">
-                        <span class="nav-text-full">Gerenciamento de Produtos</span>
-                        <span class="nav-text-short">Produtos</span>
+                    <a class="nav-link {% if request.resolver_match.url_name == 'product_list' %}active{% endif %}"
+                        href="{% url 'dashboard:product_list' %}">
+                        <span class="nav-text-full">Produtos</span>
                     </a>
                 </li>
                 <li>
-                    <a class="nav-link {% if request.resolver_match.url_name == 'order_list' %}active{% endif %}" href="{% url 'dashboard:order_list' %}">
-                        <span class="nav-text-full">Gerenciamento de Pedidos</span>
-                        <span class="nav-text-short">Pedidos</span>
+                    <a class="nav-link {% if request.resolver_match.url_name == 'category_list' %}active{% endif %}"
+                        href="{% url 'dashboard:category_list' %}">
+                        <span class="nav-text-full">Categorias</span>
                     </a>
                 </li>
-                <li><a class="nav-link {% if request.resolver_match.url_name == 'logout' %}active{% endif %}" href="{% url 'dashboard:logout' %}">Sair</a></li>
+                <li>
+                    <a class="nav-link {% if request.resolver_match.url_name == 'order_list' %}active{% endif %}"
+                        href="{% url 'dashboard:order_list' %}">
+                        <span class="nav-text-full">Pedidos</span>
+                    </a>
+                </li>
+                <li><a class="nav-link {% if request.resolver_match.url_name == 'logout' %}active{% endif %}"
+                        href="{% url 'dashboard:logout' %}">Sair</a></li>
                 {% else %}
-                <li><a class="nav-link {% if request.resolver_match.url_name == 'product_list' %}active{% endif %}" href="{% url 'product_list' %}">Produtos</a></li>
+                <li><a class="nav-link {% if request.resolver_match.url_name == 'product_list' %}active{% endif %}"
+                        href="{% url 'product_list' %}">Produtos</a></li>
                 <li style="position: relative;">
                     <a class="nav-link {% if request.resolver_match.url_name == 'cart_detail' %}active{% endif %} d-flex align-items-center gap-1 position-relative"
                         href="{% url 'cart_detail' %}">

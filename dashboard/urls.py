@@ -17,6 +17,11 @@ urlpatterns = [
         views.product_toggle_active,
         name="product_toggle_active",
     ),
+    # Category URLs
+    path("categories/", views.category_list, name="category_list"),
+    path("categories/create/", views.category_create, name="category_create"),
+    path("categories/<int:pk>/edit/", views.category_edit, name="category_edit"),
+    path("categories/<int:pk>/delete/", views.category_delete, name="category_delete"),
     # Order URLs
     path("orders/", views.order_list, name="order_list"),
     path("orders/create/", views.order_create, name="order_create"),

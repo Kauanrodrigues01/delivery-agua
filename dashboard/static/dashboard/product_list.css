@@ -28,6 +28,12 @@
     font-weight: bold;
 }
 
+.product-category {
+    color: var(--muted-foreground);
+    font-size: 0.9rem;
+    margin: 0.25rem 0;
+}
+
 .product-actions {
     display: flex;
     align-items: center;
