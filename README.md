@@ -1,16 +1,22 @@
-<div align="center">
-
-![Sistema de Delivery](https://img.shields.io/badge/Sistema-Delivery%20de%20%C3%81gua-blue?style=for-the-badge)
-![Status](https://img.shields.io/badge/Status-Ativo-success?style=for-the-badge)
-![Versão](https://img.shields.io/badge/Vers%C3%A3o-1.0.0-informational?style=for-the-badge)
-
-</div>
-
 # 🚚 Sistema Delivery de Água
 
 **Sistema Delivery de Água** é uma aplicação web completa desenvolvida com **Django 5.1+**, projetada para automatizar o processo de vendas e entregas de água mineral. O sistema integra **pagamentos via Mercado Pago** (PIX/Cartão), **notificações automáticas via WhatsApp** através da Evolution API, e possui um **painel administrativo avançado** com regras de negócio complexas para gestão completa de pedidos.
 
 Com este sistema, empresas de delivery podem gerenciar produtos, categorias, pedidos, pagamentos e comunicação com clientes de forma automatizada e eficiente.
+
+<div align="center">
+
+   ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+   ![Django](https://img.shields.io/badge/Django-092E20?style=for-the-badge&logo=django&logoColor=white)
+   ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
+   ![SQLite](https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)
+   ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+   ![WhatsApp](https://img.shields.io/badge/WhatsApp-25D366?style=for-the-badge&logo=whatsapp&logoColor=white)
+   ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
+   ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
+   ![JavaScript](https://img.shields.io/badge/JavaScript-323330?style=for-the-badge&logo=javascript&logoColor=F7DF1E)
+
+</div>
 
 ---
 
@@ -28,22 +34,6 @@ Com este sistema, empresas de delivery podem gerenciar produtos, categorias, ped
 * 📈 **Relatórios e Filtros** avançados para análise de negócio
 
 ---
-
-## 🛠️ Tecnologias Utilizadas
-
-<div align="center">
-
-![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![Django](https://img.shields.io/badge/Django-092E20?style=for-the-badge&logo=django&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
-![SQLite](https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
-![WhatsApp](https://img.shields.io/badge/WhatsApp-25D366?style=for-the-badge&logo=whatsapp&logoColor=white)
-![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
-![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
-![JavaScript](https://img.shields.io/badge/JavaScript-323330?style=for-the-badge&logo=javascript&logoColor=F7DF1E)
-
-</div>
 
 ### Stack Principal
 * **Django 5.1+**: Framework web com arquitetura MVT
