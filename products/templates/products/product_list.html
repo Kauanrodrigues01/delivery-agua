@@ -35,8 +35,7 @@
                 <select id="categoryFilter" name="category" class="form-control" onchange="this.form.submit()">
                     <option value="">Todas as Categorias</option>
                     {% for category in categories %}
-                    <option value="{{ category.id }}" {% if category_filter==category.id|stringformat:"s" %}selected{%
-                        endif %}>
+                    <option value="{{ category.id }}" {% if category_filter|stringformat:"s" == category.id|stringformat:"s" %}selected{% endif %}>
                         {{ category.name }}
                     </option>
                     {% endfor %}
@@ -72,8 +71,7 @@
         </section>
 
         <!-- Pagination -->
-        {% include 'components/pagination.html' with page_obj=page_obj search_query=search_query
-        category_filter=category_filter %}
+        {% include 'components/pagination.html' with page_obj=page_obj search_query=search_query category_filter=category_filter %}
 
         <!-- Contact Section -->
         <section class="contact-section">
