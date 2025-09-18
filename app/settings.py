@@ -15,6 +15,8 @@ from pathlib import Path
 import dj_database_url
 from decouple import Csv, config
 
+from utils.utils import normalize_text
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -53,8 +55,14 @@ INSTALLED_APPS = [
     "services",
 ]
 
-# Media files (uploads) para Django 5.1
-MEDIA_URL = "/media/"
+COMPANY_NAME = config("COMPANY_NAME", default="Delivery Service")
+COMPANY_NAME_NORMALIZED = normalize_text(COMPANY_NAME)
+
+# Media files
+if DEBUG:
+    MEDIA_URL = "/media/"
+else:
+    MEDIA_URL = f"/{COMPANY_NAME_NORMALIZED if COMPANY_NAME_NORMALIZED != 'delivery_service' else 'media'}/"
 MEDIA_ROOT = BASE_DIR / "media"
 CLOUDINARY_STORAGE = {
     "CLOUD_NAME": config("CLOUD_NAME"),
@@ -93,6 +101,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "core.middlewares.global_context.GlobalTemplateContextMiddleware",
 ]
 
 ROOT_URLCONF = "app.urls"
@@ -194,6 +203,7 @@ MP_ACCESS_TOKEN = config("MP_ACCESS_TOKEN", default=None)
 MP_BASE_API_URL = config("MP_BASE_API_URL", default="https://api.mercadopago.com")
 NOTIFICATION_URL = config("NOTIFICATION_URL", default=None)
 BASE_APPLICATION_URL = config("BASE_APPLICATION_URL", default="http://localhost:8000")
+
 
 # WhiteNoise configurações apenas para produção
 if not DEBUG:

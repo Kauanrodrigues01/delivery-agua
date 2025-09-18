@@ -5,7 +5,7 @@
         <div class="logo-area">
             <img src="{% static 'images/logo.jpg' %}" alt="F.A Distribuidora" class="logo-icon">
             <div>
-                <h1 class="mb-0">F.A Distribuidora</h1>
+                <h1 class="mb-0">{{ global_info.company_name }}</h1>
                 <p class="d-block">
                     {% if request.user.is_authenticated %}
                     Página do Administrador
