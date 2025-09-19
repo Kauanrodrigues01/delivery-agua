@@ -1,12 +1,19 @@
 {% extends 'base.html' %}
+
 {% load static %}
+{% load compress %}
+
 {% block title %}Produtos{% endblock %}
+
 {% block head %}
-<link rel="stylesheet" href="{% static 'products/styles.css' %}">
-<link rel="stylesheet" href="{% static 'global/form-default-style.css' %}">
-<link rel="stylesheet" href="{% static 'global/buttons-default-style.css' %}">
-<link rel="stylesheet" href="{% static 'components/pagination/pagination.css' %}">
+    {% compress css %}
+    <link rel="stylesheet" href="{% static 'products/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'global/form-default-style.css' %}">
+    <link rel="stylesheet" href="{% static 'global/buttons-default-style.css' %}">
+    <link rel="stylesheet" href="{% static 'components/pagination/pagination.css' %}">
+    {% endcompress %}
 {% endblock %}
+
 {% block content %}
 <main class="main-content">
     <div class="container">
@@ -97,9 +104,11 @@
     </div>
 </div>
 
+{% compress js %}
 <script src="{% static 'global/pagination/pagination.js' %}"></script>
 <script src="{% static '/products/script.js' %}"></script>
 <script src="{% static '/products/filterProductsByName.js' %}"></script>
+{% endcompress %}
 <script>
     // Initialize pagination smooth scroll for products section
     initializePaginationScroll('.products-grid');

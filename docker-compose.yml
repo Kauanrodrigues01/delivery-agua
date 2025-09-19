@@ -12,7 +12,7 @@ services:
     environment:
       # Database
       - DATABASE_URL=${DATABASE_URL}
-      
+
       # Django Settings
       - SECRET_KEY=${SECRET_KEY}
       - DEBUG=${DEBUG:-False}
@@ -21,22 +21,25 @@ services:
       - LANGUAGE_CODE=${LANGUAGE_CODE:-pt-br}
       - TIME_ZONE=${TIME_ZONE:-America/Sao_Paulo}
 
+      # Redis
+      - REDIS_URL=redis://redis:6379/1
+
       # Superuser Settings
       - SUPERUSER_USERNAME=${SUPERUSER_USERNAME}
       - SUPERUSER_EMAIL=${SUPERUSER_EMAIL}
       - SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
-      
+
       # WhatsApp Integration - Evolution API
       - EVOLUTION_API_BASE_URL=${EVOLUTION_API_BASE_URL}
       - EVOLUTION_API_KEY=${EVOLUTION_API_KEY}
       - INSTANCE_NAME=${INSTANCE_NAME}
       - WHATSAPP_ADMIN_NUMBER=${WHATSAPP_ADMIN_NUMBER}
-      
+
       # WhatsApp Integration - CallMeBot
       - CALLMEBOT_API_URL=${CALLMEBOT_API_URL}
       - CALLMEBOT_API_KEY=${CALLMEBOT_API_KEY}
       - CALLMEBOT_PHONE_NUMBER=${CALLMEBOT_PHONE_NUMBER}
-      
+
       # Cloudinary Settings
       - CLOUD_NAME=${CLOUD_NAME}
       - CLOUD_API_KEY=${CLOUD_API_KEY}
@@ -47,10 +50,41 @@ services:
       - MP_ACCESS_TOKEN=${MP_ACCESS_TOKEN}
       - MP_BASE_API_URL=${MP_BASE_API_URL:-https://api.mercadopago.com}
       - NOTIFICATION_URL=${NOTIFICATION_URL}
-    command: sh -c "python manage.py migrate && python manage.py collectstatic --noinput && uvicorn app.asgi:application --host 0.0.0.0 --port 8000 --workers ${WORKERS:-1} --log-level info"
+    depends_on:
+      - redis
+    command: sh -c "python manage.py migrate && python manage.py collectstatic --noinput && uvicorn app.asgi:application --host 0.0.0.0 --port 8000 --workers ${WORKERS:-2} --log-level info"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/admin/"]
-      interval: 30s
-      timeout: 10s
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
+      interval: 15s
+      timeout: 5s
       retries: 3
-      start_period: 40s
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    volumes:
+      - app_logs:/app/logs
+
+  redis:
+    image: redis:7-alpine
+    container_name: ${CONTAINER_NAME:-delivery-agua}-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+volumes:
+  redis_data:
+  app_logs:

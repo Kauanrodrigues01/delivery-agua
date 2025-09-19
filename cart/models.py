@@ -13,8 +13,8 @@ class Cart(models.Model):
 
     @property
     def total_quantity(self):
-        """Return the total quantity of items in the cart"""
-        return self.items.aggregate(total=Sum("quantity"))["total"] or 0
+        """Return the total quantity of items in the cart (only active products)"""
+        return self.items.filter(product__is_active=True).aggregate(total=Sum("quantity"))["total"] or 0
 
     @property
     def unique_items_count(self):
@@ -23,9 +23,9 @@ class Cart(models.Model):
 
     @property
     def total_price(self):
-        """Return the total price of all items in the cart"""
+        """Return the total price of all items in the cart (only active products)"""
         return (
-            self.items.aggregate(total=Sum(F("quantity") * F("product__price")))[
+            self.items.filter(product__is_active=True).aggregate(total=Sum(F("quantity") * F("product__price")))[
                 "total"
             ]
             or 0

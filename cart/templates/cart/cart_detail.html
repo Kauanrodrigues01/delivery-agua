@@ -1,10 +1,17 @@
 {% extends 'base.html' %}
-{% block title %}Carrinho{% endblock %}
-{% block content %}
+
 {% load static %}
+{% load compress %}
+
+{% block title %}Carrinho{% endblock %}
+
 {% block head %}
-<link rel="stylesheet" href="{% static 'cart/styles.css' %}">
+    {% compress css %}
+    <link rel="stylesheet" href="{% static 'cart/styles.css' %}">
+    {% endcompress %}
 {% endblock %}
+
+{% block content %}
 <main class="main-content">
     <div class="container">
         <section class="cart-section">
@@ -12,23 +19,37 @@
             {% if cart_items %}
             <ul class="cart-list">
                 {% for item in cart_items %}
-                <li class="cart-item">
+                <li class="cart-item {% if not item.product.is_active %}cart-item-inactive{% endif %}">
                     <div class="cart-item-main">
                         {% if item.product.image %}
-                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="cart-item-img">
+                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="cart-item-img{% if not item.product.is_active %} cart-item-img-inactive{% endif %}">
                         {% else %}
-                        <div class="cart-item-placeholder">?</div>
+                        <div class="cart-item-placeholder{% if not item.product.is_active %} cart-item-placeholder-inactive{% endif %}">?</div>
                         {% endif %}
                         <div>
-                            <div class="cart-item-name">{{ item.product.name }}</div>
+                            <div class="cart-item-name">
+                                {{ item.product.name }}
+                                {% if not item.product.is_active %}
+                                <span class="product-inactive-badge">
+                                    <i data-lucide="alert-triangle"></i>
+                                    Produto Indisponível
+                                </span>
+                                {% endif %}
+                            </div>
+                            {% if not item.product.is_active %}
+                            <div class="cart-item-inactive-message">
+                                Este produto não está mais disponível. Você pode apenas removê-lo do carrinho.
+                            </div>
+                            {% endif %}
                             <div class="cart-item-qty-controls">
                                 <button class="cart-btn cart-btn-decrease" data-product-id="{{ item.product.id }}"
-                                    title="Remover 1">
+                                    title="Remover 1" {% if not item.product.is_active %}disabled{% endif %}>
                                     <i data-lucide="minus"></i>
                                 </button>
                                 <span class="cart-item-qty-value">{{ item.quantity }}</span>
                                 <button class="cart-btn cart-btn-increase" data-product-id="{{ item.product.id }}"
-                                    title="Adicionar 1">
+                                    title="{% if item.product.is_active %}Adicionar 1{% else %}Produto indisponível{% endif %}"
+                                    {% if not item.product.is_active %}disabled{% endif %}>
                                     <i data-lucide="plus"></i>
                                 </button>
                                 <button class="cart-btn cart-btn-remove" data-product-id="{{ item.product.id }}"
@@ -38,7 +59,9 @@
                             </div>
                         </div>
                     </div>
-                    <div class="cart-item-price">R$ {{ item.product.price|floatformat:2 }}</div>
+                    <div class="cart-item-price{% if not item.product.is_active %} cart-item-price-inactive{% endif %}">
+                        R$ {{ item.product.price|floatformat:2 }}
+                    </div>
                 </li>
                 {% endfor %}
             </ul>

@@ -19,6 +19,11 @@ def increase_cart_item(request):
     product_id = request.POST.get("product_id")
     cart = get_cart(request)
     item = get_object_or_404(CartItem, cart=cart, product_id=product_id)
+
+    # SEGURANÇA: Verificar se produto ainda está ativo
+    if not item.product.is_active:
+        return JsonResponse({"error": "Produto não está mais disponível"}, status=400)
+
     item.quantity += 1
     item.save()
     cart_total = cart.total_price
@@ -33,6 +38,17 @@ def decrease_cart_item(request):
     product_id = request.POST.get("product_id")
     cart = get_cart(request)
     item = get_object_or_404(CartItem, cart=cart, product_id=product_id)
+
+    # SEGURANÇA: Verificar se produto ainda está ativo (permite remoção mesmo se inativo)
+    if not item.product.is_active:
+        # Se produto inativo, só permite remoção, não diminuição
+        item.delete()
+        cart_total = cart.total_price
+        return JsonResponse(
+            {"success": True, "quantity": 0, "cart_total": float(cart_total),
+             "message": "Produto removido (não disponível)"}
+        )
+
     if item.quantity > 1:
         item.quantity -= 1
         item.save()
@@ -76,7 +92,8 @@ def get_cart(request):
 class AddToCartView(View):
     def post(self, request, *args, **kwargs):
         product_id = request.POST.get("product_id")
-        product = get_object_or_404(Product, pk=product_id)
+        # SEGURANÇA: Só permite adicionar produtos ativos
+        product = get_object_or_404(Product, pk=product_id, is_active=True)
         cart = get_cart(request)
         item, created = CartItem.objects.get_or_create(cart=cart, product=product)
         if not created:

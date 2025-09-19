@@ -27,21 +27,35 @@ def calculate_metrics():
     - revenue_today agora exclui receitas canceladas
     - Gráficos usam queryset base para evitar dupla filtragem
     - Performance otimizada com agregações do Django
+    - Otimizado com uma única query usando aggregações condicionais
     """
-    # ===== MÉTRICAS DO DIA =====
+    from django.db.models import Count, F, Q, Sum
+
+    # ===== MÉTRICAS DO DIA COM OTIMIZAÇÃO =====
     orders_today = Order.objects.today()
 
-    # Quantidade de pedidos por status hoje
-    orders_today_count = orders_today.count()
-    orders_pending_today = orders_today.pending().count()
-    orders_completed_today = orders_today.completed().count()
-    orders_cancelled_today = orders_today.cancelled().count()
-    orders_late_today = orders_today.late().count()
+    # Uma única query com agregações condicionais para métricas do dia
+    today_metrics = orders_today.aggregate(
+        total_count=Count('id'),
+        pending_count=Count('id', filter=Q(status='pending')),
+        completed_count=Count('id', filter=Q(status='completed')),
+        cancelled_count=Count('id', filter=Q(status='cancelled')),
+        late_count=Count('id', filter=Q(status='pending', created_at__lt=now() - timedelta(minutes=25))),
+        revenue_paid=Sum(F('items__quantity') * F('items__product__price'), filter=Q(payment_status='paid')),
+        revenue_pending=Sum(F('items__quantity') * F('items__product__price'), filter=Q(payment_status='pending')),
+        revenue_cancelled=Sum(F('items__quantity') * F('items__product__price'), filter=Q(payment_status='cancelled')),
+    )
 
-    # Receitas do dia por status de pagamento
-    revenue_paid_today = orders_today.paid().total_revenue()
-    revenue_pending_today = orders_today.payment_pending().total_revenue()
-    revenue_cancelled_today = orders_today.payment_cancelled().total_revenue()
+    # Extrair valores da agregação
+    orders_today_count = today_metrics['total_count'] or 0
+    orders_pending_today = today_metrics['pending_count'] or 0
+    orders_completed_today = today_metrics['completed_count'] or 0
+    orders_cancelled_today = today_metrics['cancelled_count'] or 0
+    orders_late_today = today_metrics['late_count'] or 0
+
+    revenue_paid_today = float(today_metrics['revenue_paid'] or 0)
+    revenue_pending_today = float(today_metrics['revenue_pending'] or 0)
+    revenue_cancelled_today = float(today_metrics['revenue_cancelled'] or 0)
     # CORREÇÃO: Receita real do dia não deve incluir cancelamentos
     revenue_today = revenue_paid_today + revenue_pending_today
 

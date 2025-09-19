@@ -27,6 +27,23 @@ class CheckoutView(TemplateView):
     def post(self, request, *args, **kwargs):
         cart = get_cart(request)
         cart_items = cart.items.select_related("product").all()
+
+        # SEGURANÇA: Verificar se há produtos inativos no carrinho
+        inactive_items = cart_items.filter(product__is_active=False)
+        if inactive_items.exists():
+            context = self.get_context_data()
+            context["error_message"] = "Seu carrinho contém produtos que não estão mais disponíveis. Remova-os antes de continuar."
+            context["inactive_products"] = [item.product.name for item in inactive_items]
+            return render(request, "checkout/error.html", context)
+
+        # Filtrar apenas produtos ativos para o checkout
+        cart_items = cart_items.filter(product__is_active=True)
+
+        if not cart_items.exists():
+            context = self.get_context_data()
+            context["error_message"] = "Seu carrinho está vazio ou todos os produtos estão indisponíveis."
+            return render(request, "checkout/error.html", context)
+
         total = cart.total_price  # Usando a propriedade do modelo
         name = request.POST.get("name")
         phone = request.POST.get("phone")

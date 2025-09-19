@@ -112,17 +112,17 @@ class Order(models.Model):
         ("cancelled", "Cancelado/Devolvido"),
     ]
     customer_name = models.CharField(max_length=100)
-    phone = models.CharField(max_length=20)
+    phone = models.CharField(max_length=20, db_index=True)
     cpf = models.CharField(max_length=14, blank=True, null=True, help_text="CPF do cliente")
     address = models.TextField()
     payment_method = models.CharField(
-        max_length=20, choices=PAYMENT_CHOICES, default="pix"
+        max_length=20, choices=PAYMENT_CHOICES, default="pix", db_index=True
     )
     cash_value = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
     )
     payment_status = models.CharField(
-        max_length=20, choices=PAYMENT_STATUS_CHOICES, default="pending"
+        max_length=20, choices=PAYMENT_STATUS_CHOICES, default="pending", db_index=True
     )
     payment_id = models.CharField(
         max_length=255,
@@ -135,8 +135,8 @@ class Order(models.Model):
         blank=True,
         help_text="URL do pagamento no MercadoPago (para cartão)",
     )
-    created_at = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending", db_index=True)
 
     objects = OrderQuerySet.as_manager()
 
@@ -194,6 +194,12 @@ class Order(models.Model):
     class Meta:
         verbose_name = "Pedido"
         verbose_name_plural = "Pedidos"
+        indexes = [
+            models.Index(fields=['status', 'payment_status']),
+            models.Index(fields=['created_at', 'status']),
+            models.Index(fields=['payment_method', 'payment_status']),
+            models.Index(fields=['phone', 'created_at']),
+        ]
 
 
 class OrderItem(models.Model):

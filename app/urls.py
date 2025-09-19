@@ -16,14 +16,10 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.http import HttpResponse
 from django.urls import include, path, reverse_lazy
 from django.views.generic.base import RedirectView
 
-
-def health_check(request):
-    return HttpResponse("OK", status=200)
-
+from core.views import cache_stats_view, health_check
 
 urlpatterns = [
     path("", RedirectView.as_view(url=reverse_lazy("product_list"), permanent=False)),
@@ -33,5 +29,6 @@ urlpatterns = [
     path("checkout/", include("checkout.urls")),
     path("dashboard/", include("dashboard.urls")),
     path("health/", health_check, name="health_check"),
+    path("cache-stats/", cache_stats_view, name="cache_stats"),
     path("services/", include("services.urls")),
 ]

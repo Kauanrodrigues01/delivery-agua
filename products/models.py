@@ -23,8 +23,8 @@ class Product(models.Model):
     category = models.ForeignKey(
         Category, on_delete=models.CASCADE, related_name="products", default=None, null=True, blank=True
     )
-    is_active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
     def __str__(self):
         return self.name
@@ -32,3 +32,8 @@ class Product(models.Model):
     class Meta:
         verbose_name = "Produto"
         verbose_name_plural = "Produtos"
+        indexes = [
+            models.Index(fields=['is_active', 'created_at']),
+            models.Index(fields=['category', 'is_active']),
+            models.Index(fields=['name', 'is_active']),
+        ]

@@ -150,8 +150,8 @@ def order_list(request):
     payment_status_filter = request.GET.get("payment_status")
     search_query = request.GET.get("search", "")
 
-    # Start with all orders
-    orders = Order.objects.all()
+    # Start with optimized queryset using select_related
+    orders = Order.objects.select_related().prefetch_related('items__product')
 
     # Filter orders based on the status
     if status_filter == "pending":

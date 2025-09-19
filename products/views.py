@@ -17,7 +17,8 @@ def add_to_cart(request):
         return JsonResponse({"error": "No product id"}, status=400)
 
     cart = get_cart(request)
-    product = get_object_or_404(Product, pk=product_id)
+    # SEGURANÇA: Só permite adicionar produtos ativos
+    product = get_object_or_404(Product, pk=product_id, is_active=True)
     item, created = CartItem.objects.get_or_create(cart=cart, product=product)
     if not created:
         item.quantity += 1

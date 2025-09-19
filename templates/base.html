@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 {% load static %}
+{% load compress %}
 
 <head>
     <meta charset="UTF-8">
@@ -19,11 +20,12 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 
-
+    {% compress css %}
     <link rel="stylesheet" href="{% static '/reset.css' %}">
     <link rel="stylesheet" href="{% static 'base.css' %}">
     <link rel="stylesheet" href="{% static 'components/header.css' %}">
     <link rel="stylesheet" href="{% static 'components/footer.css' %}">
+    {% endcompress %}
 
     <style>
         :root {
