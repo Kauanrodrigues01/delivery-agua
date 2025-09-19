@@ -313,6 +313,260 @@
 </main>
 
 <script>
+    // WebSocket connection for real-time order updates
+    let ordersSocket = null;
+
+    function initWebSocket() {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const socketUrl = `${protocol}//${window.location.host}/ws/dashboard/orders/`;
+
+        ordersSocket = new WebSocket(socketUrl);
+
+        ordersSocket.onopen = function(e) {
+            console.log('WebSocket connected for orders');
+        };
+
+        ordersSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            handleOrderUpdate(data);
+        };
+
+        ordersSocket.onclose = function(e) {
+            console.log('WebSocket disconnected. Attempting to reconnect...');
+            // Attempt to reconnect after 3 seconds
+            setTimeout(initWebSocket, 3000);
+        };
+
+        ordersSocket.onerror = function(e) {
+            console.error('WebSocket error:', e);
+        };
+    }
+
+    function handleOrderUpdate(data) {
+        if (data.type === 'new_order') {
+            // Show notification for new order
+            showNotification('Novo pedido recebido!', `Pedido #${data.data.order_id} de ${data.data.customer_name}`);
+
+            // Reload page to show new order (simple approach)
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else if (data.type === 'order_update') {
+            // Update existing order in the DOM
+            updateOrderInDOM(data.data);
+
+            // Show notification for order update
+            showNotification('Pedido atualizado!', `Pedido #${data.data.order_id} foi atualizado`);
+        }
+    }
+
+    function updateOrderInDOM(orderData) {
+        const orderId = orderData.order_id;
+
+        // Update table row
+        const tableRow = document.querySelector(`tr[data-id="${orderId}"]`);
+        if (tableRow) {
+            updateTableRow(tableRow, orderData);
+        }
+
+        // Update card
+        const card = document.querySelector(`.order-card[data-id="${orderId}"]`);
+        if (card) {
+            updateOrderCard(card, orderData);
+        }
+    }
+
+    function updateTableRow(row, orderData) {
+        // Update status
+        const statusCell = row.querySelector('td:nth-child(4)');
+        if (statusCell) {
+            statusCell.innerHTML = getStatusHTML(orderData.status, orderData.is_late);
+        }
+
+        // Update payment status
+        const paymentCell = row.querySelector('td:nth-child(5)');
+        if (paymentCell) {
+            paymentCell.innerHTML = getPaymentStatusHTML(orderData.payment_status);
+        }
+
+        // Update total price
+        const totalCell = row.querySelector('td:nth-child(6)');
+        if (totalCell) {
+            totalCell.textContent = `R$ ${orderData.total_price.toFixed(2)}`;
+        }
+
+        // Update late class
+        if (orderData.is_late) {
+            row.classList.add('order-row-late');
+        } else {
+            row.classList.remove('order-row-late');
+        }
+    }
+
+    function updateOrderCard(card, orderData) {
+        // Update status in header
+        const statusElement = card.querySelector('.order-card-status');
+        if (statusElement) {
+            statusElement.className = `order-card-status ${getStatusClass(orderData.status)}`;
+            statusElement.textContent = getStatusText(orderData.status);
+        }
+
+        // Update payment status
+        const paymentDetail = card.querySelector('.order-card-detail:nth-child(4) .order-card-detail-value');
+        if (paymentDetail) {
+            paymentDetail.textContent = getPaymentStatusText(orderData.payment_status);
+        }
+
+        // Update total price
+        const totalDetail = card.querySelector('.order-card-detail:nth-child(3) .order-card-detail-value');
+        if (totalDetail) {
+            totalDetail.textContent = `R$ ${orderData.total_price.toFixed(2)}`;
+        }
+
+        // Update late class and indicator
+        if (orderData.is_late) {
+            card.classList.add('order-card-late');
+            const lateIndicator = card.querySelector('.late-indicator');
+            if (!lateIndicator) {
+                const idDiv = card.querySelector('.order-card-id');
+                const indicator = document.createElement('span');
+                indicator.className = 'late-indicator';
+                indicator.textContent = 'ATRASADO';
+                idDiv.appendChild(indicator);
+            }
+        } else {
+            card.classList.remove('order-card-late');
+            const lateIndicator = card.querySelector('.late-indicator');
+            if (lateIndicator) {
+                lateIndicator.remove();
+            }
+        }
+    }
+
+    function getStatusHTML(status, isLate) {
+        const statusClass = getStatusClass(status);
+        const statusText = getStatusText(status);
+        const lateIndicator = isLate ? '<span class="late-indicator">ATRASADO</span>' : '';
+
+        return `
+            <div class="order-status">
+                <span class="${statusClass}">${statusText}</span>
+                ${lateIndicator}
+            </div>
+        `;
+    }
+
+    function getPaymentStatusHTML(paymentStatus) {
+        const statusClass = getPaymentStatusClass(paymentStatus);
+        const statusText = getPaymentStatusText(paymentStatus);
+
+        return `<span class="${statusClass}">${statusText}</span>`;
+    }
+
+    function getStatusClass(status) {
+        switch(status) {
+            case 'pending': return 'order-pending';
+            case 'completed': return 'order-completed';
+            case 'cancelled': return 'order-cancelled';
+            default: return 'order-pending';
+        }
+    }
+
+    function getStatusText(status) {
+        switch(status) {
+            case 'pending': return 'Pendente';
+            case 'completed': return 'Concluído';
+            case 'cancelled': return 'Cancelado';
+            default: return 'Pendente';
+        }
+    }
+
+    function getPaymentStatusClass(status) {
+        switch(status) {
+            case 'pending': return 'order-pending';
+            case 'paid': return 'order-completed';
+            case 'cancelled': return 'order-cancelled';
+            default: return 'order-pending';
+        }
+    }
+
+    function getPaymentStatusText(status) {
+        switch(status) {
+            case 'pending': return 'Pendente';
+            case 'paid': return 'Pago';
+            case 'cancelled': return 'Cancelado';
+            default: return 'Pendente';
+        }
+    }
+
+    function showNotification(title, message) {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = 'websocket-notification';
+        notification.innerHTML = `
+            <div class="notification-content">
+                <strong>${title}</strong>
+                <p>${message}</p>
+            </div>
+        `;
+
+        // Add styles
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 10000;
+            min-width: 300px;
+            animation: slideIn 0.3s ease;
+        `;
+
+        // Add animation styles
+        if (!document.querySelector('#notification-styles')) {
+            const style = document.createElement('style');
+            style.id = 'notification-styles';
+            style.textContent = `
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+                @keyframes slideOut {
+                    from { transform: translateX(0); opacity: 1; }
+                    to { transform: translateX(100%); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        document.body.appendChild(notification);
+
+        // Auto remove after 4 seconds
+        setTimeout(() => {
+            notification.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }, 4000);
+    }
+
+    // Initialize WebSocket when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        initWebSocket();
+    });
+
+    // Clean up WebSocket when leaving page
+    window.addEventListener('beforeunload', function() {
+        if (ordersSocket) {
+            ordersSocket.close();
+        }
+    });
+
     // Função genérica para abrir e fechar modais
     function toggleModal(modalId, show = true) {
         const modal = document.getElementById(modalId);
@@ -571,7 +825,7 @@
     });
 </script>
 
-<script src="{% static 'global/components/pagination.js' %}"></script>
+<script src="{% static 'components/pagination/pagination.js' %}"></script>
 <script>
     // Initialize pagination smooth scroll for orders section
     initializePaginationScroll('.orders-section');

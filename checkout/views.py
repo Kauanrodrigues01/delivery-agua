@@ -240,7 +240,6 @@ def check_payment_status(request, order_id):
             order = get_object_or_404(Order, id=order_id)
 
             if not order.payment_id:
-                print("DEBUG: pedido sem payment_id")
                 return JsonResponse(
                     {
                         "status": "error",
@@ -249,6 +248,7 @@ def check_payment_status(request, order_id):
                 )
 
             payment_info = get_payment_info(order.payment_id)
+
 
             return JsonResponse(
                 {

@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "channels",
     "cloudinary_storage",  # Precisa ficar depois do staticfiles para evitar conflito no collectstatic
     "cloudinary",
     "compressor",
@@ -129,6 +130,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "app.wsgi.application"
+ASGI_APPLICATION = "app.asgi.application"
 
 
 # Database
@@ -243,6 +245,16 @@ CACHES = {
         'KEY_PREFIX': 'delivery_cache',
         'TIMEOUT': 300,  # 5 min default
     }
+}
+
+# Channels Configuration
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [config('REDIS_URL', default='redis://localhost:6379/2')],
+        },
+    },
 }
 
 # Cache timeouts customizados
