@@ -1,9 +1,9 @@
 {% load static %}
 
-<header class="main-header mb-4">
+<header class="main-header color-header mb-4">
     <div class="container main-header-inner">
         <div class="logo-area">
-            <img src="{% static 'images/logo.jpg' %}" alt="F.A Distribuidora" class="logo-icon">
+            <img src="{{ global_info.company_logo_url }}" alt="{{ global_info.company_name }}" class="logo-icon">
             <div>
                 <h1 class="mb-0">{{ global_info.company_name }}</h1>
                 <p class="d-block">

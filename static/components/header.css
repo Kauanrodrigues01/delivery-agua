@@ -1,9 +1,9 @@
 /* Header Styles */
 .main-header {
-    background: linear-gradient(90deg, #007bff 0%, #00c6ff 100%);
+    background: linear-gradient(90deg, var(--header-start) 0%, var(--header-end) 100%);
     color: #fff;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
-    padding: 0;
+    padding: 1.5rem;
 }
 
 .main-header-inner {
