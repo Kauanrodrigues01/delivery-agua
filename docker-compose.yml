@@ -50,7 +50,7 @@ services:
       - MP_ACCESS_TOKEN=${MP_ACCESS_TOKEN}
       - MP_BASE_API_URL=${MP_BASE_API_URL:-https://api.mercadopago.com}
       - NOTIFICATION_URL=${NOTIFICATION_URL}
-    command: sh -c "python manage.py migrate && python manage.py collectstatic --noinput && uvicorn app.asgi:application --host 0.0.0.0 --port 8000 --workers ${WORKERS:-2} --log-level info"
+    command: sh -c "python manage.py migrate && python manage.py collectstatic --noinput --clear && python manage.py compress --force && uvicorn app.asgi:application --host 0.0.0.0 --port 8000 --workers ${WORKERS:-2} --log-level info"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
       interval: 15s

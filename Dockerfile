@@ -48,12 +48,6 @@ RUN mkdir -p /app/staticfiles /app/static /app/logs \
 # Instalar curl e ferramentas básicas
 RUN apk add --no-cache curl
 
-# Compilar assets estáticos no build (se não for desenvolvimento)
-RUN if [ "$DEBUG" != "True" ]; then \
-        python manage.py collectstatic --noinput && \
-        python manage.py compress --force; \
-    fi
-
 # Porta exposta
 EXPOSE 8000
 
