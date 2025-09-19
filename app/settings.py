@@ -89,7 +89,7 @@ if DEBUG:
         },
     }
 else:
-    # Cloudinary para produção
+    # Cloudinary e Whitenoise para produção
     STORAGES = {
         "default": {
             "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",

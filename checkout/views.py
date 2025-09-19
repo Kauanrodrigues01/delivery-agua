@@ -32,8 +32,12 @@ class CheckoutView(TemplateView):
         inactive_items = cart_items.filter(product__is_active=False)
         if inactive_items.exists():
             context = self.get_context_data()
-            context["error_message"] = "Seu carrinho contém produtos que não estão mais disponíveis. Remova-os antes de continuar."
-            context["inactive_products"] = [item.product.name for item in inactive_items]
+            context["error_message"] = (
+                "Seu carrinho contém produtos que não estão mais disponíveis. Remova-os antes de continuar."
+            )
+            context["inactive_products"] = [
+                item.product.name for item in inactive_items
+            ]
             return render(request, "checkout/error.html", context)
 
         # Filtrar apenas produtos ativos para o checkout
@@ -41,7 +45,9 @@ class CheckoutView(TemplateView):
 
         if not cart_items.exists():
             context = self.get_context_data()
-            context["error_message"] = "Seu carrinho está vazio ou todos os produtos estão indisponíveis."
+            context["error_message"] = (
+                "Seu carrinho está vazio ou todos os produtos estão indisponíveis."
+            )
             return render(request, "checkout/error.html", context)
 
         total = cart.total_price  # Usando a propriedade do modelo
@@ -94,6 +100,11 @@ class CheckoutView(TemplateView):
                     # Salva o ID do pagamento no pedido para rastreamento
                     order.payment_id = payment_data.get("id")
                     order.save()
+                    order.payment_url = (
+                        payment_data.get("point_of_interaction", {})
+                        .get("transaction_data", {})
+                        .get("ticket_url")
+                    )
 
                     # Limpa o carrinho e redireciona para página de aguardar pagamento
                     cart.items.all().delete()
@@ -105,7 +116,7 @@ class CheckoutView(TemplateView):
                         "Erro ao processar pagamento PIX. Tente novamente."
                     )
                     return render(request, "checkout/error.html", context)
-            
+
             if payment_method == "cartao":
                 try:
                     preference_data = create_payment_charge(order)
@@ -124,7 +135,7 @@ class CheckoutView(TemplateView):
                         "Erro ao processar pagamento com cartão. Tente novamente."
                     )
                     return render(request, "checkout/error.html", context)
-            
+
             if payment_method == "dinheiro":
                 try:
                     # Limpa o carrinho
@@ -142,7 +153,7 @@ class CheckoutView(TemplateView):
             cart.items.all().delete()
             context = self.get_context_data()
             return render(request, "checkout/success.html", context)
-            
+
         except Exception as e:
             print(f"Error processing order: {e}")
             return render(request, "checkout/error.html", context)
@@ -158,26 +169,30 @@ def create_payment_charge(order: Order) -> dict:
     if order.payment_method == "pix":
         payment_data = mp_service.pay_with_pix(
             amount=float(order.total_price),
-            payer_email="cliente@exemplo.com",  # Email padrão para PIX
+            payer_email="cliente@exemplo.com",
             payer_cpf=order.cpf if order.cpf else "00000000000",
             description=f"Pedido #{order.id} - {order.customer_name}",
         )
         return payment_data
-    
+
     elif order.payment_method == "cartao":
         # Criar lista de itens para a preferência
         items = []
         for item in order.items.all():
-            items.append({
-                "id": str(item.product.id),
-                "title": item.product.name,
-                "quantity": item.quantity,
-                "currency_id": "BRL",
-                "unit_price": float(item.product.price)
-            })
-        
+            items.append(
+                {
+                    "id": str(item.product.id),
+                    "title": item.product.name,
+                    "quantity": item.quantity,
+                    "currency_id": "BRL",
+                    "unit_price": float(item.product.price),
+                }
+            )
+
         # Usar o método adequado do serviço MercadoPago
-        preference_data = mp_service.create_preference_with_card(items, order_id=str(order.id))
+        preference_data = mp_service.create_preference_with_card(
+            items, order_id=str(order.id)
+        )
         return preference_data
 
     return {}
@@ -227,9 +242,12 @@ def check_payment_status(request, order_id):
             if not order.payment_id:
                 print("DEBUG: pedido sem payment_id")
                 return JsonResponse(
-                    {"status": "error", "message": "Pagamento não encontrado, caso seja cartão, verifique se o pagamento foi efetuado"}
+                    {
+                        "status": "error",
+                        "message": "Pagamento não encontrado, caso seja cartão, verifique se o pagamento foi efetuado",
+                    }
                 )
-            
+
             payment_info = get_payment_info(order.payment_id)
 
             return JsonResponse(
@@ -256,30 +274,29 @@ def check_payment_status(request, order_id):
 
 class SuccessPaymentView(TemplateView):
     """View para página de pagamento bem-sucedido"""
-    
+
     template_name = "checkout/success_payment.html"
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         order_id = kwargs.get("order_id")
         order = get_object_or_404(Order, id=order_id)
-        
-        context.update({
-            "order": order,
-            "success_message": "Pagamento realizado com sucesso!"
-        })
+
+        context.update(
+            {"order": order, "success_message": "Pagamento realizado com sucesso!"}
+        )
         return context
 
 
 class ErrorPaymentView(TemplateView):
     """View para página de erro no pagamento"""
-    
+
     template_name = "checkout/error_payment.html"
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         order_id = kwargs.get("order_id")
-        
+
         # Se o order_id for fornecido, busca o pedido
         if order_id:
             try:
@@ -287,9 +304,11 @@ class ErrorPaymentView(TemplateView):
                 context["order"] = order
             except:
                 pass
-        
+
         # Pega a mensagem de erro da URL se existir
-        error_message = self.request.GET.get("message", "Ocorreu um erro no processamento do pagamento.")
+        error_message = self.request.GET.get(
+            "message", "Ocorreu um erro no processamento do pagamento."
+        )
         context["error_message"] = error_message
-        
+
         return context
