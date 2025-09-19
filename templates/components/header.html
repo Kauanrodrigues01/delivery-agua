@@ -3,7 +3,11 @@
 <header class="main-header color-header mb-4">
     <div class="container main-header-inner">
         <div class="logo-area">
-            <img src="{{ global_info.company_logo_url }}" alt="{{ global_info.company_name }}" class="logo-icon">
+            {% if global_info.company_logo_url %}
+                <img src="{{ global_info.company_logo_url }}" alt="{{ global_info.company_name }}" class="logo-icon">
+            {% else %}
+                <img src="{% static 'images/default-logo.svg' %}" alt="{{ global_info.company_name|default:'Logo' }}" class="logo-icon">
+            {% endif %}
             <div>
                 <h1 class="mb-0">{{ global_info.company_name }}</h1>
                 <p class="d-block">

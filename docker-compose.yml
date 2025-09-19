@@ -22,7 +22,7 @@ services:
       - TIME_ZONE=${TIME_ZONE:-America/Sao_Paulo}
 
       # Redis
-      - REDIS_URL=redis://redis:6379/1
+      - REDIS_URL=${REDIS_URL}
 
       # Superuser Settings
       - SUPERUSER_USERNAME=${SUPERUSER_USERNAME}
@@ -50,8 +50,6 @@ services:
       - MP_ACCESS_TOKEN=${MP_ACCESS_TOKEN}
       - MP_BASE_API_URL=${MP_BASE_API_URL:-https://api.mercadopago.com}
       - NOTIFICATION_URL=${NOTIFICATION_URL}
-    depends_on:
-      - redis
     command: sh -c "python manage.py migrate && python manage.py collectstatic --noinput && uvicorn app.asgi:application --host 0.0.0.0 --port 8000 --workers ${WORKERS:-2} --log-level info"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
@@ -70,21 +68,5 @@ services:
     volumes:
       - app_logs:/app/logs
 
-  redis:
-    image: redis:7-alpine
-    container_name: ${CONTAINER_NAME:-delivery-agua}-redis
-    restart: unless-stopped
-    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
-    volumes:
-      - redis_data:/data
-    ports:
-      - "6379:6379"
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 3s
-      retries: 3
-
 volumes:
-  redis_data:
   app_logs:

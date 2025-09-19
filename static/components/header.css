@@ -29,6 +29,23 @@
     border-radius: 10px;
 }
 
+.main-header .default-logo-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 70px;
+    height: 70px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.main-header .logo-icon-svg {
+    width: 36px;
+    height: 36px;
+    color: #fff;
+}
+
 .main-header h1 {
     font-size: 2rem;
     font-weight: 700;
@@ -143,6 +160,16 @@
         width: 40px;
     }
 
+    .main-header .default-logo-icon {
+        width: 40px;
+        height: 40px;
+    }
+
+    .main-header .logo-icon-svg {
+        width: 24px;
+        height: 24px;
+    }
+
     .main-header nav .nav-link {
         font-size: 0.9rem;
         padding: 0.4rem 0.6rem;
@@ -170,6 +197,16 @@
     
     .main-header .logo-icon {
         width: 35px;
+    }
+
+    .main-header .default-logo-icon {
+        width: 35px;
+        height: 35px;
+    }
+
+    .main-header .logo-icon-svg {
+        width: 20px;
+        height: 20px;
     }
     
     .main-header nav .nav-link {

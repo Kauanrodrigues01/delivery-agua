@@ -5,8 +5,11 @@
         <div class="footer-content">
             <div class="footer-brand">
                 <div class="footer-logo">
-                    <img src="{% static 'images/logo.jpg' %}" alt="{{ global_info.company_name|default:" Delivery
-                        Service" }}" class="logo-icon">
+                    {% if global_info.company_logo_url %}
+                        <img src="{{ global_info.company_logo_url }}" alt="{{ global_info.company_name|default:'Delivery Service' }}" class="logo-icon">
+                    {% else %}
+                        <img src="{% static 'images/default-logo.svg' %}" alt="{{ global_info.company_name|default:'Delivery Service' }}" class="logo-icon">
+                    {% endif %}
                     <div class="logo-text">
                         <h3>{{ global_info.company_name|default:"Delivery Service" }}</h3>
                     </div>

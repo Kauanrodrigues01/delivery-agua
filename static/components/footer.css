@@ -26,12 +26,27 @@
 }
 
 .footer-logo .logo-icon {
-    background: var(--primary);
-    color: var(--primary-foreground);
     font-size: 1.25rem;
     max-width: 100px;
     text-align: center;
     margin-right: 0.3rem;
+}
+
+.footer-logo .default-logo-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    background: var(--primary);
+    border-radius: 8px;
+    margin-right: 0.3rem;
+}
+
+.footer-logo .logo-icon-svg {
+    width: 30px;
+    height: 30px;
+    color: var(--primary-foreground);
 }
 
 .footer-logo h3 {
