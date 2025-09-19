@@ -99,12 +99,12 @@ class CheckoutView(TemplateView):
                     payment_data = create_payment_charge(order)
                     # Salva o ID do pagamento no pedido para rastreamento
                     order.payment_id = payment_data.get("id")
-                    order.save()
                     order.payment_url = (
                         payment_data.get("point_of_interaction", {})
                         .get("transaction_data", {})
                         .get("ticket_url")
                     )
+                    order.save()
 
                     # Limpa o carrinho e redireciona para página de aguardar pagamento
                     cart.items.all().delete()
