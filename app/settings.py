@@ -273,6 +273,7 @@ if not DEBUG:
     SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
     # Template caching
+    TEMPLATES[0]['APP_DIRS'] = False
     TEMPLATES[0]['OPTIONS']['loaders'] = [
         ('django.template.loaders.cached.Loader', [
             'django.template.loaders.filesystem.Loader',
