@@ -481,11 +481,29 @@
         font-weight: 600;
         flex: none;
         min-height: 52px;
+        white-space: normal;
     }
 
     .action-buttons form {
         width: 100% !important;
         flex: none !important;
+        min-width: auto;
+    }
+
+    /* Payment cancel group responsive */
+    .payment-cancel-group {
+        flex-direction: column;
+        gap: 0.875rem;
+    }
+
+    .payment-cancel-group form {
+        width: 100% !important;
+        flex: none !important;
+    }
+
+    .payment-cancel-group .btn {
+        width: 100%;
+        flex: none;
         min-width: auto;
     }
 

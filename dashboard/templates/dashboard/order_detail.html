@@ -206,7 +206,7 @@
                     {% csrf_token %}
                     <button type="submit" class="btn btn-warning" style="width: 100%;"
                         onclick="return confirm('Tem certeza que deseja cancelar este pagamento? Esta ação indica que o dinheiro foi devolvido ao cliente.')">
-                        Cancelar Pagamento (Devolver)
+                        Devolver Pagamento
                     </button>
                 </form>
                 {% elif order.status == 'completed' and order.payment_status == 'pending' %}
