@@ -69,14 +69,30 @@ def order_saved(sender, instance, created, **kwargs):
 
 
 @receiver(post_save, sender=OrderItem)
-@receiver(post_delete, sender=OrderItem)
-def order_item_changed(sender, instance, **kwargs):
+def order_item_saved(sender, instance, created, **kwargs):
     """
-    Signal chamado quando um item do pedido é criado, atualizado ou deletado
+    Signal chamado quando um item do pedido é criado ou atualizado
     """
     try:
-        # Enviar atualização do pedido quando os itens mudam
-        send_order_update(instance.order, "order_update")
+        if created:
+            # Novo item adicionado ao pedido
+            send_order_update(instance.order, "order_item_added")
+        else:
+            # Item existente atualizado
+            send_order_update(instance.order, "order_update")
+    except Exception as e:
+        # Não pode falhar o signal
+        pass
+
+
+@receiver(post_delete, sender=OrderItem)
+def order_item_deleted(sender, instance, **kwargs):
+    """
+    Signal chamado quando um item do pedido é deletado
+    """
+    try:
+        # Item removido do pedido
+        send_order_update(instance.order, "order_item_removed")
     except Exception as e:
         # Não pode falhar o signal
         pass

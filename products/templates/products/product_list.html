@@ -20,11 +20,11 @@
         <!-- Hero Section -->
         <section class="hero-section">
             <h2>Nossos Produtos</h2>
-            <p>
+            <!-- <p>
                 Água pura e de qualidade para você e sua família.
                 <br>
                 Entrega rápida e preços especiais.
-            </p>
+            </p> -->
         </section>
 
         <section class="products-filters">
@@ -83,11 +83,18 @@
         <!-- Contact Section -->
         <section class="contact-section">
             <h3>Faça seu Pedido Agora!</h3>
-            <p>Entre em contato conosco pelos telefones abaixo ou adicione os produtos ao carrinho</p>
+            <p>Entre em contato conosco {% if global_info.company_contacts|length > 1 %}pelos telefones abaixo{% else %}pelo telefone abaixo{% endif %} ou adicione os produtos ao carrinho</p>
             <div class="contact-phones">
-                <span class="phone">(85) 99233-8103</span>
-                <span class="separator">•</span>
-                <span class="phone">(85) 99169-0986</span>
+                {% if global_info.company_contacts|length > 0 %}
+                    {% for contact in global_info.company_contacts %}
+                        <span class="phone">{{ contact }}</span>
+                        {% if not forloop.last and global_info.company_contacts|length > 1 %}
+                            <span class="separator">•</span>
+                        {% endif %}
+                    {% endfor %}
+                {% else %}
+                    <span class="phone">Nenhum contato disponível</span>
+                {% endif %}
             </div>
         </section>
     </div>

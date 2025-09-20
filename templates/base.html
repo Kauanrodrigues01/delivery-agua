@@ -6,16 +6,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>F.A Distribuidora</title>
+    <title>{{ global_info.company_name }} - {% block title %}{% endblock %}</title>
     <meta name="description"
-        content="F.A Distribuidora - Distribuidora de água em Palmácia/CE. Galões, garrafas e bebedouros com entrega rápida e preços especiais.">
-    <meta name="author" content="F.A Distribuidora">
+        content="{{ global_info.company_name }} - {% if global_info.company_address %}{{ global_info.company_address }}. {% endif %}Produtos de qualidade com entrega rápida e preços especiais.">
+    <meta name="author" content="{{ global_info.company_name }}">
 
     <!-- Open Graph -->
-    <meta property="og:title" content="F.A Distribuidora">
+    <meta property="og:title" content="{{ global_info.company_name }}">
     <meta property="og:description"
-        content="Distribuidora de água em Palmácia/CE. Galões, garrafas e bebedouros com entrega rápida e preços especiais.">
+        content="{{ global_info.company_name }} - {% if global_info.company_address %}{{ global_info.company_address }}. {% endif %}Produtos de qualidade com entrega rápida e preços especiais.">
     <meta property="og:type" content="website">
+    {% if global_info.company_logo_url %}
+    <meta property="og:image" content="{{ global_info.company_logo_url }}">
+    <link rel="icon" type="image/x-icon" href="{{ global_info.company_logo_url }}">
+    {% endif %}
 
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>

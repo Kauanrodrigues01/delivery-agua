@@ -40,3 +40,17 @@ class OrdersConsumer(AsyncWebsocketConsumer):
         await self.send(
             text_data=json.dumps({"type": "new_order", "data": event["data"]})
         )
+
+    # Receber mensagem de item adicionado
+    async def order_item_added(self, event):
+        # Enviar mensagem para WebSocket
+        await self.send(
+            text_data=json.dumps({"type": "order_item_added", "data": event["data"]})
+        )
+
+    # Receber mensagem de item removido
+    async def order_item_removed(self, event):
+        # Enviar mensagem para WebSocket
+        await self.send(
+            text_data=json.dumps({"type": "order_item_removed", "data": event["data"]})
+        )

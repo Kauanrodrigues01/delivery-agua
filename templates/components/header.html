@@ -12,9 +12,13 @@
                 <h1 class="mb-0">{{ global_info.company_name }}</h1>
                 <p class="d-block">
                     {% if request.user.is_authenticated %}
-                    Página do Administrador
+                        Página do Administrador
                     {% else %}
-                    Água Mineral em Palmácia/CE
+                        {% if global_info.company_address %}
+                            {{ global_info.company_address }}
+                        {% else %}
+                            Sistema de Delivery
+                        {% endif %}
                     {% endif %}
                 </p>
             </div>

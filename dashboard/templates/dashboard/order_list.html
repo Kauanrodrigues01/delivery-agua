@@ -357,6 +357,18 @@
 
             // Show notification for order update
             showNotification('Pedido atualizado!', `Pedido #${data.data.order_id} foi atualizado`);
+        } else if (data.type === 'order_item_added') {
+            // Update existing order in the DOM
+            updateOrderInDOM(data.data);
+
+            // Show notification for item added
+            showNotification('Produto adicionado!', `Produto foi adicionado ao pedido #${data.data.order_id}`);
+        } else if (data.type === 'order_item_removed') {
+            // Update existing order in the DOM
+            updateOrderInDOM(data.data);
+
+            // Show notification for item removed
+            showNotification('Produto removido!', `Produto foi removido do pedido #${data.data.order_id}`);
         }
     }
 
