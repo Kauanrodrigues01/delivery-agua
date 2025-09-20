@@ -149,7 +149,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 48px;
+    min-height: 60px;
     line-height: 1.2;
 }
 
@@ -232,6 +232,7 @@
     box-shadow: 0 6px 16px rgba(255, 193, 7, 0.3);
 }
 
+
 .btn:focus {
     outline: 2px solid var(--primary);
     outline-offset: 2px;
@@ -250,6 +251,23 @@
 
 .action-buttons form .btn {
     width: 100%;
+}
+
+/* Group for payment and cancel buttons to stay on same line */
+.payment-cancel-group {
+    display: flex;
+    gap: 1rem;
+    flex: 1;
+    align-items: stretch;
+}
+
+.payment-cancel-group form {
+    flex: 1;
+}
+
+.payment-cancel-group .btn {
+    flex: 1;
+    min-width: 140px;
 }
 
 .items-table {

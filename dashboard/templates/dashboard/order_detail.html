@@ -195,13 +195,6 @@
                         Marcar como Pago
                     </button>
                 </form>
-                <form method="post" action="{% url 'dashboard:order_cancel_payment' order.pk %}" style="flex: 1;">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-warning" style="width: 100%;"
-                        onclick="return confirm('Tem certeza que deseja marcar este pagamento como cancelado/devolvido?')">
-                        Cancelar Pagamento
-                    </button>
-                </form>
                 {% elif order.status == 'cancelled' and order.payment_status == 'paid' %}
                 <!-- Pedido cancelado mas já pago: deve devolver o dinheiro -->
                 <div class="status-box status-box-danger">
@@ -226,7 +219,7 @@
                     style="flex: 1;">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-success" style="width: 100%;">
-                        Confirmar Pagamento Recebido
+                        Confirmar Pagamento
                     </button>
                 </form>
                 {% else %}
@@ -238,15 +231,35 @@
                 <form method="post" action="{% url 'dashboard:order_toggle_status' order.pk %}" style="flex: 1;">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-success" style="width: 100%;">
-                        Marcar como Concluído
+                        Concluir Pedido
                     </button>
                 </form>
                 {% endif %}
+                {% if order.payment_status != 'cancelled' and not order.is_finalized and order.status == 'pending' %}
+                <!-- Grupo para botões de pagamento e cancelamento quando ambos devem aparecer -->
+                <div class="payment-cancel-group">
+                    <form method="post" action="{% url 'dashboard:order_toggle_payment_status' order.pk %}"
+                        style="flex: 1;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn {% if order.payment_status == 'pending' %}btn-payment{% else %}btn-warning{% endif %}" style="width: 100%;">
+                            {% if order.payment_status == 'pending' %}
+                            Marcar como Pago
+                            {% else %}
+                            Marcar como Pendente
+                            {% endif %}
+                        </button>
+                    </form>
+                    <button class="btn btn-danger" onclick="confirmCancel('{{ order.id }}')">
+                        Cancelar Pedido
+                    </button>
+                </div>
+                {% else %}
+                <!-- Botões individuais quando apenas um deve aparecer -->
                 {% if order.payment_status != 'cancelled' and not order.is_finalized %}
                 <form method="post" action="{% url 'dashboard:order_toggle_payment_status' order.pk %}"
                     style="flex: 1;">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-payment" style="width: 100%;">
+                    <button type="submit" class="btn {% if order.payment_status == 'pending' %}btn-payment{% else %}btn-warning{% endif %}" style="width: 100%;">
                         {% if order.payment_status == 'pending' %}
                         Marcar como Pago
                         {% else %}
@@ -255,19 +268,11 @@
                     </button>
                 </form>
                 {% endif %}
-                {% if order.payment_status != 'cancelled' and not order.is_finalized %}
-                <form method="post" action="{% url 'dashboard:order_cancel_payment' order.pk %}" style="flex: 1;">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-warning" style="width: 100%;"
-                        onclick="return confirm('Tem certeza que deseja marcar este pagamento como cancelado/devolvido? Esta ação pode ser necessária quando há devolução de dinheiro.')">
-                        Cancelar Pagamento
-                    </button>
-                </form>
-                {% endif %}
                 {% if order.status == 'pending' and not order.is_finalized %}
                 <button class="btn btn-danger" onclick="confirmCancel('{{ order.id }}')">
                     Cancelar Pedido
                 </button>
+                {% endif %}
                 {% endif %}
                 {% endif %}
             </div>

@@ -151,7 +151,7 @@ def order_list(request):
     search_query = request.GET.get("search", "")
 
     # Start with optimized queryset using select_related
-    orders = Order.objects.select_related().prefetch_related('items__product')
+    orders = Order.objects.select_related().prefetch_related("items__product")
 
     # Filter orders based on the status
     if status_filter == "pending":
@@ -333,6 +333,8 @@ def order_cancel(request, pk):
     # Para outros casos, só permite cancelar se o status for "pending"
     if order.status == "pending":
         order.status = "cancelled"
+        # Sempre cancelar também o pagamento automaticamente
+        order.payment_status = "cancelled"
         order.save()
 
     return redirect("dashboard:order_list")

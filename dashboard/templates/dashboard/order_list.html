@@ -159,7 +159,7 @@
                                     <button class="delete-btn" data-order-id="{{ order.id }}">Cancelar</button>
                                     {% endif %}
                                     {% if order.payment_status != 'cancelled' and not order.is_finalized and order.status != 'completed' and order.status != 'cancelled' %}
-                                    <button class="payment-btn" data-order-id="{{ order.id }}"
+                                    <button class="{% if order.payment_status == 'pending' %}payment-btn{% else %}btn-warning{% endif %}" data-order-id="{{ order.id }}"
                                         data-current-status="{{ order.payment_status }}">
                                         {% if order.payment_status == 'pending' %}Marcar Pago{% else %}Marcar Pendente{% endif %}
                                     </button>
@@ -257,11 +257,11 @@
                         <!-- Lógica normal para outros casos (pending/pending e pending/paid) -->
                         {% if order.status == 'pending' and not order.is_finalized %}
                         <button class="complete-btn" data-order-id="{{ order.id }}"
-                            data-action="complete">Concluir</button>
+                            data-action="complete">Concluir Pedido</button>
                         <button class="delete-btn" data-order-id="{{ order.id }}">Cancelar</button>
                         {% endif %}
                         {% if order.payment_status != 'cancelled' and not order.is_finalized and order.status != 'completed' and order.status != 'cancelled' %}
-                        <button class="payment-btn complete-btn" data-order-id="{{ order.id }}"
+                        <button class="{% if order.payment_status == 'pending' %}payment-btn{% else %}btn-warning{% endif %} complete-btn" data-order-id="{{ order.id }}"
                             data-current-status="{{ order.payment_status }}">
                             {% if order.payment_status == 'pending' %}Marcar Pago{% else %}Marcar Pendente{% endif %}
                         </button>
